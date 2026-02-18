@@ -62,10 +62,52 @@ export const registerUser = async (req, res) => {
     return response(res, 201, "User Created Successfully", {
       userId: newUser._id,
       username: newUser.username,
+      VerificationToken:VerificationToken,
       hotdropId: newUser.hotdropId,
     });
   } catch (error) {
     console.log(error);
+    return response(res, 500, "Internal server error", null, error.message);
+  }
+};
+export const Verification = async (req, res) => {
+  try {
+   
+    const { token } = req.params; 
+
+    if (!token) {
+      return response(res, 400, "Token is missing");
+    }
+
+    
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    } catch (error) {
+      const msg = error.name === "TokenExpiredError" ? "Link expired" : "Invalid token";
+      return response(res, 400, msg);
+    }
+
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return response(res, 404, "User not found");
+    }
+
+
+    if (user.token !== token) {
+      return response(res, 400, "This link is no longer valid or has been used");
+    }
+
+ 
+    user.isVerified = true;
+    user.token = null; 
+    await user.save();
+
+    return response(res, 200, "Email verified successfully! You can now login.");
+
+  } catch (error) {
+    console.error(error);
     return response(res, 500, "Internal server error", null, error.message);
   }
 };
