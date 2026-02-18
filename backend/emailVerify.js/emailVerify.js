@@ -17,8 +17,8 @@ export const emailVerify = async (token, email) => {
 
 
     });
-    console.log("EMAIL:", process.env.MAIL_USER_EMAIL);
-    console.log("PASS:", process.env.MAIL_USER_PASS);
+    // console.log("EMAIL:", process.env.MAIL_USER_EMAIL);
+    // console.log("PASS:", process.env.MAIL_USER_PASS);
     const mailOptions = {
       from: process.env.MAIL_USER_EMAIL,
       to: email,
