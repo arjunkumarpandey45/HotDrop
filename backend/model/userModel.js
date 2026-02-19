@@ -48,7 +48,18 @@ const userSchema = new mongoose.Schema(
       enum: ["male", "female", "other"],
       default: null,
     },
-
+  token: {
+      type: String,
+      default: null,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    isLoggedIn: {
+      type: Boolean,
+      default: false,
+    },
     dateOfBirth: {
       type: Date,
       default: null,
