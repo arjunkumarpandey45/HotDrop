@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { generateToken } from "../utils/tokenGenrate.js";
 import { emailVerify } from "../emailVerify.js/emailVerify.js";
 
+
 export const registerUser = async (req, res) => {
   try {
     const { hotdropId, username, email, password, gender, dateOfBirth } =
@@ -118,6 +119,45 @@ export const Verification = async (req, res) => {
     return response(res, 500, "Internal server error", null, error.message);
   }
 };
+export const reVerificationMail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return response(res, 400, "Email is required");
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return response(res, 404, "User not found");
+    }
+
+    if (user.isVerified) {
+      return response(res, 400, "User already verified. Please login.");
+    }
+
+  
+    const token = jwt.sign(
+      { userId: user._id }, 
+      process.env.JWT_SECRET_KEY, 
+      { expiresIn: "15m" } 
+    );
+
+   
+    user.token = token;
+    await user.save();
+
+    
+    await emailVerify(token, user.email);
+
+    return response(res, 200, "Verification email sent successfully");
+
+  } catch (error) {
+    console.error("Re-verification error:", error.message);
+    return response(res, 500, "Internal server error", null, error.message);
+  }
+};
 export const login = async (req, res) => {
   try {
     const { hotdropId, email, password } = req.body;
@@ -134,11 +174,11 @@ export const login = async (req, res) => {
         Boolean,
       ),
     }).select("+password");
-  
+
     if (!existingUser) {
       return response(res, 400, "User not found");
     }
-      if (!existingUser.isVerified) {
+    if (!existingUser.isVerified) {
       return response(res, 400, "User not Verified");
     }
     const matchPassword = await bcryptjs.compare(
@@ -157,8 +197,10 @@ export const login = async (req, res) => {
       sameSite: "strict",
       maxAge: 15 * 24 * 60 * 60 * 1000,
     });
-
-    return response(res, 200, "User Logged In Successfully", {
+    existingUser.isLoggedIn = true;
+    await existingUser.save();
+   
+    return response(res, 200, `Welcome Mr ${existingUser.username}`, {
       userId: existingUser._id,
       accessToken: accessToken,
       hotdropId: existingUser.hotdropId,
