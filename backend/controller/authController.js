@@ -1,7 +1,7 @@
 import User from "../model/userModel.js";
 import response from "../utils/responseHandler.js";
 import bcryptjs from "bcryptjs";
-import jwt from 'jsonwebtoken'
+import jwt from "jsonwebtoken";
 import { generateToken } from "../utils/tokenGenrate.js";
 import { emailVerify } from "../emailVerify.js/emailVerify.js";
 
@@ -43,9 +43,13 @@ export const registerUser = async (req, res) => {
       username,
     });
 
-    const VerificationToken = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET_KEY, {
-      expiresIn: "5m",
-    });
+    const VerificationToken = jwt.sign(
+      { id: newUser._id },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "60m",
+      },
+    );
 
     await emailVerify(VerificationToken, normalizedEmail);
     newUser.token = VerificationToken;
@@ -62,7 +66,7 @@ export const registerUser = async (req, res) => {
     return response(res, 201, "User Created Successfully", {
       userId: newUser._id,
       username: newUser.username,
-      VerificationToken:VerificationToken,
+      VerificationToken: VerificationToken,
       hotdropId: newUser.hotdropId,
     });
   } catch (error) {
@@ -72,42 +76,95 @@ export const registerUser = async (req, res) => {
 };
 export const Verification = async (req, res) => {
   try {
-   
-    const { token } = req.params; 
+    const { token } = req.params;
 
     if (!token) {
       return response(res, 400, "Token is missing");
     }
 
-    
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     } catch (error) {
-      const msg = error.name === "TokenExpiredError" ? "Link expired" : "Invalid token";
+      const msg =
+        error.name === "TokenExpiredError" ? "Link expired" : "Invalid token";
       return response(res, 400, msg);
     }
-
 
     const user = await User.findById(decoded.id);
     if (!user) {
       return response(res, 404, "User not found");
     }
 
-
     if (user.token !== token) {
-      return response(res, 400, "This link is no longer valid or has been used");
+      return response(
+        res,
+        400,
+        "This link is no longer valid or has been used",
+      );
     }
 
- 
     user.isVerified = true;
-    user.token = null; 
+    user.token = null;
     await user.save();
 
-    return response(res, 200, "Email verified successfully! You can now login.");
-
+    return response(
+      res,
+      200,
+      "Email verified successfully! You can now login.",
+    );
   } catch (error) {
     console.error(error);
+    return response(res, 500, "Internal server error", null, error.message);
+  }
+};
+export const login = async (req, res) => {
+  try {
+    const { hotdropId, email, password } = req.body;
+
+    if ((!email && !hotdropId) || !password) {
+      return response(res, 400, "Required fields are missing");
+    }
+
+    const normalizedEmail = email ? email.toLowerCase() : null;
+    const normalizedId = hotdropId ? hotdropId.toLowerCase() : null;
+
+    const existingUser = await User.findOne({
+      $or: [{ email: normalizedEmail }, { hotdropId: normalizedId }].filter(
+        Boolean,
+      ),
+    }).select("+password");
+  
+    if (!existingUser) {
+      return response(res, 400, "User not found");
+    }
+      if (!existingUser.isVerified) {
+      return response(res, 400, "User not Verified");
+    }
+    const matchPassword = await bcryptjs.compare(
+      password,
+      existingUser.password,
+    );
+
+    if (!matchPassword) {
+      return response(res, 400, "Invalid email or password");
+    }
+
+    const accessToken = generateToken(existingUser);
+    res.cookie("auth_token", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 24 * 60 * 60 * 1000,
+    });
+
+    return response(res, 200, "User Logged In Successfully", {
+      userId: existingUser._id,
+      accessToken: accessToken,
+      hotdropId: existingUser.hotdropId,
+    });
+  } catch (error) {
+    console.log(error);
     return response(res, 500, "Internal server error", null, error.message);
   }
 };
