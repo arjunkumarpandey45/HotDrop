@@ -210,3 +210,23 @@ export const login = async (req, res) => {
     return response(res, 500, "Internal server error", null, error.message);
   }
 };
+
+export const logout = async (req, res) => {
+  try {
+   
+    if (req.user) {
+      await User.findByIdAndUpdate(req.user._id, { isLoggedIn: false });
+    }
+
+    res.clearCookie("auth_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    return response(res, 200, "Logout Successfully and status updated in DB");
+  } catch (error) {
+    console.log(error);
+    return response(res, 500, "Internal server error");
+  }
+};
