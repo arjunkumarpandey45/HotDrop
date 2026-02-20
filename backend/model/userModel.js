@@ -63,6 +63,18 @@ const userSchema = new mongoose.Schema(
     dateOfBirth: {
       type: Date,
       default: null,
+    }, otp: {
+      type: String,
+      default: null,
+    },
+    otpExpire: {
+      type: Date,
+      default: null,
+    },
+    phoneNumber: {
+      type: Number,
+      default:null
+      
     },
 
     profilePicture: {
