@@ -240,8 +240,44 @@ export const forgotPassword = async (req, res) => {
     user.otp = otp;
     user.otpExpire = otpExpire;
     await user.save();
-      await sentOtpMail(email, otp);
-    return response(res,200,"Otp Sent to Your Mail")
+    await sentOtpMail(email, otp);
+    return response(res, 200, "Otp Sent to Your Mail");
+  } catch (error) {
+    console.log(error);
+    return response(res, 500, "Internal server error");
+  }
+};
+export const verifyOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+    const {email}=req.params
+    if (!otp) {
+      return response(res, 400, "otp requires");
+    }
+    if (!email) {
+      return response(res, 400, "email requires");
+    }
+   
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return response(res, 404, "user not found");
+    }
+    if (new Date() > user.otpExpire) {
+      return response(res, 400, "OTP has expired. Please request a new one.");
+    }
+    if (otp !== user.otp) {
+      return response(res, 400, "incorrect otp");
+    }
+   
+    user.otp = null;
+    user.otpExpire = null;
+    await user.save();
+    const resetToken = jwt.sign(
+      { userId: user._id }, 
+      process.env.JWT_SECRET_KEY, 
+      { expiresIn: "10m" } 
+    );
+    return response(res, 200, "otp verified",{resetToken});
   } catch (error) {
     console.log(error);
     return response(res, 500, "Internal server error");
