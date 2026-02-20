@@ -4,6 +4,7 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { generateToken } from "../utils/tokenGenrate.js";
 import { emailVerify } from "../emailVerify.js/emailVerify.js";
+import { sentOtpMail } from "../sentOTP/sentOTP.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -216,6 +217,31 @@ export const logout = async (req, res) => {
     });
 
     return response(res, 200, "Logout Successfully and status updated in DB");
+  } catch (error) {
+    console.log(error);
+    return response(res, 500, "Internal server error");
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    console.log("EMAIL RECEIVED:", email);
+
+    if (!email) {
+      return response(res, 404, "email not found");
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return response(res, 404, "User not");
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpire = new Date(Date.now() + 10 * 60 * 1000);
+    user.otp = otp;
+    user.otpExpire = otpExpire;
+    await user.save();
+      await sentOtpMail(email, otp);
+    return response(res,200,"Otp Sent to Your Mail")
   } catch (error) {
     console.log(error);
     return response(res, 500, "Internal server error");
