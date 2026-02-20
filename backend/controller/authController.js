@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import { generateToken } from "../utils/tokenGenrate.js";
 import { emailVerify } from "../emailVerify.js/emailVerify.js";
 
-
 export const registerUser = async (req, res) => {
   try {
     const { hotdropId, username, email, password, gender, dateOfBirth } =
@@ -137,22 +136,16 @@ export const reVerificationMail = async (req, res) => {
       return response(res, 400, "User already verified. Please login.");
     }
 
-  
-    const token = jwt.sign(
-      { userId: user._id }, 
-      process.env.JWT_SECRET_KEY, 
-      { expiresIn: "15m" } 
-    );
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "15m",
+    });
 
-   
     user.token = token;
     await user.save();
 
-    
     await emailVerify(token, user.email);
 
     return response(res, 200, "Verification email sent successfully");
-
   } catch (error) {
     console.error("Re-verification error:", error.message);
     return response(res, 500, "Internal server error", null, error.message);
@@ -191,7 +184,7 @@ export const login = async (req, res) => {
     }
 
     const accessToken = generateToken(existingUser);
-    res.cookie("auth_token", accessToken, {
+    res.cookie("auth_token", accessToken, email, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
@@ -199,7 +192,7 @@ export const login = async (req, res) => {
     });
     existingUser.isLoggedIn = true;
     await existingUser.save();
-   
+
     return response(res, 200, `Welcome Mr ${existingUser.username}`, {
       userId: existingUser._id,
       accessToken: accessToken,
@@ -210,10 +203,8 @@ export const login = async (req, res) => {
     return response(res, 500, "Internal server error", null, error.message);
   }
 };
-
 export const logout = async (req, res) => {
   try {
-   
     if (req.user) {
       await User.findByIdAndUpdate(req.user._id, { isLoggedIn: false });
     }
