@@ -277,9 +277,29 @@ export const verifyOtp = async (req, res) => {
       process.env.JWT_SECRET_KEY, 
       { expiresIn: "10m" } 
     );
-    return response(res, 200, "otp verified",{resetToken});
+    return response(res, 200, "otp verified",{resetToken,user});
   } catch (error) {
     console.log(error);
     return response(res, 500, "Internal server error");
   }
 };
+export const changePassword=async(req,res)=>{
+    try{
+const{resetToken,newPassword}=req.body
+if(!resetToken||!newPassword){
+    return response(res,404,"token or password missing")
+}
+const decoded=jwt.verify(resetToken,process.env.JWT_SECRET_KEY)
+const user=await User.findById(decoded.userId)
+if(!user){
+    return response(res,404,"user not found")
+}
+user.password=await bcryptjs.hash(newPassword,10)
+await user.save()
+return response(res,200,"password changed")
+
+    }catch (error) {
+    console.log(error);
+    return response(res, 500, "Internal server error");
+  }
+}
