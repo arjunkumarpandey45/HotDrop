@@ -1,88 +1,98 @@
 import mongoose from "mongoose";
 
-const postSchema = new mongoose.Schema({
+const postSchema = new mongoose.Schema(
+  {
     user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-  shareUrl: { type: String ,required:true,  unique: true},
+    shareUrl: { type: String, required: true, unique: true },
     description: {
-        type: String,
-        required: [true, "Description is required"],
-        trim: true,
-        maxLength: [200, "Description cannot exceed 2000 characters"]
-    },  title: {
-        type: String,
-        required: [true, "title is required"],
-        trim: true,
-        maxLength: [50, "Description cannot exceed 2000 characters"]
+      type: String,
+      required: [true, "Description is required"],
+      trim: true,
+      maxLength: [200, "Description cannot exceed 2000 characters"],
+    },
+    title: {
+      type: String,
+      required: [true, "title is required"],
+      trim: true,
+      maxLength: [50, "Description cannot exceed 2000 characters"],
     },
     projectLink: {
-        type: String,
-        trim: true,
-        default: null
-    },isLinkDead: { 
-    type: Boolean, 
-    default: false 
-},
-   images: {
-        type: [String], 
-        required: [true, "At least one image is required"], 
-        public_id: { type: String, required: true },
-        validate: {
-            validator: function(val) {
-              
-                return val && val.length > 0 && val.length <= 3; 
-            },
-            message: "You must upload between 1 and 3 images."
-        }
+      type: String,
+      trim: true,
+      default: null,
     },
-    video: { 
-        type: String, 
-        default: null ,
-        public_id: { type: String }
+    isLinkDead: {
+      type: Boolean,
+      default: false,
     },
-    likes: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }],
-  
-ratings: [
-    {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        stars: { type: Number, required: true, min: 1, max: 5 }
-    }
-],
-averageRating: { 
-    type: Number, 
-    default: 0 
-},
-totalRatings: { 
-    type: Number, 
-    default: 0 
-},
-    comments: [
+    images: {
+      type: [
         {
-            user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-            text: { type: String, required: true },
-            createdAt: { type: Date, default: Date.now } 
-        }
+          url: { type: String, required: true },
+          public_id: { type: String, required: true },
+        },
+      ],
+      required: [true, "At least one image is required"],
+      validate: {
+        validator: function (val) {
+          // Check kar raha hai ki array khali na ho aur max 3 images hon
+          return val && val.length > 0 && val.length <= 3;
+        },
+        message: "You must upload between 1 and 3 images.",
+      },
+    },
+    video: {
+      url: { type: String, default: null },
+      public_id: { type: String, default: null },
+    },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
     ],
-    tags: [{
+
+    ratings: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        stars: { type: Number, required: true, min: 1, max: 5 },
+      },
+    ],
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+    totalRatings: {
+      type: Number,
+      default: 0,
+    },
+    comments: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        text: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
+    tags: [
+      {
         type: String,
         trim: true,
-         lowercase: true
-    }],
-   
+        lowercase: true,
+      },
+    ],
+
     likeCount: { type: Number, default: 0 },
     commentCount: { type: Number, default: 0 },
-    shareCount: { type: Number, default: 0 }
-
-}, { 
-    timestamps: true 
-});
-
+    shareCount: { type: Number, default: 0 },
+  },
+  {
+    timestamps: true,
+  },
+);
 
 const Post = mongoose.model("Post", postSchema);
 export default Post;
