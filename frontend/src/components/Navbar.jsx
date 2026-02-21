@@ -233,8 +233,95 @@
 
 
 
-import '../index.css'  
+// import '../index.css'  
 
+// import { useState } from "react";
+// import { MdMenu, MdSearch, MdNotificationsNone } from "react-icons/md";
+
+// const Navbar = () => {
+//   const [openProfile, setOpenProfile] = useState(false);
+
+//   return (
+//     <div className="w-full bg-gray-900 py-3 px-6 shadow-md">
+//       <div className="max-w-7xl mx-auto flex items-center justify-between">
+
+//         {/* LEFT SECTION */}
+//         <div className="flex items-center gap-4">
+
+//           {/* Hamburger */}
+//           <MdMenu className="text-white text-3xl cursor-pointer" />
+
+//           {/* Logo */}
+//           <h1 className="text-white text-xl font-semibold">
+//          hot drop
+//           </h1>
+
+//           {/* Search Bar */}
+//           <div className=" hidden md:flex items-center bg-gray-700 px-3 py-2 rounded-lg w-50">
+//             <MdSearch className="text-gray-300 text-xl" />
+//             <input
+//               type="text"
+//               placeholder="Search..."
+//               className="bg-transparent outline-none text-gray-200 ml-2 w-full"
+//             />
+//           </div>
+
+//         </div>
+// <div className=" md:block items-center bg-gray-700 px-3 py-2 rounded-lg w-50">
+//             <MdSearch className="text-gray-300 text-xl" />
+//             <input
+//               type="text"
+//               placeholder="Search..."
+//               className="bg-transparent outline-none text-gray-200 ml-2 w-full"
+//             />
+//           </div>
+//         {/* RIGHT SECTION */}
+//         <div className="flex items-center gap-6 relative">
+
+//           {/* Notification */}
+//           <div className="relative cursor-pointer">
+//             <MdNotificationsNone className="text-white text-2xl" />
+//             <span className="absolute -top-1 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+//               9
+//             </span>
+//           </div>
+
+//           {/* Profile Avatar */}
+//           <img
+//             src="https://i.pravatar.cc/100"
+//             onClick={() => setOpenProfile(!openProfile)}
+//             alt="profile"
+//             className="h-9 w-9 rounded-full cursor-pointer border border-gray-400"
+//           />
+
+//           {/* Profile Dropdown */}
+//           {openProfile && (
+//             <div className="absolute right-0 top-12 bg-gray-800 text-white rounded-lg shadow-lg w-40 py-2 z-20">
+//               <button className="w-full text-left px-4 py-2 hover:bg-gray-700">
+//                 Profile
+//               </button>
+//               <button className="w-full text-left px-4 py-2 hover:bg-gray-700">
+//                 Settings
+//               </button>
+//               <button className="w-full text-left px-4 py-2 hover:bg-gray-700">
+//                 Sign Up
+//               </button>
+//               <button className="w-full text-left px-4 py-2 hover:bg-gray-700">
+//                 Logout
+//               </button>
+//             </div>
+//           )}
+
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Navbar;
+
+
+import '../index.css';
 import { useState } from "react";
 import { MdMenu, MdSearch, MdNotificationsNone } from "react-icons/md";
 
@@ -242,72 +329,84 @@ const Navbar = () => {
   const [openProfile, setOpenProfile] = useState(false);
 
   return (
-    <div className="w-full bg-gray-900 py-3 px-6 shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <nav className="w-full bg-white py-3 px-4 sm:px-6 shadow-md border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
 
-        {/* LEFT SECTION */}
-        <div className="flex items-center gap-4">
-
-          {/* Hamburger */}
-          <MdMenu className="text-white text-3xl cursor-pointer" />
-
-          {/* Logo */}
-          <h1 className="text-white text-xl font-semibold">
-         hot drop
+        {/* LEFT SECTION: Menu & Logo */}
+        <div className="flex items-center gap-4 md:w-1/3">
+          <button className="p-1 rounded-md hover:bg-gray-100 transition-colors">
+            <MdMenu className="text-gray-600 hover:text-gray-900 text-3xl cursor-pointer transition-colors" />
+          </button>
+          
+          <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 text-2xl font-bold tracking-tight cursor-pointer whitespace-nowrap">
+            Hot Drop
           </h1>
-
-          {/* Search Bar */}
-          <div className=" hidden md:flex items-center bg-gray-700 px-3 py-2 rounded-lg w-50">
-            <MdSearch className="text-gray-300 text-xl" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="bg-transparent outline-none text-gray-200 ml-2 w-full"
-            />
-          </div>
-
         </div>
 
-        {/* RIGHT SECTION */}
-        <div className="flex items-center gap-6 relative">
+        {/* CENTER SECTION: Desktop Search Bar (Hidden on Mobile) */}
+        <div className="hidden md:flex flex-1 justify-center">
+          <div className="flex items-center bg-gray-100 px-4 py-2 rounded-full w-full max-w-md border border-gray-200 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 transition-all shadow-inner">
+            <MdSearch className="text-gray-500 text-xl" />
+            <input
+              type="text"
+              placeholder="Search for anything..."
+              className="bg-transparent outline-none text-gray-800 ml-3 w-full placeholder-gray-500 text-sm"
+            />
+          </div>
+        </div>
+
+        {/* RIGHT SECTION: Mobile Search, Notifications & Profile */}
+        <div className="flex items-center justify-end gap-2 sm:gap-4 md:w-1/3 relative">
+
+          {/* Mobile Search Icon (Hidden on Desktop) */}
+          <button className="md:hidden p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer">
+            <MdSearch className="text-gray-600 hover:text-gray-900 text-2xl transition-colors" />
+          </button>
 
           {/* Notification */}
-          <div className="relative cursor-pointer">
-            <MdNotificationsNone className="text-white text-2xl" />
-            <span className="absolute -top-1 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+          <button className="relative p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer">
+            <MdNotificationsNone className="text-gray-600 hover:text-gray-900 text-2xl transition-colors" />
+            <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white translate-x-1/4 -translate-y-1/4">
               9
             </span>
-          </div>
+          </button>
 
           {/* Profile Avatar */}
-          <img
-            src="https://i.pravatar.cc/100"
-            onClick={() => setOpenProfile(!openProfile)}
-            alt="profile"
-            className="h-9 w-9 rounded-full cursor-pointer border border-gray-400"
-          />
+          <div className="relative pl-2">
+            <img
+              src="https://i.pravatar.cc/100"
+              onClick={() => setOpenProfile(!openProfile)}
+              alt="User profile"
+              className="h-9 w-9 rounded-full cursor-pointer border-2 border-gray-200 hover:border-orange-400 transition-all object-cover"
+            />
 
-          {/* Profile Dropdown */}
-          {openProfile && (
-            <div className="absolute right-0 top-12 bg-gray-800 text-white rounded-lg shadow-lg w-40 py-2 z-20">
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-700">
-                Profile
-              </button>
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-700">
-                Settings
-              </button>
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-700">
-                Sign Up
-              </button>
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-700">
-                Logout
-              </button>
-            </div>
-          )}
+            {/* Profile Dropdown */}
+            {openProfile && (
+              <div className="absolute right-0 top-12 bg-white text-gray-800 rounded-xl shadow-xl border border-gray-200 w-48 py-2 z-20 overflow-hidden transform transition-all">
+                <div className="px-4 py-2 border-b border-gray-100 mb-1">
+                  <p className="text-sm text-gray-900 font-semibold">My Account</p>
+                </div>
+                <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors">
+                  Profile
+                </button>
+                <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors">
+                  Settings
+                </button>
+                <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors">
+                  Sign Up
+                </button>
+                <div className="border-t border-gray-100 mt-1 pt-1">
+                  <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
         </div>
       </div>
-    </div>
+    </nav>
   );
 };
 
