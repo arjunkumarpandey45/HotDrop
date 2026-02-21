@@ -24,6 +24,7 @@ const App = () => {
       <div className=" flex items-center justify-center h-screen w-screen bg-gray-50 z-50 fixed top-0 left-0">
        
         <CircularProgress style={{ color: '#f97316' }} size={60} />
+       
       </div>
     );
   }

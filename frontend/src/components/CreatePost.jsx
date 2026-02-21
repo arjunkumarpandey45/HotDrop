@@ -9,8 +9,8 @@ import { FaRegEdit } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa6";
 
 const actions = [
-  { icon: <FaPlus />, name: "Create post" },
-  { icon: <FaRegEdit />, name: "Edit Post" },
+  { icon: <FaPlus />, name: "Create " },
+  { icon: <FaRegEdit />, name: "Edit " },
   
 ];
 
