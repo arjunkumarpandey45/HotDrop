@@ -11,8 +11,8 @@ function App() {
   return (
     <>
      <Loader></Loader>
-     <Navbar ></Navbar>
-     <CreatePost></CreatePost>
+     {/* <Navbar ></Navbar> */}
+     {/* <CreatePost></CreatePost> */}
      
     </>
   )

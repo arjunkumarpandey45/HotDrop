@@ -4,12 +4,12 @@ import Backdrop from "@mui/material/Backdrop";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
-import FileCopyIcon from "@mui/icons-material/FileCopyOutlined";
 
 import { FaRegEdit } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa6";
 
 const actions = [
-  { icon: <FileCopyIcon />, name: "Create post" },
+  { icon: <FaPlus />, name: "Create post" },
   { icon: <FaRegEdit />, name: "Edit Post" },
   
 ];
@@ -25,13 +25,13 @@ const CrestePost = () => {
 <Box sx={{ flexGrow: 1 }}>
   <Backdrop open={open} />
   
-  {/* The SpeedDial is now pinned to the screen */}
+  
   <SpeedDial
     ariaLabel="SpeedDial tooltip example"
     sx={{ 
-      position: "fixed", // Keeps it floating on the screen
-      bottom: 16,        // 16px from the bottom edge
-      right: 16          // 16px from the right edge
+      position: "fixed", 
+      bottom: 16,        
+      right: 16          
     }}
     icon={<SpeedDialIcon />}
     onClose={handleClose}

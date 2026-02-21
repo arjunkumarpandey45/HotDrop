@@ -1,21 +1,40 @@
-import React from 'react'
+import React, { useState, useEffect } from "react";
+import { CircularProgress } from "@mui/material";
+import Navbar from "./Navbar";
+import CreatePost from "./CreatePost.jsx"
 
-function Loader() {
 
-  //   const [loading, setLoading] = useState(true);
-  // return (
-  //   <>
-  //      useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setLoading(false);
-  //   }, 500); // 0.5 second
+const App = () => {
 
-  //   return () => clearTimeout(timer);
-  // }, []);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // return loading ? <Loader /> : <MainWebsite />;
-  //   </>
-  // )
-}
+  useEffect(() => {
+   
+    const timer = setTimeout(() => {
+      setIsLoading(false); 
+    }, 500);
 
-export default Loader
+    
+    return () => clearTimeout(timer);
+  }, []); 
+
+  
+  if (isLoading) {
+    return (
+      <div className=" flex items-center justify-center h-screen w-screen bg-gray-50 z-50 fixed top-0 left-0">
+       
+        <CircularProgress style={{ color: '#f97316' }} size={60} />
+      </div>
+    );
+  }
+
+
+  return (
+    <>
+    <Navbar></Navbar>
+   <CreatePost></CreatePost>
+    </>
+  );
+};
+
+export default App;
