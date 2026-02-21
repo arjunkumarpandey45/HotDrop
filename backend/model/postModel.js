@@ -32,6 +32,10 @@ const postSchema = new mongoose.Schema({
             message: "You must upload between 1 and 3 images."
         }
     },
+    video: { 
+        type: String, 
+        default: null 
+    },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
