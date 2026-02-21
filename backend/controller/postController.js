@@ -2,7 +2,26 @@ import axios from "axios";
 import Post from "../model/postModel.js";
 import response from "../utils/responseHandler.js";
 import slugify from "slugify";
+export const verifyLink = async (req, res) => {
+  let { url } = req.body;
+  if (!url) return response(res, 400, "URL is required");
 
+  if (!/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
+  }
+
+  try {
+    await axios.get(url, {
+      timeout: 5000,
+      headers: { "User-Agent": "Mozilla/5.0" },
+      validateStatus: (status) => status >= 200 && status < 500,
+    });
+
+    return response(res, 200, "Link verified! 🔥");
+  } catch (error) {
+    return response(res, 400, "Link dead hai ya reachable nahi hai.");
+  }
+};
 export const createPost = async (req, res) => {
   try {
     const { title, description, projectLink, tags } = req.body;
