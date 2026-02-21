@@ -11,7 +11,12 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: [true, "Description is required"],
         trim: true,
-        maxLength: [2000, "Description cannot exceed 2000 characters"]
+        maxLength: [200, "Description cannot exceed 2000 characters"]
+    },  title: {
+        type: String,
+        required: [true, "title is required"],
+        trim: true,
+        maxLength: [50, "Description cannot exceed 2000 characters"]
     },
     projectLink: {
         type: String,
@@ -24,6 +29,7 @@ const postSchema = new mongoose.Schema({
    images: {
         type: [String], 
         required: [true, "At least one image is required"], 
+        public_id: { type: String, required: true },
         validate: {
             validator: function(val) {
               
@@ -34,7 +40,8 @@ const postSchema = new mongoose.Schema({
     },
     video: { 
         type: String, 
-        default: null 
+        default: null ,
+        public_id: { type: String }
     },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
