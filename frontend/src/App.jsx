@@ -1,7 +1,7 @@
 
 import Loader from "./components/Loader.jsx"
 import Navbar from "./components/Navbar.jsx"
-import Slidebar from "./components/Slidebar.jsx"
+
 
 
 function App() {
@@ -11,7 +11,7 @@ function App() {
     <>
      <Loader></Loader>
      <Navbar ></Navbar>
-     <Slidebar></Slidebar>
+     
     </>
   )
 }
