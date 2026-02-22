@@ -4,14 +4,14 @@ import Backdrop from "@mui/material/Backdrop";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
-
+import { FaRobot } from "react-icons/fa";
 import { FaRegEdit } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa6";
 
 const actions = [
   { icon: <FaPlus />, name: "Create " },
   { icon: <FaRegEdit />, name: "Edit " },
-  
+    { icon: <FaRobot />, name: "Chat " },
 ];
 
 const CrestePost = () => {
