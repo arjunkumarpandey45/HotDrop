@@ -192,3 +192,55 @@ export const likePost = async (req, res) => {
     return response(res, 500, "Server error", null, error.message);
   }
 };
+export const commentPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user._id;
+    const { text } = req.body;
+
+    
+    if (!text || !text.trim()) {
+      return response(res, 400, "Comment text is required");
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return response(res, 400, "Invalid Post ID format");
+    }
+
+   
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      {
+        $push: {
+          comments: {
+            user: userId,
+            text: text.trim()
+          }
+        },
+        $inc: { commentCount: 1 }
+      },
+      {
+        returnDocument: "after",
+        runValidators: true
+      }
+    ).populate("comments.user", "hotdropId profilePicture");
+
+    if (!updatedPost) {
+      return response(res, 404, "Post not found");
+    }
+
+    
+    const newComment =
+      updatedPost.comments[updatedPost.comments.length - 1];
+
+    return response(
+      res,
+      201,
+      "Comment added successfully",
+      newComment
+    );
+
+  } catch (error) {
+    return response(res, 500, "Server error", null, error.message);
+  }
+};
