@@ -93,7 +93,7 @@ const Navbar = () => {
               <MdSearch className="text-gray-500 text-xl" />
               <input
                 type="text"
-                placeholder="Search for anything..."
+                placeholder="Search for projects..."
                 className="bg-transparent outline-none text-gray-800 ml-3 w-full placeholder-gray-500 text-sm"
               />
             </div>
