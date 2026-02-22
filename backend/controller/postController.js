@@ -2,6 +2,8 @@ import axios from "axios";
 import Post from "../model/postModel.js";
 import response from "../utils/responseHandler.js";
 import slugify from "slugify";
+import mongoose from "mongoose";
+import User from "../model/userModel.js";
 export const verifyLink = async (req, res) => {
   let { url } = req.body;
   if (!url) return response(res, 400, "URL is required");
@@ -105,4 +107,48 @@ export const getAllPosts = async (req, res) => {
     return response(res, 500, "Server error", null, error.message);
   }
 };
+export const getPostsByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
 
+   
+    if (!userId) {
+      return response(res, 400, "User ID is required");
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return response(res, 400, "Invalid User ID format");
+    }
+
+    const userExists = await User.exists({ _id: userId });
+    if (!userExists) {
+      return response(res, 404, "User not found");
+    }
+
+ 
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const [posts, totalPosts] = await Promise.all([
+      Post.find({ user: userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("user", "hotdropId username email profilePicture")
+        .populate("comments.user", "hotdropId profilePicture"),
+      Post.countDocuments({ user: userId })
+    ]);
+
+    
+    return response(res, 200, "User posts fetched successfully", {
+      posts,
+      currentPage: page,
+      totalPages: Math.ceil(totalPosts / limit),
+      hasMore: skip + posts.length < totalPosts
+    });
+
+  } catch (error) {
+    return response(res, 500, "Server error", null, error.message);
+  }
+};
