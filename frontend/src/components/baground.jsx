@@ -31,7 +31,7 @@ const getAnchorAndDir = (origin, w, h) => {
   }
 };
 
-const baground= ({
+const Baground= ({
   raysOrigin = 'top-center',
   raysColor = DEFAULT_COLOR,
   raysSpeed = 1,
@@ -396,4 +396,4 @@ void main() {
   return <div ref={containerRef} className={`light-rays-container ${className}`.trim()} />;
 };
 
-export default baground;
+export default Baground;

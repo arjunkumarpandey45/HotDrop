@@ -2,7 +2,7 @@
 import Loader from "./components/Loader.jsx"
 import Navbar from "./components/Navbar.jsx"
 import CreatePost from "./components/CreatePost.jsx"
-import baground from "./components/baground.jsx"
+import Baground from "./components/Baground.jsx"
 
 
 function App() {
@@ -10,9 +10,9 @@ function App() {
 
   return (
     <>
-    <div style={{ width: '100%', height: '600px', position: 'absolute' }}>
+    <div style={{ width: '100%', height: '100%', position: 'absolute' }}>
     <Loader></Loader>
-    <baground raysOrigin="top-center"
+    <Baground raysOrigin="top-center"
     raysColor="#ffffff"
     raysSpeed={1}
     lightSpread={0.5}
@@ -26,7 +26,7 @@ function App() {
     fadeDistance={1}
     saturation={1}>
 
-    </baground>
+    </Baground>
     </div>
     
      
