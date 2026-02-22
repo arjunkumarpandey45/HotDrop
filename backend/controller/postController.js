@@ -152,3 +152,43 @@ export const getPostsByUserId = async (req, res) => {
     return response(res, 500, "Server error", null, error.message);
   }
 };
+export const likePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user._id;
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return response(res, 400, "Invalid Post ID format");
+    }
+
+    const post = await Post.findById(postId).select("likes likeCount");
+    if (!post) {
+      return response(res, 404, "Post not found");
+    }
+
+    const alreadyLiked = post.likes.some(
+      (id) => id.toString() === userId.toString()
+    );
+
+    const updateOperation = alreadyLiked
+      ? { $pull: { likes: userId }, $inc: { likeCount: -1 } }
+      : { $addToSet: { likes: userId }, $inc: { likeCount: 1 } };
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      updateOperation,
+      {  returnDocument: "after", select: "likeCount likes" }
+    );
+
+    return response(res, 200,
+      alreadyLiked ? "Post unliked" : "Post liked",
+      {
+        likeCount: Math.max(updatedPost.likeCount, 0),
+        isLiked: !alreadyLiked
+      },userId
+    );
+
+  } catch (error) {
+    return response(res, 500, "Server error", null, error.message);
+  }
+};

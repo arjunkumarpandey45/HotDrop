@@ -4,7 +4,8 @@ import response from "../utils/responseHandler.js";
 
 export const protect = async (req, res, next) => {
   try {
-    
+     console.log("🟡 PROTECT middleware entered");
+
     const token = req.cookies.auth_token;
 
     if (!token) {
