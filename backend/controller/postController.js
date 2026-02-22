@@ -78,3 +78,31 @@ export const createPost = async (req, res) => {
     );
   }
 };
+export const getAllPosts = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const [posts, totalPosts] = await Promise.all([
+      Post.find({ user: { $ne: null } })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("user", "hotdropId username email profilePicture")
+        .populate("comments.user", "hotdropId profilePicture"),
+      Post.countDocuments({ user: { $ne: null } })
+    ]);
+
+    return response(res, 200, "Posts fetched successfully", {
+      posts,
+      currentPage: page,
+      totalPages: Math.ceil(totalPosts / limit),
+      hasMore: skip + posts.length < totalPosts
+    });
+
+  } catch (error) {
+    return response(res, 500, "Server error", null, error.message);
+  }
+};
+
