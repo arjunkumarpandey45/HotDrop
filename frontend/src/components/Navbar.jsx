@@ -13,7 +13,7 @@ import MailIcon from "@mui/icons-material/Mail";
 import "../index.css";
 import { useState } from "react";
 import { MdMenu, MdSearch, MdNotificationsNone } from "react-icons/md";
-
+import logo from "../assets/logo, HOTDROP.png"
 
 
 
@@ -83,7 +83,7 @@ const Navbar = () => {
             </button>
 
             <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 text-2xl font-bold tracking-tight cursor-pointer whitespace-nowrap">
-              Hot Drop
+              <img className="w-20   " src={logo} alt="company logo" />
             </h1>
           </div>
 
