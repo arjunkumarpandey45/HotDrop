@@ -22,7 +22,7 @@ const connectDB = async () => {
         family: 4 
       });
 
-      // Agar hum direct shard connect kar rahe hain, toh check karo Primary hai ya nahi
+     
       if (conn.checkPrimary) {
         const isMasterDoc = await mongoose.connection.db.admin().command({ isMaster: 1 });
         
