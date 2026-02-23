@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
       unique:true,
        lowercase: true,
       trim: true,
+      index: true
     },
     username: {
       type: String,
@@ -72,7 +73,7 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     phoneNumber: {
-      type: Number,
+      type: String,
       default:null
       
     },
@@ -87,21 +88,8 @@ posts: [
         ref: "Post"
       }
     ],
-    followers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
-    following: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
-    followerCount: {
+  
+    followersCount: {
       type: Number,
       default: 0,
     },
