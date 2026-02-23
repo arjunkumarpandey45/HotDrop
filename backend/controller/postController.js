@@ -243,4 +243,33 @@ export const commentPost = async (req, res) => {
   } catch (error) {
     return response(res, 500, "Server error", null, error.message);
   }
+};export const sharePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return response(res, 400, "Invalid Post ID format");
+    }
+
+    const post = await Post.findByIdAndUpdate(
+      postId,
+      { $inc: { shareCount: 1 } },
+      {
+        returnDocument: "after",
+        select: "shareCount shareUrl"
+      }
+    );
+
+    if (!post) {
+      return response(res, 404, "Post not found");
+    }
+
+    return response(res, 200, "Share count updated", {
+      shareCount: post.shareCount,
+      shareUrl: `https://hotdrop.com/post/${post.shareUrl}`
+    });
+
+  } catch (error) {
+    return response(res, 500, "Server error", null, error.message);
+  }
 };
