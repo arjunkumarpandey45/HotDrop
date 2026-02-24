@@ -17,7 +17,7 @@ router.post('/changepassword',changePassword)
 
 //google auth 
 router.get('/google', passport.authenticate('google', { scope: ['email', 'profile'] }));
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login` }), (req, res) => {
+router.get('/google/callback', passport.authenticate('google', {session: false, failureRedirect: `${process.env.FRONTEND_URL}/login` }), (req, res) => {
 const accessToken = generateToken(req.user)
    res.cookie("auth_token", accessToken, {
       httpOnly: true,
