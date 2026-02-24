@@ -9,39 +9,40 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-    const isVideo = file.mimetype.startsWith("video/");
-
     return {
-      folder: "hotdrops_content",
-      resource_type: isVideo ? "video" : "image",
-      allowed_formats: isVideo ? ["mp4", "mov"] : ["jpg", "png", "jpeg", "webp"],
-      transformation: isVideo
-        ? [{ quality: "auto:eco" }, { fetch_format: "mp4" }]
-        : [
-            { width: 1200, height: 1200, crop: "limit" },
-            { quality: "auto:eco" },
-            { fetch_format: "auto" },
-          ],
+      folder: "hotdrops_images",
+      resource_type: "image", 
+      allowed_formats: ["jpg", "png", "jpeg", "webp"],
+      transformation: [
+        { width: 1200, height: 1200, crop: "limit" },
+        { quality: "auto:eco" },
+        { fetch_format: "auto" },
+      ],
     };
   },
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) {
+  
+  if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error("Only images and videos are allowed"), false);
+    cb(new Error("Sirf images upload kar sakte ho bhai!"), false);
   }
 };
 
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, 
+  limits: { 
+    fileSize: 6 * 1024 * 1024, 
+  }, 
 });
+
+
+export const uploadImages = upload.array("images", 3);
 
 export default upload;

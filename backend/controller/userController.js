@@ -43,3 +43,15 @@ const followed = await User.findById(userIdToFollow).select("hotdropId");
     return response(res, 500, "Server error", null, error.message);
   }
 };
+export const getAllUser = async (req, res) => {
+    try {
+        const myId = req.user?._id; 
+        const users = await User.find({ _id: { $ne: myId } }) 
+            .select("hotdropId username profilePicture")
+            .limit(20); 
+
+        return response(res, 200, "Users fetched successfully", { users });
+    } catch (error) {
+        return response(res, 500, "Server error", null, error.message);
+    }
+}
