@@ -83,3 +83,15 @@ export const checkAuth = async (req, res) => {
     return response(res, 500, "Server error", null, error.message);
   }
 };
+export const getUserByHotdropId = async (req, res) => {
+    const { hotdropId } = req.params;
+    try{
+        const user = await User.findOne({ hotdropId }).select("-password");
+        if(!user || user.length === 0){
+            return response(res, 404, "User not found with this hotdropId");
+        }
+        return response(res, 200, "User fetched successfully", { user})
+    }catch(error){
+        return response(res, 500, "Server error", null, error.message);
+    }
+}
