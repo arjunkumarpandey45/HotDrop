@@ -1,13 +1,15 @@
 import mongoose from "mongoose";
-const urlRegex = /^(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
+const urlRegex =
+  /^(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
 const userSchema = new mongoose.Schema(
-  {hotdropId: {
+  {
+    hotdropId: {
       type: String,
       required: true,
-      unique:true,
-       lowercase: true,
+      unique: true,
+      lowercase: true,
       trim: true,
-      index: true
+      index: true,
     },
     username: {
       type: String,
@@ -27,9 +29,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
       select: false,
-        required: function () {
-    return this.authMethod === "local";
-  }
+      required: function () {
+        return this.authMethod === "local";
+      },
     },
     googleId: {
       type: String,
@@ -40,16 +42,18 @@ const userSchema = new mongoose.Schema(
       enum: ["local", "google"],
       default: "local",
     },
-    githubProfile: { type: String,  match: [urlRegex, "Invalid URL"],default: null },
-    portfolioLink: { type: String,  match: [urlRegex, "Invalid URL"],default: null },
-    linkedinLink: { type: String,  match: [urlRegex, "Invalid URL"],default: null },
+    socialLinks: {
+  github: { type: String, match: [urlRegex, "Invalid URL"], default: null },
+  portfolio: { type: String, match: [urlRegex, "Invalid URL"], default: null },
+  linkedin: { type: String, match: [urlRegex, "Invalid URL"], default: null },
+},
     bio: { type: String, maxLength: 200, default: "" },
     gender: {
       type: String,
       enum: ["male", "female", "other"],
       default: null,
     },
-  token: {
+    token: {
       type: String,
       default: null,
     },
@@ -64,7 +68,8 @@ const userSchema = new mongoose.Schema(
     dateOfBirth: {
       type: Date,
       default: null,
-    }, otp: {
+    },
+    otp: {
       type: String,
       default: null,
     },
@@ -74,21 +79,15 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      default:null
-      
+      default: null,
     },
 
     profilePicture: {
       type: String,
       default: null,
     },
-posts: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Post"
-      }
-    ],
   
+
     followersCount: {
       type: Number,
       default: 0,
