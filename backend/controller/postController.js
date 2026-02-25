@@ -264,7 +264,42 @@ export const commentPost = async (req, res) => {
   } catch (error) {
     return response(res, 500, "Server error", null, error.message);
   }
-};export const sharePost = async (req, res) => {
+};
+export const deleteComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const loggedUserId = req.user._id;
+
+   
+    const post = await Post.findById(postId).select("comments");
+    if (!post) return response(res, 404, "Post not found");
+
+   
+    const comment = post.comments.id(commentId);
+    if (!comment) return response(res, 404, "Comment not found");
+
+  
+    if (comment.user.toString() !== loggedUserId.toString()) {
+      return response(res, 403, "You can only delete your own comments");
+    }
+
+   
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      {
+        $pull: { comments: { _id: commentId } }, 
+        $inc: { commentCount: -1 }              
+      },
+      { new: true }
+    );
+
+    return response(res, 200, "Comment deleted successfully 🗑️");
+
+  } catch (error) {
+    return response(res, 500, "Server error", null, error.message);
+  }
+};
+export const sharePost = async (req, res) => {
   try {
     const { postId } = req.params;
 

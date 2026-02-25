@@ -1,6 +1,6 @@
 import express from 'express'
 import { protect } from '../middleware/protect.js';
-import { commentPost, createPost, deletePost, getAllPosts, getPostsByUserId, likePost, sharePost, verifyLink } from '../controller/postController.js';
+import { commentPost, createPost, deleteComment, deletePost, getAllPosts, getPostsByUserId, likePost, sharePost, verifyLink } from '../controller/postController.js';
 import upload from '../config/cloudinary.js';
 const router = express.Router();
 router.post('/verifylink',protect,verifyLink)
@@ -10,5 +10,6 @@ router.get("/getallposts", getAllPosts);
 router.get("/getpostbyuserid/user/:userId", getPostsByUserId);
 router.post('/like/:postId',protect,likePost)
 router.post('/comment/:postId', protect, commentPost);
+router.delete('/deletecomment/:postId/:commentId', protect, deleteComment);
 router.post('/share/:postId', protect, sharePost);
-export default router;
+export default router; 
