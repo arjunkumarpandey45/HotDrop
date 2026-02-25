@@ -264,7 +264,8 @@ export const commentPost = async (req, res) => {
   } catch (error) {
     return response(res, 500, "Server error", null, error.message);
   }
-};export const sharePost = async (req, res) => {
+};
+export const sharePost = async (req, res) => {
   try {
     const { postId } = req.params;
 
