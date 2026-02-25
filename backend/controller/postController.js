@@ -3,6 +3,7 @@ import Post from "../model/postModel.js";
 import response from "../utils/responseHandler.js";
 import slugify from "slugify";
 import mongoose from "mongoose";
+import { v2 as cloudinary } from "cloudinary";
 import User from "../model/userModel.js";
 export const verifyLink = async (req, res) => {
   let { url } = req.body;
@@ -44,6 +45,7 @@ export const createPost = async (req, res) => {
 
  
     const newPost = await Post.create({
+        postId: new mongoose.Types.ObjectId(),
       user: req.user._id,
       title,
       description,
@@ -60,6 +62,43 @@ export const createPost = async (req, res) => {
   } catch (error) {
     console.error("Create Post Error:", error.message);
     return response(res, 500, "Post create karne mein error aaya", null, error.message);
+  }
+};
+
+
+export const deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const loggedInUserId = req.user._id.toString(); 
+
+     
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return response(res, 404, "Bhai, ye post toh pehle se hi gayab hai!");
+    }
+
+   
+    if (post.user.toString() !== loggedInUserId) {
+      return response(res, 403, "Oye! Dusre ki post delete karna mana hai. 🛑");
+    }
+
+  
+    if (post.images && post.images.length > 0) {
+      const deletePromises = post.images.map((img) =>
+        cloudinary.uploader.destroy(img.public_id)
+      );
+      await Promise.all(deletePromises);
+    }
+
+   
+    await Post.findByIdAndDelete(postId);
+
+    return response(res, 200, "Project deleted successfully from everywhere! 🗑️");
+
+  } catch (error) {
+    console.error("Delete Post Error:", error.message);
+    return response(res, 500, "Delete logic mein kuch locha hai", null, error.message);
   }
 };
 export const getAllPosts = async (req, res) => {
