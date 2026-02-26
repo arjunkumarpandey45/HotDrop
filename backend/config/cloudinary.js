@@ -1,6 +1,7 @@
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+const storageProfile = multer.diskStorage({});
 import "dotenv/config";
 
 
@@ -42,6 +43,21 @@ const upload = multer({
   }, 
 });
 
+
+
+export const uploadProfile = multer({
+    storage,
+    limits: { 
+        fileSize: 3 * 1024 * 1024 
+    },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith("image/")) {
+            cb(null, true);
+        } else {
+            cb(new Error("Sirf images upload karein!"), false);
+        }
+    }
+});
 
 export const uploadImages = upload.array("images", 3);
 
