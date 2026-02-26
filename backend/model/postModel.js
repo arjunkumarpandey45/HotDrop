@@ -30,6 +30,10 @@ const postSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    lastChecked: { 
+      type: Date, 
+      default: Date.now 
+    },
     images: {
       type: [
         {

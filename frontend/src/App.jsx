@@ -1,13 +1,14 @@
+import { useState } from "react";
+import "./App.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Loader from "./components/Loader.jsx"
-import Navbar from "./components/Navbar.jsx"
-import CreatePost from "./components/CreatePost.jsx"
-import Baground from "./components/Baground.jsx"
-
+import Navbar from "./pages/Navbar.jsx";
+import CreatePost from "./pages/CreatePost.jsx";
 
 function App() {
- 
+  const [isCreateOpen, setIsCreateOpen] = useState(true);
 
+<<<<<<< HEAD
   return (
     <>
     <div style={{ width: '100%', height: '100%', position: 'absolute' }}>
@@ -25,16 +26,42 @@ function App() {
     pulsating={false}
     fadeDistance={1}
     saturation={1}>
+=======
+  // Temporary dummy user (jab tak backend connect na ho)
+  const user = {
+    username: "Arjun",
+    hotdropId: "arjun_07",
+    profilePicture: ""
+  };
+>>>>>>> d73fb0ba5faada4c32beae7ee048d03c093120bc
 
-    </Baground>
-    </div>
-    
-     
-     {/* <Navbar ></Navbar> */}
-     {/* <CreatePost></CreatePost> */}
-     
-    </>
-  )
+  const logout = () => {
+    console.log("Logged out");
+  };
+
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: (
+        <>
+          <Navbar
+            user={user}
+            logout={logout}
+            onOpenCreate={() => setIsCreateOpen(true)}
+          />
+
+          {/* 👇 Create Modal Render */}
+          {isCreateOpen && (
+            <CreatePost
+              onClose={() => setIsCreateOpen(false)}
+            />
+          )}
+        </>
+      ),
+    },
+  ]);
+
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;
