@@ -1,23 +1,47 @@
-import { useState } from 'react'
+import { useState } from "react";
+import "./App.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import './App.css'
-import {  createBrowserRouter, RouterProvider } from 'react-router'
-import Navbar from './pages/Navbar.jsx'
+import Navbar from "./pages/Navbar.jsx";
+import CreatePost from "./pages/CreatePost.jsx";
+
 function App() {
+  const [isCreateOpen, setIsCreateOpen] = useState(true);
+
+  // Temporary dummy user (jab tak backend connect na ho)
+  const user = {
+    username: "Arjun",
+    hotdropId: "arjun_07",
+    profilePicture: ""
+  };
+
+  const logout = () => {
+    console.log("Logged out");
+  };
 
   const router = createBrowserRouter([
     {
-      path: '/',
-      element: <><Navbar /></>
-    },
-   
-  ])
+      path: "/",
+      element: (
+        <>
+          <Navbar
+            user={user}
+            logout={logout}
+            onOpenCreate={() => setIsCreateOpen(true)}
+          />
 
-  return (
-    <>
-      <RouterProvider router={router} />
-    </>
-  )
+          {/* 👇 Create Modal Render */}
+          {isCreateOpen && (
+            <CreatePost
+              onClose={() => setIsCreateOpen(false)}
+            />
+          )}
+        </>
+      ),
+    },
+  ]);
+
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;
