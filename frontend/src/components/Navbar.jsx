@@ -27,7 +27,7 @@ const Navbar = () => {
   };
 
   const DrawerList = (
-    <Box
+    <Box 
       sx={{ width: 250 }}
       role="presentation"
       onClick={toggleDrawer(false)}
@@ -63,12 +63,12 @@ const Navbar = () => {
 
   return (
     <>
-      {/* MUI Drawer Component */}
+      {/*  Drawer Component */}
       <Drawer open={openDrawer} onClose={toggleDrawer(false)}>
         {DrawerList}
       </Drawer>
 
-      <nav className="w-full bg-white py-3 px-4 sm:px-6 shadow-md border-b border-gray-200 sticky top-0 z-50">
+      <nav className="w-full bg-[#05000f] py-3 px-4 sm:px-6 shadow-md border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           
           {/* LEFT SECTION: Menu & Logo */}
@@ -83,7 +83,7 @@ const Navbar = () => {
             </button>
 
             <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 text-2xl font-bold tracking-tight cursor-pointer whitespace-nowrap">
-              <img className="w-20   " src={logo} alt="company logo" />
+              <img className="w-[60px] h-[50px]   " src={logo} alt="company logo" />
             </h1>
           </div>
 
@@ -125,9 +125,9 @@ const Navbar = () => {
 
               {/* Profile Dropdown */}
               {openProfile && (
-                <div className="absolute right-0 top-12 bg-white text-gray-800 rounded-xl shadow-xl border border-gray-200 w-48 py-2 z-20 overflow-hidden transform transition-all">
+                <div className="absolute right-0 top-12 bg-[#05000f] text-white rounded-xl shadow-xl border border-gray-200 w-48 py-2 z-20 overflow-hidden transform transition-all">
                   <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                    <p className="text-sm text-gray-900 font-semibold">
+                    <p className="text-sm text-white font-semibold">
                       My Account
                     </p>
                   </div>

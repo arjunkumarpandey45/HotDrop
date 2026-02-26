@@ -21,7 +21,7 @@ function App() {
     mouseInfluence={0.1}
     noiseAmount={0}
     distortion={0}
-    className="custom-rays"
+    className=" bg-[#0f1214]custom-rays"
     pulsating={false}
     fadeDistance={1}
     saturation={1}>

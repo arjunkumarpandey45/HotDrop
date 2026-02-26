@@ -28,7 +28,7 @@ const App = () => {
       // </div>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-50">
         
-        {/* 2. Replace the MUI spinner with your image */}
+       
         <img 
           src={myLogo}
           alt="Loading Hot Drop..." 
