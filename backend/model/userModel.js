@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    projectCount:{
+      type: Number,
+      default: 0
+    },
     isVerified: {
       type: Boolean,
       default: false,

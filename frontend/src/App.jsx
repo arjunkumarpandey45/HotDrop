@@ -1,15 +1,21 @@
 import { useState } from 'react'
 
 import './App.css'
-
+import {  createBrowserRouter, RouterProvider } from 'react-router'
+import Navbar from './pages/Navbar.jsx'
 function App() {
 
+  const router = createBrowserRouter([
+    {
+      path: '/',
+      element: <><Navbar /></>
+    },
+   
+  ])
 
   return (
     <>
-    <h1 class="text-3xl font-bold underline">
-    Hello world!
-  </h1>
+      <RouterProvider router={router} />
     </>
   )
 }
