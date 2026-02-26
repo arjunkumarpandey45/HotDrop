@@ -1,7 +1,7 @@
 import User from "../model/userModel.js";
 import Follow from "../model/followModel.js";
 import response from "../utils/responseHandler.js";
-
+import { v2 as cloudinary } from "cloudinary";
 export const toggleFollow = async (req, res) => {
   try {
     const { userIdToFollow } = req.body;
@@ -84,50 +84,86 @@ export const checkAuth = async (req, res) => {
   }
 };
 export const getUserByHotdropId = async (req, res) => {
-    const { hotdropId } = req.params;
-  
-    const loggedInUserId = req.user?._id;
-    try{
-        const user = await User.findOne({ hotdropId }).select("-password");
-        if(!user || user.length === 0){
-            return response(res, 404, "User not found with this hotdropId");
+  const { hotdropId } = req.params;
 
-        }
-       const isOwner = loggedInUserId ? loggedInUserId.toString() === user._id.toString() : false;
-      return response(res, 200, "User profile fetched successfully", { user, isOwner });
-    }catch(error){
-        return response(res, 500, "Server error", null, error.message);
+  const loggedInUserId = req.user?._id;
+  try {
+    const user = await User.findOne({ hotdropId }).select("-password");
+    if (!user || user.length === 0) {
+      return response(res, 404, "User not found with this hotdropId");
     }
-}
+    const isOwner = loggedInUserId
+      ? loggedInUserId.toString() === user._id.toString()
+      : false;
+    return response(res, 200, "User profile fetched successfully", {
+      user,
+      isOwner,
+    });
+  } catch (error) {
+    return response(res, 500, "Server error", null, error.message);
+  }
+};
 export const bioUpdate = async (req, res) => {
-    const loggedInUserId = req.user._id.toString();
-    const { userIdFromParams } = req.params; 
+  const loggedInUserId = req.user._id.toString();
+  const { userIdFromParams } = req.params;
 
-   
-    if (userIdFromParams && loggedInUserId !== userIdFromParams) {
-        return response(res, 403, "Bhai, kisi aur ki profile edit karna paap hai! 🛑");
+  if (userIdFromParams && loggedInUserId !== userIdFromParams) {
+    return response(
+      res,
+      403,
+      "Bhai, kisi aur ki profile edit karna paap hai! 🛑",
+    );
+  }
+
+  try {
+    const user = await User.findById(loggedInUserId);
+        if (!user) return response(res, 404, "User nahi mila!");
+    const updateData = {
+      bio: req.body.bio,
+      username: req.body.username,
+      hotdropId: req.body.hotdropId,
+      "socialLinks.github": req.body.github,
+      "socialLinks.portfolio": req.body.portfolio,
+      "socialLinks.linkedin": req.body.linkedin,
+      dateOfBirth: req.body.dateOfBirth,
+      phoneNumber: req.body.phoneNumber,
+      gender: req.body.gender,
+    };
+    if (req.body.hotdropId) {
+      const existingUser = await User.findOne({ 
+        hotdropId: req.body.hotdropId, 
+        _id: { $ne: loggedInUserId } 
+      });
+      if (existingUser){
+    return response(res,400,"Ye hotdropId already kisi aur ne le rakha hai! 😕")
+}
     }
 
-    try {
-        const updateData = {
-            bio: req.body.bio,
-            "socialLinks.github": req.body.github,
-            "socialLinks.portfolio": req.body.portfolio,
-            "socialLinks.linkedin": req.body.linkedin,
-            "dateOfBirth": req.body.dateOfBirth,
-            "phoneNumber": req.body.phoneNumber,
-            "gender": req.body.gender
-        };
 
 
-        const updatedUser = await User.findByIdAndUpdate(
-            loggedInUserId,
-            { $set: updateData },
-            {  returnDocument: 'after' , runValidators: true, upsert: true }
-        ).select("-password");
-
-        return response(res, 200, "Profile updated successfully! ✨", updatedUser);
-    } catch (error) {
-        return response(res, 500, "Update fail ho gaya", null, error.message);
+    if (req.file) {
+      if (user.profilePicture) {
+      const parts = user.profilePicture.split("/");
+        const filename = parts.pop(); // e.g. "image_name.jpg"
+        const publicId = filename.split(".")[0];
+        await cloudinary.uploader.destroy(`HotDrop_Profiles/${publicId}`);
+      }
+if(req.file.length > 1){
+    return response(res,400,"Ek baar mein sirf ek profile picture upload kar sakte ho! 🖼️")
+}
+      const uploadRes = await cloudinary.uploader.upload(req.file.path, {
+        folder: "HotDrop_Profiles",
+      });
+      updateData.profilePicture = uploadRes.secure_url;
     }
+    const updatedUser = await User.findByIdAndUpdate(
+      loggedInUserId,
+      { $set: updateData },
+      { returnDocument: "after", runValidators: true,  },
+    ).select("-password");
+
+    return response(res, 200, "Profile updated successfully! ✨", updatedUser);
+  } catch (error) {
+    return response(res, 500, "Update fail ho gaya", null, error.message);
+  }
 };
