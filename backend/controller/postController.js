@@ -3,6 +3,7 @@ import Post from "../model/postModel.js";
 import response from "../utils/responseHandler.js";
 import slugify from "slugify";
 import mongoose from "mongoose";
+import * as cheerio from "cheerio";
 import { v2 as cloudinary } from "cloudinary";
 import User from "../model/userModel.js";
 export const verifyLink = async (req, res) => {
@@ -14,13 +15,32 @@ export const verifyLink = async (req, res) => {
   }
 
   try {
-    await axios.get(url, {
+    const { data } = await axios.get(url, {
       timeout: 5000,
       headers: { "User-Agent": "Mozilla/5.0" },
-      validateStatus: (status) => status >= 200 && status < 500,
+      validateStatus: (status) => status >= 200 && status < 400,
     });
+    const $ = cheerio.load(data);
 
-    return response(res, 200, "Link verified! 🔥");
+    const metaData = {
+      title: (
+        $("title").text() ||
+        $("meta[property='og:title']").attr("content") ||
+        "Project"
+      ).trim(),
+      description: (
+        $("meta[name='description']").attr("content") ||
+        $("meta[property='og:description']").attr("content") ||
+        "No description found"
+      ).trim(),
+      image:
+        $("meta[property='og:image']").attr("content") ||
+        $("meta[name='twitter:image']").attr("content") ||
+        null,
+      url: url,
+      isLive: true,
+    };
+    return response(res, 200, "Link verified! 🔥", metaData);
   } catch (error) {
     return response(res, 400, "Link dead hai ya reachable nahi hai.");
   }
@@ -29,76 +49,100 @@ export const createPost = async (req, res) => {
   try {
     const { title, description, projectLink, tags } = req.body;
 
-    
-    if (!req.files || req.files.length === 0) {
-      return response(res, 400, "Bhai, kam se kam ek image toh dalo!");
+    if (
+      !req.files ||
+      req.files.length === 0 ||
+      !title ||
+      !description ||
+      !projectLink
+    ) {
+      return response(
+        res,
+        400,
+        "All fields are required, and at least 1 image must be uploaded.",
+      );
     }
 
-  
     const images = req.files.map((file) => ({
       url: file.path,
       public_id: file.filename,
     }));
 
-  
     const shareUrl = `${slugify(title || "hotdrop", { lower: true })}-${Date.now()}`;
 
- 
+    const isLinkDeadStatus = false;
     const newPost = await Post.create({
-        postId: new mongoose.Types.ObjectId(),
+      postId: new mongoose.Types.ObjectId(),
       user: req.user._id,
       title,
       description,
-      projectLink,
+      projectLink: projectLink || null,
+      isLinkDead: isLinkDeadStatus,
+      lastChecked: projectLink ? new Date() : null,
       shareUrl,
       images,
-      video: null, 
+      video: null,
       tags: tags ? tags.split(",").map((t) => t.trim().toLowerCase()) : [],
-     
     });
 
     return response(res, 201, "Project Dropped Successfully! 🔥", newPost);
-
   } catch (error) {
     console.error("Create Post Error:", error.message);
-    return response(res, 500, "Post create karne mein error aaya", null, error.message);
+    return response(
+      res,
+      500,
+      "Post create karne mein error aaya",
+      null,
+      error.message,
+    );
   }
 };
-
 
 export const deletePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const loggedInUserId = req.user._id.toString(); 
+    const loggedInUserId = req.user._id.toString();
 
-     
     const post = await Post.findById(postId);
 
     if (!post) {
       return response(res, 404, "Bhai, ye post toh pehle se hi gayab hai!");
     }
 
-   
     if (post.user.toString() !== loggedInUserId) {
       return response(res, 403, "Oye! Dusre ki post delete karna mana hai. 🛑");
     }
 
-  
     if (post.images && post.images.length > 0) {
       const deletePromises = post.images.map((img) =>
-        cloudinary.uploader.destroy(img.public_id)
+        cloudinary.uploader
+          .destroy(img.public_id)
+          .catch((err) =>
+            console.log(
+              `Cloudinary delete failed for ${img.public_id}:`,
+              err.message,
+            ),
+          ),
       );
       await Promise.all(deletePromises);
     }
 
-   
     await Post.findByIdAndDelete(postId);
 
-    return response(res, 200, "Project deleted successfully from everywhere! 🗑️");
-
+    return response(
+      res,
+      200,
+      "Project deleted successfully from everywhere! 🗑️",
+    );
   } catch (error) {
     console.error("Delete Post Error:", error.message);
-    return response(res, 500, "Delete logic mein kuch locha hai", null, error.message);
+    return response(
+      res,
+      500,
+      "Delete logic mein kuch locha hai",
+      null,
+      error.message,
+    );
   }
 };
 export const getAllPosts = async (req, res) => {
@@ -106,24 +150,37 @@ export const getAllPosts = async (req, res) => {
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = 10;
     const skip = (page - 1) * limit;
+    const { search, tag } = req.query;
+    let query = { user: { $ne: null } };
 
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (tag) {
+      query.tags = tag.toLowerCase();
+    }
     const [posts, totalPosts] = await Promise.all([
-      Post.find({ user: { $ne: null } })
+      Post.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .populate("user", "hotdropId username email profilePicture")
-        .populate("comments.user", "hotdropId profilePicture"),
-      Post.countDocuments({ user: { $ne: null } })
+        .populate("comments.user", "hotdropId profilePicture")
+        .lean(),
+
+      Post.countDocuments(query),
     ]);
 
     return response(res, 200, "Posts fetched successfully", {
       posts,
+      totalPosts,
       currentPage: page,
       totalPages: Math.ceil(totalPosts / limit),
-      hasMore: skip + posts.length < totalPosts
+      hasMore: skip + posts.length < totalPosts,
     });
-
   } catch (error) {
     return response(res, 500, "Server error", null, error.message);
   }
@@ -132,7 +189,6 @@ export const getPostsByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
 
-   
     if (!userId) {
       return response(res, 400, "User ID is required");
     }
@@ -146,7 +202,6 @@ export const getPostsByUserId = async (req, res) => {
       return response(res, 404, "User not found");
     }
 
- 
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = 10;
     const skip = (page - 1) * limit;
@@ -157,18 +212,16 @@ export const getPostsByUserId = async (req, res) => {
         .skip(skip)
         .limit(limit)
         .populate("user", "hotdropId username email profilePicture")
-        .populate("comments.user", "hotdropId profilePicture"),
-      Post.countDocuments({ user: userId })
+        .populate("comments.user", "hotdropId profilePicture").lean(),
+      Post.countDocuments({ user: userId }),
     ]);
 
-    
     return response(res, 200, "User posts fetched successfully", {
       posts,
       currentPage: page,
       totalPages: Math.ceil(totalPosts / limit),
-      hasMore: skip + posts.length < totalPosts
+      hasMore: skip + posts.length < totalPosts,
     });
-
   } catch (error) {
     return response(res, 500, "Server error", null, error.message);
   }
@@ -188,27 +241,28 @@ export const likePost = async (req, res) => {
     }
 
     const alreadyLiked = post.likes.some(
-      (id) => id.toString() === userId.toString()
+      (id) => id.toString() === userId.toString(),
     );
 
     const updateOperation = alreadyLiked
       ? { $pull: { likes: userId }, $inc: { likeCount: -1 } }
       : { $addToSet: { likes: userId }, $inc: { likeCount: 1 } };
 
-    const updatedPost = await Post.findByIdAndUpdate(
-      postId,
-      updateOperation,
-      {  returnDocument: "after", select: "likeCount likes" }
-    );
+    const updatedPost = await Post.findByIdAndUpdate(postId, updateOperation, {
+      returnDocument: "after",
+      select: "likeCount likes",
+    });
 
-    return response(res, 200,
+    return response(
+      res,
+      200,
       alreadyLiked ? "Post unliked" : "Post liked",
       {
         likeCount: Math.max(updatedPost.likeCount, 0),
-        isLiked: !alreadyLiked
-      },userId
+        isLiked: !alreadyLiked,
+      },
+      userId,
     );
-
   } catch (error) {
     return response(res, 500, "Server error", null, error.message);
   }
@@ -219,7 +273,6 @@ export const commentPost = async (req, res) => {
     const userId = req.user._id;
     const { text } = req.body;
 
-    
     if (!text || !text.trim()) {
       return response(res, 400, "Comment text is required");
     }
@@ -228,39 +281,30 @@ export const commentPost = async (req, res) => {
       return response(res, 400, "Invalid Post ID format");
     }
 
-   
     const updatedPost = await Post.findByIdAndUpdate(
       postId,
       {
         $push: {
           comments: {
             user: userId,
-            text: text.trim()
-          }
+            text: text.trim(),
+          },
         },
-        $inc: { commentCount: 1 }
+        $inc: { commentCount: 1 },
       },
       {
         returnDocument: "after",
-        runValidators: true
-      }
+        runValidators: true,
+      },
     ).populate("comments.user", "hotdropId profilePicture");
 
     if (!updatedPost) {
       return response(res, 404, "Post not found");
     }
 
-    
-    const newComment =
-      updatedPost.comments[updatedPost.comments.length - 1];
+    const newComment = updatedPost.comments[updatedPost.comments.length - 1];
 
-    return response(
-      res,
-      201,
-      "Comment added successfully",
-      newComment
-    );
-
+    return response(res, 201, "Comment added successfully", newComment);
   } catch (error) {
     return response(res, 500, "Server error", null, error.message);
   }
@@ -270,31 +314,26 @@ export const deleteComment = async (req, res) => {
     const { postId, commentId } = req.params;
     const loggedUserId = req.user._id;
 
-   
     const post = await Post.findById(postId).select("comments");
     if (!post) return response(res, 404, "Post not found");
 
-   
     const comment = post.comments.id(commentId);
     if (!comment) return response(res, 404, "Comment not found");
 
-  
     if (comment.user.toString() !== loggedUserId.toString()) {
       return response(res, 403, "You can only delete your own comments");
     }
 
-   
     const updatedPost = await Post.findByIdAndUpdate(
       postId,
       {
-        $pull: { comments: { _id: commentId } }, 
-        $inc: { commentCount: -1 }              
+        $pull: { comments: { _id: commentId } },
+        $inc: { commentCount: -1 },
       },
-      { new: true }
+      { new: true },
     );
 
     return response(res, 200, "Comment deleted successfully 🗑️");
-
   } catch (error) {
     return response(res, 500, "Server error", null, error.message);
   }
@@ -312,8 +351,8 @@ export const sharePost = async (req, res) => {
       { $inc: { shareCount: 1 } },
       {
         returnDocument: "after",
-        select: "shareCount shareUrl"
-      }
+        select: "shareCount shareUrl",
+      },
     );
 
     if (!post) {
@@ -322,9 +361,8 @@ export const sharePost = async (req, res) => {
 
     return response(res, 200, "Share count updated", {
       shareCount: post.shareCount,
-      shareUrl: `https://hotdrop.com/post/${post.shareUrl}`
+      shareUrl: `https://hotdrop.com/post/${post.shareUrl}`,
     });
-
   } catch (error) {
     return response(res, 500, "Server error", null, error.message);
   }
