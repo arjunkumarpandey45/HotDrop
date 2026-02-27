@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import CreatePost from "./CreatePost";
-import logo from "../assets/logo.png";
+import logo from "../assets/logo5.png";
 
 const Navbar = ({ user, logout }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
