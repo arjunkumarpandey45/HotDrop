@@ -5,6 +5,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Navbar from "./pages/Navbar.jsx";
 import CreatePost from "./pages/CreatePost.jsx";
 
+import Contact from "./pages/Contact.jsx";
+
 function App() {
   const [isCreateOpen, setIsCreateOpen] = useState(true);
 
@@ -39,6 +41,14 @@ function App() {
         </>
       ),
     },
+    // {
+    //   path: "/profile/:userId",
+    //   element: <><EditUserProfile/></>
+    // },
+    {
+      path:"/contact",
+      element:<><Contact></Contact></>
+    }
   ]);
 
   return <RouterProvider router={router} />;
