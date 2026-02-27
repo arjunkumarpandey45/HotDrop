@@ -124,13 +124,29 @@ const Navbar = ({ user, logout }) => {
               </button>
 
               {/* CREATE BUTTON */}
-              <button
-                onClick={handleCreateClick}
-                className="flex items-center gap-2 bg-blue-600 text-white p-2.5 sm:px-5 sm:py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Drop Project</span>
-              </button>
+          <button
+  onClick={handleCreateClick}
+  className="group relative flex items-center gap-2 
+  px-3 py-2 sm:px-5 sm:py-2.5 
+  rounded-xl sm:rounded-2xl 
+  text-xs sm:text-sm 
+  font-semibold text-white 
+  bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 
+  shadow-md sm:shadow-lg shadow-blue-500/20
+  transition-all duration-300 
+  hover:scale-105 hover:shadow-blue-600/40 
+  active:scale-95 overflow-hidden"
+>
+  
+  {/* Shine Effect */}
+  <span className="absolute left-[-75%] top-0 h-full w-1/2 bg-white/20 skew-x-12 
+  group-hover:left-[130%] transition-all duration-700"></span>
+
+  <Plus className="h-4 w-4 sm:h-5 sm:w-5 relative z-10" />
+  <span className="relative z-10 hidden sm:inline tracking-wide">
+    Drop Project
+  </span>
+</button>
 
               {!isLoggedIn ? (
                 <Link
@@ -253,7 +269,7 @@ const Navbar = ({ user, logout }) => {
               onClick={() => setIsSidebarOpen(false)}
               className="flex items-center gap-3 p-3 rounded-xl text-slate-600 font-bold text-sm"
             >
-              <Mail className="h-5 w-5" /> Support
+              <Mail className="h-5 w-5" /> Contact us
             </Link>
           </nav>
         </div>
