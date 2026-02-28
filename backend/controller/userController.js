@@ -167,3 +167,17 @@ if(req.file.length > 1){
     return response(res, 500, "Update fail ho gaya", null, error.message);
   }
 };
+export const getMe = async (req, res) => {
+  try {
+   
+    const user = req.user; 
+
+    if (!user) {
+      return response(res, 404, "User not found");
+    }
+
+    return response(res, 200, "User data fetched", { user });
+  } catch (error) {
+    return response(res, 500, "Server error", null, error.message);
+  }
+};
