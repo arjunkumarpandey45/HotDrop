@@ -68,6 +68,7 @@ useEffect(() => {
         {isLoading ? (
           <SplashScreen key="splash" />
         ) : (<RouterProvider router={router} />)}
+        
       </AnimatePresence></>
 }
 
