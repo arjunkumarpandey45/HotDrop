@@ -200,7 +200,7 @@ const Navbar = ({ user, logout }) => {
                       </Link>
 
                       <Link
-                        to="/login"
+                        to="/setting"
                         onClick={() => setIsProfileOpen(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 transition"
                       >
