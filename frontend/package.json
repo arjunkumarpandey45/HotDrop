@@ -12,18 +12,11 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@tailwindcss/vite": "^4.2.1",
-<<<<<<< HEAD
     "axios": "^1.13.6",
     "canvas-confetti": "^1.9.4",
     "chrome": "^0.1.0",
-=======
-    "axios": "^1.13.5",
     "emailjs": "^5.0.0",
-<<<<<<< HEAD
->>>>>>> 62f645f6a78ebbd846cd838934ebf2b291b59373
-=======
     "framer-motion": "^12.34.3",
->>>>>>> b19b98583d2b6741536f0bda57fe39fcc17346be
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
