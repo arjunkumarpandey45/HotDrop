@@ -26,7 +26,7 @@ const Navbar = ({ user, logout }) => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const isLoggedIn = !!user;
+  const isLoggedIn = !user;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
