@@ -1,162 +1,126 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, Eye, EyeOff, Loader2 } from "lucide-react";
+import { UserPlus, Eye, EyeOff, Loader2, Sparkles, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { Slide, ToastContainer } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../Toast/toast";
 
 const Signup = () => {
   const navigate = useNavigate();
-
   const [form, setForm] = useState({
-    hotdropId: "",
-    username: "",
-    email: "",
-    password: "",
-    gender: "",
-    dateOfBirth: "",
+    hotdropId: "", username: "", email: "", password: "", gender: "", dateOfBirth: "",
   });
-
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const res = await axios.post(
-        "http://localhost:8080/auth/register",
-        form,
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
-      );
-
-      toast.success(res.data.message);
-
-      const token = res.data.data.VerificationToken;
-      navigate(`/verify`);
+      const res = await axios.post("http://localhost:8080/auth/register", form, {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      });
+      showSuccessToast(res.data.message);
+     setTimeout(() => {
+    navigate("/verify");
+  }, 1500);;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to create account");
+      showErrorToast(error.response?.data?.message || "Failed to create account");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-3 sm:px-4">
-      <div className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl shadow-md p-6 sm:p-7">
+    <div className="h-screen bg-[#F8FAFC] flex items-center justify-center p-4 overflow-hidden font-sans">
+      {/* Soft Background Glows */}
+      <ToastContainer 
+  position="top-center" 
+  autoClose={3000}
+  hideProgressBar
+  closeButton={false}
+  theme="light"
+  transition={Slide} 
+/>
+      <div className="absolute top-0 left-0 w-72 h-72 bg-blue-100/50 rounded-full blur-[100px]"></div>
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-indigo-100/50 rounded-full blur-[100px]"></div>
 
-        {/* HEADER */}
-        <div className="flex items-center gap-2 mb-6">
-          <UserPlus className="h-6 w-6 text-blue-600" />
-          <h1 className="text-xl font-bold text-gray-900">Create Account</h1>
+      <div className="relative z-10 w-full max-w-[550px]">
+        {/* Compact Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100 mb-3">
+            <UserPlus className="h-5 w-5 text-blue-600" />
+            <span className="text-sm font-bold text-slate-800 tracking-tight">Join HotDrop</span>
+          </div>
+          <h2 className="text-xl font-black text-slate-900 leading-tight">Create your new account </h2>
         </div>
 
-        {/* FORM */}
-        <form onSubmit={handleSubmit} className="space-y-4 text-gray-800">
-
-          {/* BASIC FIELDS */}
-          {[
-            { name: "hotdropId", placeholder: "Hotdrop ID" },
-            { name: "username", placeholder: "Full Name" },
-            { name: "email", placeholder: "Email Address", type: "email" },
-          ].map((input, i) => (
-            <div key={i} className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">
-                {input.placeholder}
-              </label>
-              <input
-                type={input.type || "text"}
-                name={input.name}
-                placeholder={input.placeholder}
-                value={form[input.name]}
-                onChange={handleChange}
-                className="w-full bg-gray-50 border border-gray-300 rounded-xl py-2.5 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+        {/* Multi-Column Form Card */}
+        <div className="bg-white/90 backdrop-blur-md border border-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] p-6 sm:p-8">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Row 1: ID & Username */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Hotdrop ID</label>
+                <input name="hotdropId" value={form.hotdropId} onChange={handleChange} placeholder="@username" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                <input name="username" value={form.username} onChange={handleChange} placeholder="John Doe" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required />
+              </div>
             </div>
-          ))}
 
-          {/* PASSWORD */}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Create Password"
-                value={form.password}
-                onChange={handleChange}
-                className="w-full bg-gray-50 border border-gray-300 rounded-xl py-2.5 px-3 pr-10 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-700"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+            {/* Row 2: Email */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+              <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="name@company.com" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required />
             </div>
+
+            {/* Row 3: Password */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Secure Password</label>
+              <div className="relative">
+                <input name="password" type={showPassword ? "text" : "password"} value={form.password} onChange={handleChange} placeholder="••••••••" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 pr-11 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors">
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Row 4: Gender & DOB (Side by Side) */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Gender</label>
+                <select name="gender" value={form.gender} onChange={handleChange} className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer" required>
+                  <option value="">Select</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Birth Date</label>
+                <input name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={handleChange} className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-500" required />
+              </div>
+            </div>
+
+            {/* Compact Submit Button */}
+            <button type="submit" disabled={loading} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-lg shadow-blue-100 flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-2">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Complete Registration <ChevronRight size={14} /></>}
+            </button>
+          </form>
+
+          {/* Minimal Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-slate-500 font-medium">
+              Already have an account? <button onClick={() => navigate("/login")} className="text-blue-600 font-bold hover:underline">Login</button>
+            </p>
           </div>
-
-          {/* GENDER */}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">Gender</label>
-            <select
-              name="gender"
-              value={form.gender}
-              onChange={handleChange}
-              className="w-full bg-gray-50 border border-gray-300 rounded-xl py-2.5 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Select Gender</option>
-              <option className="text-gray-800" value="male">Male</option>
-              <option className="text-gray-800" value="female">Female</option>
-              <option className="text-gray-800" value="other">Other</option>
-            </select>
-          </div>
-
-          {/* DOB */}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">Date of Birth</label>
-            <input
-              type="date"
-              name="dateOfBirth"
-              value={form.dateOfBirth}
-              onChange={handleChange}
-              className="w-full bg-gray-50 border border-gray-300 rounded-xl py-2.5 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          {/* SUBMIT BUTTON */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 transition-all rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-2 active:scale-95"
-          >
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Create Account"}
-          </button>
-        </form>
-
-        {/* FOOTER */}
-        <p className="text-center text-gray-600 mt-5 text-xs">
-          Already have an account?{" "}
-          <span
-            onClick={() => navigate("/login")}
-            className="text-blue-600 hover:underline cursor-pointer font-medium"
-          >
-            Login
-          </span>
-        </p>
-
+        </div>
       </div>
     </div>
   );
