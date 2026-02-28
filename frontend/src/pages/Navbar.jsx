@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import CreatePost from "./CreatePost";
-import logo from "../assets/logo.png";
+import logo from "../assets/logo5.png";
 
 const Navbar = ({ user, logout }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -200,7 +200,7 @@ const Navbar = ({ user, logout }) => {
                       </Link>
 
                       <Link
-                        to="/settings"
+                        to="/login"
                         onClick={() => setIsProfileOpen(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 transition"
                       >
