@@ -1,23 +1,16 @@
-<<<<<<< HEAD
 import express from "express";
 import { protect } from "../middleware/protect.js";
 import {
   bioUpdate,
   checkAuth,
   getAllUser,
+  getMe,
   getUserByHotdropId,
   toggleFollow,
 } from "../controller/userController.js";
 import { uploadProfile } from "../config/cloudinary.js";
 import response from "../utils/responseHandler.js";
 import { registerUser } from "../controller/authController.js";
-=======
-import express from 'express'
-import { protect } from '../middleware/protect.js';
-import { bioUpdate, checkAuth, getAllUser, getMe, getUserByHotdropId, toggleFollow } from '../controller/userController.js';
-import { uploadProfile } from '../config/cloudinary.js';
-import response from '../utils/responseHandler.js';
->>>>>>> b19b98583d2b6741536f0bda57fe39fcc17346be
 const router = express.Router();
 router.post("/togglefollow", protect, toggleFollow);
 router.get("/", protect, getAllUser);
@@ -48,13 +41,6 @@ router.put(
       }
       next();
     });
-<<<<<<< HEAD
-  },
-  bioUpdate,
-);
-export default router;
-=======
 }, bioUpdate);
 router.get("/me", protect, getMe);
 export default router; 
->>>>>>> b19b98583d2b6741536f0bda57fe39fcc17346be
