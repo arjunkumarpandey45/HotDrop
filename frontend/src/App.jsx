@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "./pages/Navbar.jsx";
 import CreatePost from "./pages/CreatePost.jsx";
-import UserProfile from "./pages/Profile/EditUserProfile.jsx";
+
 import EditUserProfile from "./pages/Profile/EditUserProfile.jsx";
 import Contact from "./pages/Contact.jsx";
 import SplashScreen from "./animation/SplashScreen.jsx";
