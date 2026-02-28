@@ -6,6 +6,9 @@ import Navbar from "./pages/Navbar.jsx";
 import CreatePost from "./pages/CreatePost.jsx";
 import Signup from "./auth/Signup.jsx";
 
+import UserProfile from "./pages/Profile/EditUserProfile.jsx";
+import EditUserProfile from "./pages/Profile/EditUserProfile.jsx";
+import Contact from "./pages/Contact.jsx";
 
 function App() {
   const [isCreateOpen, setIsCreateOpen] = useState(true);
@@ -51,6 +54,13 @@ function App() {
      }
 
      
+    {
+      path: "/profile/:userId",
+      element: <><EditUserProfile/></>
+    },{
+      path:"/contact",
+      element:<><Contact></Contact></>
+    }
   ]);
 
   return <RouterProvider router={router} />;
