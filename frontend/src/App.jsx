@@ -4,8 +4,10 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "./pages/Navbar.jsx";
 import CreatePost from "./pages/CreatePost.jsx";
+import Signup from "./auth/Signup.jsx";
 
 import EditUserProfile from "./pages/Profile/EditUserProfile.jsx";
+
 import Contact from "./pages/Contact.jsx";
 import SplashScreen from "./animation/SplashScreen.jsx";
 import { useEffect } from "react";
@@ -48,9 +50,19 @@ useEffect(() => {
               onClose={() => setIsCreateOpen(false)}
             />
           )}
+
         </>
+
       ),
+
     },
+
+    {
+      path:"/Signup",
+      element: <><Signup></Signup></>
+     },
+
+     
     {
       path: "/profile/:userId",
       element: <><EditUserProfile/></>

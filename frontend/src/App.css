@@ -1,4 +1,48 @@
 @import "tailwindcss";
+
+
+
+
+
+@keyframes fireGlow {
+  0% { text-shadow: 0 0 5px #ff6600; opacity: 0.8; }
+  50% { text-shadow: 0 0 20px #ff3300; opacity: 1; }
+  100% { text-shadow: 0 0 5px #ff6600; opacity: 0.8; }
+}
+
+.animate-fire-glow {
+  animation: fireGlow 1.3s infinite ease-in-out;
+}
+
+@keyframes fireEnter {
+  from {
+    transform: translateY(-10px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0px) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fireLeave {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+.animate-fire-enter {
+  animation: fireEnter 0.35s ease-out;
+}
+
+.animate-fire-leave {
+  animation: fireLeave 0.25s ease-in forwards;
 .input-style {
   @apply w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20;
-}
+}}
+
