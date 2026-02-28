@@ -5,7 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Navbar from "./pages/Navbar.jsx";
 import CreatePost from "./pages/CreatePost.jsx";
 import Signup from "./auth/Signup.jsx";
-import verification from "./auth/Verify.jsx";
+
 
 function App() {
   const [isCreateOpen, setIsCreateOpen] = useState(true);
