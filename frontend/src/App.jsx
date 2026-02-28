@@ -9,6 +9,7 @@ import EditUserProfile from "./pages/Profile/EditUserProfile.jsx";
 import Contact from "./pages/Contact.jsx";
 import SplashScreen from "./animation/SplashScreen.jsx";
 import { useEffect } from "react";
+import Login from "./pages/Login.jsx";
 
 function App() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -56,6 +57,10 @@ useEffect(() => {
     },{
       path:"/contact",
       element:<><Contact></Contact></>
+    },
+    {
+      path:"/login",
+      element:<><Login></Login></>
     }
   ]);
 
