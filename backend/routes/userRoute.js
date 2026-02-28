@@ -1,15 +1,23 @@
-import express from 'express'
-import { protect } from '../middleware/protect.js';
-import { bioUpdate, checkAuth, getAllUser, getMe, getUserByHotdropId, toggleFollow } from '../controller/userController.js';
-import { uploadProfile } from '../config/cloudinary.js';
-import response from '../utils/responseHandler.js';
+import express from "express";
+import { protect } from "../middleware/protect.js";
+import {
+  bioUpdate,
+  checkAuth,
+  getAllUser,
+  getMe,
+  getUserByHotdropId,
+  toggleFollow,
+} from "../controller/userController.js";
+import { uploadProfile } from "../config/cloudinary.js";
+import response from "../utils/responseHandler.js";
+
 const router = express.Router();
 router.post("/togglefollow", protect, toggleFollow);
 router.get("/", protect, getAllUser);
 router.get("/checkauth", protect, checkAuth);
 router.get("/userprofile/:hotdropId", protect, getUserByHotdropId);
 
-router.put( 
+router.put(
   "/bioupdate/:userIdFromParams",
   protect,
   (req, res, next) => {
