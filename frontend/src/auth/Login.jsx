@@ -75,6 +75,7 @@ if (loading) return;
             {/* Email/ID Input */}
             <div>
               <label className="text-xs font-semibold text-slate-700 mb-2 block ml-1">Email or Hotdrop ID</label>
+              
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 <input
@@ -84,6 +85,11 @@ if (loading) return;
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
                   onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
                 />
+              </div>
+                <div className="text-right mt-2">
+                 <Link to="/email-for-reverify" className="text-xs font-medium text-blue-600 hover:underline transition-all">
+                  Verify Email ?
+                </Link>
               </div>
             </div>
 

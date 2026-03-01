@@ -16,17 +16,17 @@ import {
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import CreatePost from "./CreatePost";
 import logo from "../assets/logo5.png";
-
+import {useAuthStore } from '../store/useAuthStore'
 const Navbar = ({ user, logout }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
+const {login}=useAuthStore()
   const navigate = useNavigate();
   const location = useLocation();
-  const isLoggedIn = !user;
+  const isLoggedIn = login;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
