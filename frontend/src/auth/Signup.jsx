@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserPlus, Eye, EyeOff, Loader2, Sparkles, ChevronRight } from "lucide-react";
-import toast from "react-hot-toast";
-import axios from "axios";
+
 import { Slide, ToastContainer } from "react-toastify";
-import { showErrorToast, showSuccessToast } from "../Toast/toast";
+import {  showErrorToastForSIgnup,showSuccessToastForSignup } from "../Toast/toast";
+import API from "../api/Api";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -20,16 +20,16 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:8080/auth/register", form, {
+      const res = await API.post("/auth/register", form, {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
-      showSuccessToast(res.data.message);
+      showSuccessToastForSignup(res.data.message);
      setTimeout(() => {
     navigate("/verify");
   }, 1500);;
     } catch (error) {
-      showErrorToast(error.response?.data?.message || "Failed to create account");
+      showErrorToastForSIgnup(error.response?.data?.message || "Failed to create account");
     } finally {
       setLoading(false);
     }

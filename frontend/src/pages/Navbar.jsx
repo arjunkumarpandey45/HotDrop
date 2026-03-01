@@ -16,17 +16,16 @@ import {
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import CreatePost from "./CreatePost";
 import logo from "../assets/logo5.png";
-import {useAuthStore } from '../store/useAuthStore'
-const Navbar = ({ user, logout }) => {
+import { useAuthStore } from "../store/useAuthStore";
+const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-const {login}=useAuthStore()
+  const { user, isLoggedIn, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const isLoggedIn = login;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -42,6 +41,10 @@ const {login}=useAuthStore()
     }
   };
 
+  const handleLogout = async () => {
+    logout();
+    window.location.reload();
+  };
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -124,9 +127,9 @@ const {login}=useAuthStore()
               </button>
 
               {/* CREATE BUTTON */}
-          <button
-  onClick={handleCreateClick}
-  className="group relative flex items-center gap-2 
+              <button
+                onClick={handleCreateClick}
+                className="group relative flex items-center gap-2 
   px-3 py-2 sm:px-5 sm:py-2.5 
   rounded-xl sm:rounded-2xl 
   text-xs sm:text-sm 
@@ -136,17 +139,18 @@ const {login}=useAuthStore()
   transition-all duration-300 
   hover:scale-105 hover:shadow-blue-600/40 
   active:scale-95 overflow-hidden"
->
-  
-  {/* Shine Effect */}
-  <span className="absolute left-[-75%] top-0 h-full w-1/2 bg-white/20 skew-x-12 
-  group-hover:left-[130%] transition-all duration-700"></span>
+              >
+                {/* Shine Effect */}
+                <span
+                  className="absolute left-[-75%] top-0 h-full w-1/2 bg-white/20 skew-x-12 
+  group-hover:left-[130%] transition-all duration-700"
+                ></span>
 
-  <Plus className="h-4 w-4 sm:h-5 sm:w-5 relative z-10" />
-  <span className="relative z-10 hidden sm:inline tracking-wide">
-    Drop Project
-  </span>
-</button>
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 relative z-10" />
+                <span className="relative z-10 hidden sm:inline tracking-wide">
+                  Drop Project
+                </span>
+              </button>
 
               {!isLoggedIn ? (
                 <Link
@@ -210,7 +214,7 @@ const {login}=useAuthStore()
                       <div className="h-px bg-slate-100 my-1"></div>
 
                       <button
-                        onClick={logout}
+                        onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition"
                       >
                         <LogOut className="h-4 w-4" /> Sign Out
