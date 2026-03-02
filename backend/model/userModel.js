@@ -101,6 +101,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+     PostCount: {
+      type: Number,
+      default: 0,
+    }
   },
   { timestamps: true },
 );

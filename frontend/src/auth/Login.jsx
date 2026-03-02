@@ -9,8 +9,9 @@ const Login = () => {
   const [formData, setFormData] = useState({ identifier: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-const { login, isCheckingAuth } = useAuthStore();
-  const navigate = useNavigate();const handleSubmit = async (e) => {
+const {login} =useAuthStore()
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
   e.preventDefault();
 
 if (loading) return;
@@ -63,9 +64,7 @@ if (loading) return;
             <span className="text-2xl font-bold text-orange-500 tracking-tight">HOT</span>
             <span className="text-2xl font-bold text-blue-600 tracking-tight">DROP</span>
           </div>
-          <p className="text-slate-500 mt-2 text-sm">
-            Ready for your next big project?
-          </p>
+        
         </div>
 
         {/* Login Card */}
@@ -75,6 +74,7 @@ if (loading) return;
             {/* Email/ID Input */}
             <div>
               <label className="text-xs font-semibold text-slate-700 mb-2 block ml-1">Email or Hotdrop ID</label>
+              
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 <input
@@ -84,6 +84,11 @@ if (loading) return;
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
                   onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
                 />
+              </div>
+                <div className="text-right ">
+                 <Link to="/email-for-reverify" className="text-xs font-medium text-blue-600 hover:underline transition-all">
+                  Verify Email ?
+                </Link>
               </div>
             </div>
 
@@ -112,7 +117,7 @@ if (loading) return;
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              <div className="text-right mt-2">
+              <div className="text-right ">
                  <Link to="/forgot-password" className="text-xs font-medium text-blue-600 hover:underline transition-all">
                   Forgot Password?
                 </Link>
@@ -141,7 +146,7 @@ if (loading) return;
           </form>
 
           {/* Signup Link */}
-          <div className="mt-8 text-center pt-6 border-t border-slate-50">
+          <div className=" text-center pt-6 border-t border-slate-50">
             <p className="text-sm text-slate-500">
               New to HotDrop?{" "}
               <Link to="/signup" className="text-blue-600 font-bold hover:underline transition-colors">
@@ -152,7 +157,7 @@ if (loading) return;
         </div>
 
         {/* Security Info */}
-        <div className="mt-8 flex justify-center items-center gap-2 text-slate-400">
+        <div className="mt-2 flex justify-center items-center gap-2 text-slate-400">
            <Lock className="h-3 w-3" />
            <span className="text-[10px] font-medium uppercase tracking-wider">Secured by HotDrop Auth</span>
         </div>

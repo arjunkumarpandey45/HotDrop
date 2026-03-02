@@ -1,197 +1,218 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "../../api/Api";
-import {
-  Edit,
-  Save,
-  X,
-  Github,
-  Linkedin,
-  Globe,
-  Upload,
-} from "lucide-react";
+import { Github, Linkedin, Globe, Edit, Loader2, Award, X } from "lucide-react";
+import { useAuthStore } from "../../store/useAuthStore";
+import { showErrorToast, showProfileUpdatedToast } from "../../Toast/toast";
+import EmailModal from "./EmailModal";
+import EditProfileModal from "./EditProfileModal";
+import FollowersModal from "./FollowersModal";
+import FollowingModal from "./FollowingModal";
+import { Slide, ToastContainer } from "react-toastify";
 
-function EditUserProfile({ user }) {
-
-  // 🔥 Dummy Data (for testing UI)
-  const dummyUser = {
-    _id: "123456789",
-    username: "ArjunPandey",
-    hotdropId: "arjun.dev",
-    bio: "Frontend Developer | React & Tailwind Enthusiast 🚀",
-    profilePicture: "",
-    dateOfBirth: "2005-04-29",
-    phoneNumber: "9876543210",
-    gender: "male",
-    socialLinks: {
-      github: "https://github.com/arjunpandey",
-      linkedin: "https://linkedin.com/in/arjunpandey",
-      portfolio: "https://arjunportfolio.vercel.app",
-    },
-  };
-
-  const currentUser = user || dummyUser;
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [profilePic, setProfilePic] = useState(null);
+function EditUserProfile() {
+  const { user, setUser } = useAuthStore();
+  
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
+  const [showFullImage, setShowFullImage] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    bio: currentUser?.bio || "",
-    username: currentUser?.username || "",
-    hotdropId: currentUser?.hotdropId || "",
-    github: currentUser?.socialLinks?.github || "",
-    portfolio: currentUser?.socialLinks?.portfolio || "",
-    linkedin: currentUser?.socialLinks?.linkedin || "",
-    dateOfBirth: currentUser?.dateOfBirth?.substring(0, 10) || "",
-    phoneNumber: currentUser?.phoneNumber || "",
-    gender: currentUser?.gender || "",
+    username: "",
+    hotdropId: "",
+    bio: "",
+    github: "",
+    linkedin: "",
+    portfolio: "",
+    phoneNumber: "",
+    dateOfBirth: "",
+    gender: ""
   });
 
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        username: user.username || "",
+        hotdropId: user.hotdropId || "",
+        bio: user.bio || "",
+        github: user.socialLinks?.github || user.github || "",
+        linkedin: user.socialLinks?.linkedin || user.linkedin || "",
+        portfolio: user.socialLinks?.portfolio || user.portfolio || "",
+        phoneNumber: user.phoneNumber || "",
+        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split('T')[0] : "",
+        gender: user.gender || "",
+      });
+    }
+  }, [user]);
+
+  if (!user) return (
+    <div className="flex justify-center items-center h-40">
+      <Loader2 className="animate-spin text-indigo-600" size={24} />
+    </div>
+  );
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (formDataFromModal) => {
     try {
       setLoading(true);
-
-      const form = new FormData();
-      Object.keys(formData).forEach((key) => {
-        form.append(key, formData[key]);
+      const userId = user.userId || user._id;
+      
+      const res = await axios.put(`/user/bioupdate/${userId}`, formDataFromModal, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000
       });
 
-      if (profilePic) {
-        form.append("profilePicture", profilePic);
+      const updatedUserFromServer = res.data.data;
+
+      if (updatedUserFromServer) {
+        if (setUser) setUser(updatedUserFromServer);
+        useAuthStore.setState({ user: updatedUserFromServer });
       }
 
-      await axios.put(
-        `/api/user/update/${currentUser._id}`,
-        form,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      alert("Profile updated successfully!");
-      setIsEditing(false);
+      showProfileUpdatedToast();
+      setShowEditModal(false);
+      
     } catch (err) {
-      alert("Update failed");
-    } finally {
+      showErrorToast(err.response?.data?.message || "Update failed");
+     
+    }finally {
       setLoading(false);
-    }
+    } 
   };
 
+  const getSocialValue = (key) => user.socialLinks?.[key] || user[key];
+
   return (
-    <div className="min-h-screen bg-slate-50 pt-28 pb-16 px-4">
-      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-3xl p-10 border border-slate-200">
+    <div className="w-full flex items-center justify-center p-4 bg-[#F9FAFB]">
+       <ToastContainer
+  position="top-center" 
+  autoClose={3000}
+  hideProgressBar
+  closeButton={false}
+  theme="light"
+  transition={Slide} 
+/>
+      <div className="max-w-3xl w-full bg-white rounded-[2rem] shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden relative">
+        
+        {/* Header */}
+        <div className="flex justify-between items-center px-6 py-4 border-b border-slate-50 bg-slate-50/40">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+            <span className="text-[11px] font-semibold tracking-[0.15em] uppercase">
+              <span className="text-orange-600">HOT</span>
+              <span className="text-blue-600">DROP</span>
+            </span>
+          </div>
+         <button
+  onClick={() => setShowEditModal(true)}
+  className="flex items-center gap-2 px-4 py-1.5 
+  rounded-full text-[10px] font-semibold text-white
+  bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600
+  shadow-lg shadow-blue-500/20
+  transition-all duration-300
+  hover:shadow-blue-600/30 hover:-translate-y-0.5
+  active:scale-95"
+>
+  <Edit size={12} />
+  EDIT
+</button>
+        </div>
 
-        {/* ================= VIEW MODE ================= */}
-        {!isEditing && (
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
-
-            {/* Profile Picture */}
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-100 shadow-lg">
-              {currentUser?.profilePicture ? (
-                <img
-                  src={currentUser.profilePicture}
-                  className="w-full h-full object-cover"
-                  alt=""
-                />
+        <div className="p-6 sm:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+          
+          {/* Avatar */}
+          <div className="relative shrink-0 cursor-pointer group" onClick={() => setShowFullImage(true)}>
+            <div className="absolute -inset-1.5 bg-gradient-to-tr from-orange-500 to-blue-500 rounded-full blur-[2px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
+            <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full p-1 bg-white shadow-xl overflow-hidden ring-1 ring-slate-100">
+              {user?.profilePicture ? (
+                <img src={user.profilePicture} alt="p" className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-700" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-blue-600 text-white text-3xl font-bold">
-                  {currentUser?.username?.charAt(0)}
+                <div className="w-full h-full rounded-full bg-slate-50 flex items-center justify-center text-3xl font-semibold text-slate-200 uppercase">
+                  {user?.username?.charAt(0)}
                 </div>
               )}
             </div>
+            <div className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-lg border border-slate-50">
+              <Award size={16} className="text-orange-500" />
+            </div>
+          </div>
 
-            {/* User Info */}
-            <div className="flex-1 space-y-4 text-center md:text-left">
+          {/* Details */}
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-4">
+              <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">{user?.username}</h1>
+              <span className="text-indigo-600 font-semibold text-[11px] bg-indigo-50 px-3 py-1 rounded-lg w-fit mx-auto md:mx-0 border border-indigo-100 shadow-sm">
+                @{user?.hotdropId}
+              </span>
+            </div>
 
-              <div className="flex flex-col md:flex-row items-center gap-4">
-                <h2 className="text-2xl font-bold">
-                  {currentUser?.username}
-                </h2>
-
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-4 py-1.5 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-100 transition flex items-center gap-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  Edit Profile
+            {/* Stats */}
+            <div className="flex justify-center md:justify-start gap-10 mb-6 border-y md:border-none border-slate-50 py-4 md:py-0">
+              {[
+                { label: "Posts", count: user?.posts?.length || 0, action: null },
+                { label: "Followers", count: user?.followers?.length || 0, action: () => setShowFollowers(true) },
+                { label: "Following", count: user?.following?.length || 0, action: () => setShowFollowing(true) }
+              ].map((stat, i) => (
+                <button key={i} onClick={stat.action} disabled={!stat.action} className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 group">
+                  <span className="text-lg font-semibold text-slate-900 group-transition-colors">{stat.count}</span>
+                  <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest">{stat.label}</span>
                 </button>
-              </div>
-
-              <p className="text-slate-500 text-sm">
-                @{currentUser?.hotdropId}
-              </p>
-
-              <p className="text-slate-700 text-sm">
-                {currentUser?.bio}
-              </p>
-
-              {/* Social Links */}
-              <div className="flex items-center gap-5 mt-3">
-
-                {currentUser?.socialLinks?.github && (
-                  <a href={currentUser.socialLinks.github} target="_blank" rel="noopener noreferrer"
-                    className="p-2 bg-slate-100 rounded-full hover:bg-black hover:text-white transition">
-                    <Github className="h-4 w-4" />
-                  </a>
-                )}
-
-                {currentUser?.socialLinks?.linkedin && (
-                  <a href={currentUser.socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
-                    className="p-2 bg-slate-100 rounded-full hover:bg-blue-600 hover:text-white transition">
-                    <Linkedin className="h-4 w-4" />
-                  </a>
-                )}
-
-                {currentUser?.socialLinks?.portfolio && (
-                  <a href={currentUser.socialLinks.portfolio} target="_blank" rel="noopener noreferrer"
-                    className="p-2 bg-slate-100 rounded-full hover:bg-indigo-600 hover:text-white transition">
-                    <Globe className="h-4 w-4" />
-                  </a>
-                )}
-
-              </div>
+              ))}
             </div>
-          </div>
-        )}
 
-        {/* ================= EDIT MODE ================= */}
-        {isEditing && (
-          <div className="space-y-6">
+            <p className="text-slate-500 text-xs leading-relaxed max-w-md font-normal mb-8 italic">
+              {user?.bio || "Minimalist Creator | Building HotDrop 🚀"}
+            </p>
 
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold">Edit Profile</h3>
-              <button onClick={() => setIsEditing(false)} className="p-2 hover:bg-slate-100 rounded-lg">
-                <X className="h-5 w-5" />
+            {/* Socials */}
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <button onClick={() => setShowEmailModal(true)} className="w-full sm:w-auto px-8 py-2 bg-slate-900 text-white rounded-xl font-semibold text-[10px] tracking-widest  transition-all">
+                CONTACT
               </button>
+              <div className="flex gap-6">
+                {['github', 'linkedin', 'portfolio'].map((key) => {
+                  const val = getSocialValue(key);
+                  const Icon = key === 'github' ? Github : key === 'linkedin' ? Linkedin : Globe;
+                  return val ? (
+                    <a key={key} href={val} target="_blank" rel="noreferrer" className="text-slate-900 hover:text-blue-500 transition-all hover:-translate-y-1">
+                      <Icon size={21} />
+                    </a>
+                  ) : null;
+                })}
+              </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input name="username" value={formData.username} onChange={handleChange} placeholder="Username" className="input-style" />
-              <input name="hotdropId" value={formData.hotdropId} onChange={handleChange} placeholder="Hotdrop ID" className="input-style" />
-              <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="input-style" />
-              <input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="Phone" className="input-style" />
-              <input name="github" value={formData.github} onChange={handleChange} placeholder="GitHub URL" className="input-style" />
-              <input name="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="LinkedIn URL" className="input-style" />
-              <input name="portfolio" value={formData.portfolio} onChange={handleChange} placeholder="Portfolio URL" className="input-style" />
-            </div>
-
-            <textarea name="bio" value={formData.bio} onChange={handleChange} placeholder="Bio" className="input-style h-24 resize-none" />
-
-            <button
-              onClick={handleUpdate}
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition flex items-center justify-center gap-2"
-            >
-              <Save className="h-4 w-4" />
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-
           </div>
-        )}
-
+        </div>
       </div>
+
+      {/* Profile Preview Modal */}
+      {showFullImage && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md" onClick={() => setShowFullImage(false)}>
+          <button className="absolute top-8 right-8 text-white/50 hover:text-white">
+            <X size={24} />
+          </button>
+          <img src={user.profilePicture} className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain" alt="P" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
+
+      {/* Modals */}
+      <EditProfileModal 
+        isOpen={showEditModal} 
+        onClose={() => setShowEditModal(false)} 
+        formData={formData} 
+        handleChange={handleChange} 
+        handleUpdate={handleUpdate} 
+        loading={loading} 
+      />
+      <FollowersModal isOpen={showFollowers} onClose={() => setShowFollowers(false)} users={user?.followers} />
+      <FollowingModal isOpen={showFollowing} onClose={() => setShowFollowing(false)} users={user?.following} />
+      <EmailModal isOpen={showEmailModal} onClose={() => setShowEmailModal(false)} email={user?.email} />
     </div>
   );
 }
