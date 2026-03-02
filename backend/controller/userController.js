@@ -117,7 +117,7 @@ export const bioUpdate = async (req, res) => {
 
   try {
     const user = await User.findById(loggedInUserId);
-        if (!user) return response(res, 404, "User nahi mila!");
+    if (!user) return response(res, 404, "User nahi mila!");
     const updateData = {
       bio: req.body.bio,
       username: req.body.username,
@@ -130,36 +130,45 @@ export const bioUpdate = async (req, res) => {
       gender: req.body.gender,
     };
     if (req.body.hotdropId) {
-      const existingUser = await User.findOne({ 
-        hotdropId: req.body.hotdropId, 
-        _id: { $ne: loggedInUserId } 
+      const existingUser = await User.findOne({
+        hotdropId: req.body.hotdropId,
+        _id: { $ne: loggedInUserId },
       });
-      if (existingUser){
-    return response(res,400,"Ye hotdropId already kisi aur ne le rakha hai! 😕")
-}
+      if (existingUser) {
+        return response(
+          res,
+          400,
+          "Ye hotdropId already kisi aur ne le rakha hai! 😕",
+        );
+      }
     }
 
-
-
     if (req.file) {
+     
       if (user.profilePicture) {
-      const parts = user.profilePicture.split("/");
-        const filename = parts.pop(); // e.g. "image_name.jpg"
-        const publicId = filename.split(".")[0];
-        await cloudinary.uploader.destroy(`HotDrop_Profiles/${publicId}`);
+        try {
+         
+          const urlParts = user.profilePicture.split("/");
+          const fileNameWithExt = urlParts.pop(); 
+          const publicId = fileNameWithExt.split(".")[0]; 
+          const folderName = urlParts.pop(); 
+
+          const fullPublicId = `${folderName}/${publicId}`;
+
+          console.log("🔥 Deleting old image:", fullPublicId);
+          await cloudinary.uploader.destroy(fullPublicId);
+        } catch (err) {
+          console.error("Cloudinary Delete Error:", err.message);
+        }
       }
-if(req.file.length > 1){
-    return response(res,400,"Ek baar mein sirf ek profile picture upload kar sakte ho! 🖼️")
-}
-      const uploadRes = await cloudinary.uploader.upload(req.file.path, {
-        folder: "HotDrop_Profiles",
-      });
-      updateData.profilePicture = uploadRes.secure_url;
+
+      
+      updateData.profilePicture = req.file.path;
     }
     const updatedUser = await User.findByIdAndUpdate(
       loggedInUserId,
       { $set: updateData },
-      { returnDocument: "after", runValidators: true,  },
+      { returnDocument: "after", runValidators: true },
     ).select("-password");
 
     return response(res, 200, "Profile updated successfully! ✨", updatedUser);
@@ -169,8 +178,7 @@ if(req.file.length > 1){
 };
 export const getMe = async (req, res) => {
   try {
-   
-    const user = req.user; 
+    const user = req.user;
 
     if (!user) {
       return response(res, 404, "User not found");

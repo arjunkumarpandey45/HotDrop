@@ -21,7 +21,7 @@ router.put(
   "/bioupdate/:userIdFromParams",
   protect,
   (req, res, next) => {
-    uploadProfile.single("images")(req, res, (err) => {
+    uploadProfile.single("profilePicture")(req, res, (err) => {
       if (err) {
         if (err.code === "LIMIT_UNEXPECTED_FILE") {
           return response(

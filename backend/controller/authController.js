@@ -195,9 +195,18 @@ export const login = async (req, res) => {
     await existingUser.save();
 
     return response(res, 200, `Welcome Mr ${existingUser.username}`, {
+      profilePicture: existingUser.profilePicture,
+      username: existingUser.username,
+      portfolio: existingUser.socialLinks.portfolio,
+      github: existingUser.socialLinks.github,
+      linkedin: existingUser.socialLinks.linkedin,
+      bio: existingUser.bio,
+      email: existingUser.email,
       userId: existingUser._id,
       accessToken: accessToken,
       hotdropId: existingUser.hotdropId,
+      followerCount: existingUser.followerCount,
+      followingCount: existingUser.followingCount,
     });
   } catch (error) {
     console.log(error);
@@ -250,14 +259,14 @@ export const forgotPassword = async (req, res) => {
 export const verifyOtp = async (req, res) => {
   try {
     const { otp } = req.body;
-    const {email}=req.params
+    const { email } = req.params;
     if (!otp) {
       return response(res, 400, "otp requires");
     }
     if (!email) {
       return response(res, 400, "email requires");
     }
-   
+
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return response(res, 404, "user not found");
@@ -268,38 +277,37 @@ export const verifyOtp = async (req, res) => {
     if (otp !== user.otp) {
       return response(res, 400, "incorrect otp");
     }
-   
+
     user.otp = null;
     user.otpExpire = null;
     await user.save();
     const resetToken = jwt.sign(
-      { userId: user._id }, 
-      process.env.JWT_SECRET_KEY, 
-      { expiresIn: "10m" } 
+      { userId: user._id },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "10m" },
     );
-    return response(res, 200, "otp verified",{resetToken,user});
+    return response(res, 200, "otp verified", { resetToken, user });
   } catch (error) {
     console.log(error);
     return response(res, 500, "Internal server error");
   }
 };
-export const changePassword=async(req,res)=>{
-    try{
-const{resetToken,newPassword}=req.body
-if(!resetToken||!newPassword){
-    return response(res,404,"token or password missing")
-}
-const decoded=jwt.verify(resetToken,process.env.JWT_SECRET_KEY)
-const user=await User.findById(decoded.userId)
-if(!user){
-    return response(res,404,"user not found")
-}
-user.password=await bcryptjs.hash(newPassword,10)
-await user.save()
-return response(res,200,"password changed")
-
-    }catch (error) {
+export const changePassword = async (req, res) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+    if (!resetToken || !newPassword) {
+      return response(res, 404, "token or password missing");
+    }
+    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET_KEY);
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return response(res, 404, "user not found");
+    }
+    user.password = await bcryptjs.hash(newPassword, 10);
+    await user.save();
+    return response(res, 200, "password changed");
+  } catch (error) {
     console.log(error);
     return response(res, 500, "Internal server error");
   }
-}
+};
