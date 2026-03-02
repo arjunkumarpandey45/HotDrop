@@ -1,197 +1,201 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "../../api/Api";
-import {
-  Edit,
-  Save,
-  X,
-  Github,
-  Linkedin,
-  Globe,
-  Upload,
-} from "lucide-react";
+import { Github, Linkedin, Globe, Mail, Edit, Loader2 } from "lucide-react";
+import { useAuthStore } from "../../store/useAuthStore";
+import { showSuccessToast, showErrorToast } from "../../Toast/toast";
+import EmailModal from "./EmailModal";
+import EditProfileModal from "./EditProfileModal";
+import FollowersModal from "./FollowersModal";
+import FollowingModal from "./FollowingModal";
 
-function EditUserProfile({ user }) {
-
-  // 🔥 Dummy Data (for testing UI)
-  const dummyUser = {
-    _id: "123456789",
-    username: "ArjunPandey",
-    hotdropId: "arjun.dev",
-    bio: "Frontend Developer | React & Tailwind Enthusiast 🚀",
-    profilePicture: "",
-    dateOfBirth: "2005-04-29",
-    phoneNumber: "9876543210",
-    gender: "male",
-    socialLinks: {
-      github: "https://github.com/arjunpandey",
-      linkedin: "https://linkedin.com/in/arjunpandey",
-      portfolio: "https://arjunportfolio.vercel.app",
-    },
-  };
-
-  const currentUser = user || dummyUser;
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [profilePic, setProfilePic] = useState(null);
+function EditUserProfile() {
+  const { user, setUser } = useAuthStore();
+  
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    bio: currentUser?.bio || "",
-    username: currentUser?.username || "",
-    hotdropId: currentUser?.hotdropId || "",
-    github: currentUser?.socialLinks?.github || "",
-    portfolio: currentUser?.socialLinks?.portfolio || "",
-    linkedin: currentUser?.socialLinks?.linkedin || "",
-    dateOfBirth: currentUser?.dateOfBirth?.substring(0, 10) || "",
-    phoneNumber: currentUser?.phoneNumber || "",
-    gender: currentUser?.gender || "",
+    username: "",
+    hotdropId: "",
+    bio: "",
+    github: "",
+    linkedin: "",
+    portfolio: "",
+    phoneNumber: "",
+    dateOfBirth: "",
+    gender: ""
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // Sync Form Data when store user changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        username: user.username || "",
+        hotdropId: user.hotdropId || "",
+        bio: user.bio || "",
+        // Handle both direct and nested social links for initial load
+        github: user.socialLinks?.github || user.github || "",
+        linkedin: user.socialLinks?.linkedin || user.linkedin || "",
+        portfolio: user.socialLinks?.portfolio || user.portfolio || "",
+        phoneNumber: user.phoneNumber || "",
+        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split('T')[0] : "",
+        gender: user.gender || "",
+        profilePicture: user.profilePicture
+      });
+    }
+  }, [user]);
 
-  const handleUpdate = async () => {
+  if (!user) return (
+    <div className="flex justify-center items-center h-screen bg-white">
+      <Loader2 className="animate-spin text-blue-600" size={24} />
+    </div>
+  );
+
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  // ✅ LOGIC UPDATED: Now receives FormData from Modal for image support
+  const handleUpdate = async (formDataFromModal) => {
     try {
       setLoading(true);
-
-      const form = new FormData();
-      Object.keys(formData).forEach((key) => {
-        form.append(key, formData[key]);
+      
+      // Sending Multipart data to Backend
+      const res = await axios.put(`/user/bioupdate/${user._id}`, formDataFromModal, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout:30000
       });
 
-      if (profilePic) {
-        form.append("profilePicture", profilePic);
+      const updatedUserFromServer = res.data.data;
+
+      if (updatedUserFromServer) {
+        // Update store globally
+        if (setUser) setUser(updatedUserFromServer);
+        // Force state sync
+        useAuthStore.setState({ user: updatedUserFromServer });
       }
 
-      await axios.put(
-        `/api/user/update/${currentUser._id}`,
-        form,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      alert("Profile updated successfully!");
-      setIsEditing(false);
+      showSuccessToast("Profile updated successfully ✨");
+      setShowEditModal(false);
     } catch (err) {
-      alert("Update failed");
+      console.error("Update Error:", err);
+      showErrorToast(err.response?.data?.message || "Update failed");
     } finally {
       setLoading(false);
     }
   };
 
+  const getSocialValue = (key) => user.socialLinks?.[key] || user[key];
+
   return (
-    <div className="min-h-screen bg-slate-50 pt-28 pb-16 px-4">
-      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-3xl p-10 border border-slate-200">
+    <div className="min-h-screen bg-[#FDFDFD] pt-4 sm:pt-10 px-4 pb-10 selection:bg-blue-200/50 font-sans antialiased">
+      
+      <div className="max-w-2xl mx-auto bg-white border border-slate-100 rounded-[2rem] shadow-[0_4px_25px_rgba(0,0,0,0.03)] overflow-hidden relative">
+        
+        {/* Edit Button Inside Card */}
+        <button
+          onClick={() => setShowEditModal(true)}
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 z-10 active:scale-95 transition-all duration-300 group"
+        >
+          <div className="hidden sm:flex items-center px-4 py-1.5 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 hover:shadow-blue-600/30 hover:-translate-y-0.5 transition-all text-[11px]">
+            <Edit size={13} className="mr-1.5" />
+            Edit Profile
+          </div>
+          <div className="sm:hidden w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-xl border border-white/20">
+            <Edit size={18} strokeWidth={2.5} />
+          </div>
+        </button>
 
-        {/* ================= VIEW MODE ================= */}
-        {!isEditing && (
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
-
-            {/* Profile Picture */}
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-100 shadow-lg">
-              {currentUser?.profilePicture ? (
-                <img
-                  src={currentUser.profilePicture}
-                  className="w-full h-full object-cover"
-                  alt=""
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-blue-600 text-white text-3xl font-bold">
-                  {currentUser?.username?.charAt(0)}
-                </div>
-              )}
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left">
+            
+            {/* Avatar Section */}
+            <div className="shrink-0">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[2rem] overflow-hidden border-2 border-slate-50 shadow-md bg-slate-50">
+                {user?.profilePicture ? (
+                  <img src={user.profilePicture} alt="avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-3xl font-black text-slate-200 uppercase bg-slate-100">
+                    {user?.username?.charAt(0)}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* User Info */}
-            <div className="flex-1 space-y-4 text-center md:text-left">
+            {/* Info Section */}
+            <div className="flex-1 space-y-4 pt-1 sm:pt-0">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+                  {user?.username}
+                </h1>
+                <p className="text-blue-600 font-bold text-xs uppercase tracking-wider">@{user?.hotdropId}</p>
+              </div>
 
-              <div className="flex flex-col md:flex-row items-center gap-4">
-                <h2 className="text-2xl font-bold">
-                  {currentUser?.username}
-                </h2>
-
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-4 py-1.5 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-100 transition flex items-center gap-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  Edit Profile
+              {/* Stats Bar */}
+              <div className="flex justify-center sm:justify-start items-center gap-6 py-1 border-y border-slate-50 sm:border-none">
+                <div className="text-center sm:text-left">
+                  <span className="block text-base font-black text-slate-900 leading-none">{user?.posts?.length || 0}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Posts</span>
+                </div>
+                <button onClick={() => setShowFollowers(true)} className="text-center sm:text-left group outline-none">
+                  <span className="block text-base font-black text-slate-900 leading-none group-hover:text-blue-600 transition-colors">{user?.followers?.length || 0}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Followers</span>
+                </button>
+                <button onClick={() => setShowFollowing(true)} className="text-center sm:text-left group outline-none">
+                  <span className="block text-base font-black text-slate-900 leading-none group-hover:text-blue-600 transition-colors">{user?.following?.length || 0}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Following</span>
                 </button>
               </div>
 
-              <p className="text-slate-500 text-sm">
-                @{currentUser?.hotdropId}
+              {/* Bio */}
+              <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed max-w-md">
+                {user?.bio || "No bio added yet."}
               </p>
 
-              <p className="text-slate-700 text-sm">
-                {currentUser?.bio}
-              </p>
-
-              {/* Social Links */}
-              <div className="flex items-center gap-5 mt-3">
-
-                {currentUser?.socialLinks?.github && (
-                  <a href={currentUser.socialLinks.github} target="_blank" rel="noopener noreferrer"
-                    className="p-2 bg-slate-100 rounded-full hover:bg-black hover:text-white transition">
-                    <Github className="h-4 w-4" />
-                  </a>
-                )}
-
-                {currentUser?.socialLinks?.linkedin && (
-                  <a href={currentUser.socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
-                    className="p-2 bg-slate-100 rounded-full hover:bg-blue-600 hover:text-white transition">
-                    <Linkedin className="h-4 w-4" />
-                  </a>
-                )}
-
-                {currentUser?.socialLinks?.portfolio && (
-                  <a href={currentUser.socialLinks.portfolio} target="_blank" rel="noopener noreferrer"
-                    className="p-2 bg-slate-100 rounded-full hover:bg-indigo-600 hover:text-white transition">
-                    <Globe className="h-4 w-4" />
-                  </a>
-                )}
-
+              {/* Action Buttons & Links */}
+              <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                <button 
+                  onClick={() => setShowEmailModal(true)} 
+                  className="w-full sm:w-auto px-5 py-2 bg-slate-900 text-white rounded-lg font-bold text-xs hover:bg-blue-600 transition-all active:scale-95 shadow-sm"
+                >
+                  Contact
+                </button>
+                
+                <div className="flex items-center gap-1.5">
+                  {['github', 'linkedin', 'portfolio'].map((key) => {
+                    const val = getSocialValue(key);
+                    const Icon = key === 'github' ? Github : key === 'linkedin' ? Linkedin : Globe;
+                    return val ? (
+                      <a key={key} href={val} target="_blank" rel="noreferrer" className="p-2 rounded-lg text-slate-900 hover:text-blue-600 hover:bg-blue-50 transition-all border border-transparent">
+                        <Icon size={16} />
+                      </a>
+                    ) : null;
+                  })}
+                </div>
               </div>
             </div>
           </div>
-        )}
-
-        {/* ================= EDIT MODE ================= */}
-        {isEditing && (
-          <div className="space-y-6">
-
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold">Edit Profile</h3>
-              <button onClick={() => setIsEditing(false)} className="p-2 hover:bg-slate-100 rounded-lg">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input name="username" value={formData.username} onChange={handleChange} placeholder="Username" className="input-style" />
-              <input name="hotdropId" value={formData.hotdropId} onChange={handleChange} placeholder="Hotdrop ID" className="input-style" />
-              <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="input-style" />
-              <input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="Phone" className="input-style" />
-              <input name="github" value={formData.github} onChange={handleChange} placeholder="GitHub URL" className="input-style" />
-              <input name="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="LinkedIn URL" className="input-style" />
-              <input name="portfolio" value={formData.portfolio} onChange={handleChange} placeholder="Portfolio URL" className="input-style" />
-            </div>
-
-            <textarea name="bio" value={formData.bio} onChange={handleChange} placeholder="Bio" className="input-style h-24 resize-none" />
-
-            <button
-              onClick={handleUpdate}
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition flex items-center justify-center gap-2"
-            >
-              <Save className="h-4 w-4" />
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-
-          </div>
-        )}
-
+        </div>
       </div>
+
+      {/* Modals */}
+      {/* handleUpdate here will now receive the FormData from the child handleSubmit */}
+      <EditProfileModal 
+        isOpen={showEditModal} 
+        onClose={() => setShowEditModal(false)} 
+        formData={formData} 
+        handleChange={handleChange} 
+        handleUpdate={handleUpdate} 
+        loading={loading} 
+      />
+      
+      <FollowersModal isOpen={showFollowers} onClose={() => setShowFollowers(false)} users={user?.followers} />
+      <FollowingModal isOpen={showFollowing} onClose={() => setShowFollowing(false)} users={user?.following} />
+      <EmailModal isOpen={showEmailModal} onClose={() => setShowEmailModal(false)} email={user?.email} />
     </div>
   );
 }

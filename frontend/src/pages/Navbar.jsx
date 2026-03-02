@@ -43,7 +43,9 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     logout();
-    window.location.reload();
+    setIsProfileOpen(false); 
+  navigate("/");
+    
   };
   const isActive = (path) => location.pathname === path;
 
