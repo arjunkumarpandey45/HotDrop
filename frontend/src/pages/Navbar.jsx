@@ -17,6 +17,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import CreatePost from "./CreatePost";
 import logo from "../assets/logo5.png";
 import { useAuthStore } from "../store/useAuthStore";
+import { showSuccessToastForLogout } from "../Toast/toast";
+import { Slide, ToastContainer } from "react-toastify";
 const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -42,9 +44,14 @@ const Navbar = () => {
   };
 
   const handleLogout = async () => {
-    logout();
+    try{
+      logout();
+    showSuccessToastForLogout()
     setIsProfileOpen(false); 
   navigate("/");
+    }catch{
+      showErrorToast();
+    }
     
   };
   const isActive = (path) => location.pathname === path;
@@ -65,7 +72,14 @@ const Navbar = () => {
           }}
         />
       )}
-
+  <ToastContainer
+  position="top-center" 
+  autoClose={3000}
+  hideProgressBar
+  closeButton={false}
+  theme="light"
+  transition={Slide} 
+/>
       {/* NAVBAR CARD */}
       <div
         className={`max-w-7xl mx-auto bg-white/90 backdrop-blur-xl border border-slate-200 shadow-lg rounded-2xl px-4 py-2 flex items-center justify-between relative z-50`}

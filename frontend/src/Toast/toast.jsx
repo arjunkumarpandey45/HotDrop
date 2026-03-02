@@ -187,6 +187,44 @@ const showSuccessToastForLogout= (msg) => {
       <div className="flex flex-col leading-tight">
         
         <h4 className="text-[11px] text-slate-500 font-medium">
+          Logout Successfull ✅
+        </h4>
+      </div>
+    </div>,
+    {
+      icon: false,
+      className:
+        "bg-white border border-slate-100 rounded-xl shadow-lg p-0 min-h-[52px]",
+      autoClose: 2200,
+      closeButton: false,
+    }
+  );
+};
+const showProfileUpdatedToast = (msg = "Your profile has been updated successfully.") => {
+  toast(
+    <div className="flex items-center gap-3 py-1.5 px-1">
+
+      {/* Icon */}
+      <div className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-lg shadow-md">
+        <svg
+          className="w-4 h-4 text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2.5"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      </div>
+
+      {/* Text */}
+      <div className="flex flex-col leading-tight">
+        
+        <h4 className="text-[11px] text-slate-500 font-medium">
           {msg}
         </h4>
       </div>
@@ -201,4 +239,4 @@ const showSuccessToastForLogout= (msg) => {
   );
 };
 
-export { showSuccessToast, showErrorToast ,showSuccessToastForSignup,showErrorToastForSIgnup};
+export {showProfileUpdatedToast, showSuccessToast, showErrorToast ,showSuccessToastForSignup,showErrorToastForSIgnup,showSuccessToastForLogout};

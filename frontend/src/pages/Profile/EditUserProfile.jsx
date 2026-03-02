@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../api/Api";
-import { Github, Linkedin, Globe, Mail, Edit, Loader2 } from "lucide-react";
+import { Github, Linkedin, Globe, Edit, Loader2, Award, X } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
-import { showSuccessToast, showErrorToast } from "../../Toast/toast";
+import { showErrorToast, showProfileUpdatedToast } from "../../Toast/toast";
 import EmailModal from "./EmailModal";
 import EditProfileModal from "./EditProfileModal";
 import FollowersModal from "./FollowersModal";
 import FollowingModal from "./FollowingModal";
+import { Slide, ToastContainer } from "react-toastify";
 
 function EditUserProfile() {
   const { user, setUser } = useAuthStore();
@@ -15,6 +16,7 @@ function EditUserProfile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
+  const [showFullImage, setShowFullImage] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -29,161 +31,177 @@ function EditUserProfile() {
     gender: ""
   });
 
-  // Sync Form Data when store user changes
   useEffect(() => {
     if (user) {
       setFormData({
         username: user.username || "",
         hotdropId: user.hotdropId || "",
         bio: user.bio || "",
-        // Handle both direct and nested social links for initial load
         github: user.socialLinks?.github || user.github || "",
         linkedin: user.socialLinks?.linkedin || user.linkedin || "",
         portfolio: user.socialLinks?.portfolio || user.portfolio || "",
         phoneNumber: user.phoneNumber || "",
         dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split('T')[0] : "",
         gender: user.gender || "",
-        profilePicture: user.profilePicture
       });
     }
   }, [user]);
 
   if (!user) return (
-    <div className="flex justify-center items-center h-screen bg-white">
-      <Loader2 className="animate-spin text-blue-600" size={24} />
+    <div className="flex justify-center items-center h-40">
+      <Loader2 className="animate-spin text-indigo-600" size={24} />
     </div>
   );
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  // ✅ LOGIC UPDATED: Now receives FormData from Modal for image support
   const handleUpdate = async (formDataFromModal) => {
     try {
       setLoading(true);
+      const userId = user.userId || user._id;
       
-      // Sending Multipart data to Backend
-      const res = await axios.put(`/user/bioupdate/${user._id}`, formDataFromModal, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        timeout:30000
+      const res = await axios.put(`/user/bioupdate/${userId}`, formDataFromModal, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000
       });
 
       const updatedUserFromServer = res.data.data;
 
       if (updatedUserFromServer) {
-        // Update store globally
         if (setUser) setUser(updatedUserFromServer);
-        // Force state sync
         useAuthStore.setState({ user: updatedUserFromServer });
       }
 
-      showSuccessToast("Profile updated successfully ✨");
+      showProfileUpdatedToast();
       setShowEditModal(false);
+      
     } catch (err) {
-      console.error("Update Error:", err);
       showErrorToast(err.response?.data?.message || "Update failed");
-    } finally {
+     
+    }finally {
       setLoading(false);
-    }
+    } 
   };
 
   const getSocialValue = (key) => user.socialLinks?.[key] || user[key];
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] pt-4 sm:pt-10 px-4 pb-10 selection:bg-blue-200/50 font-sans antialiased">
-      
-      <div className="max-w-2xl mx-auto bg-white border border-slate-100 rounded-[2rem] shadow-[0_4px_25px_rgba(0,0,0,0.03)] overflow-hidden relative">
+    <div className="w-full flex items-center justify-center p-4 bg-[#F9FAFB]">
+       <ToastContainer
+  position="top-center" 
+  autoClose={3000}
+  hideProgressBar
+  closeButton={false}
+  theme="light"
+  transition={Slide} 
+/>
+      <div className="max-w-3xl w-full bg-white rounded-[2rem] shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden relative">
         
-        {/* Edit Button Inside Card */}
-        <button
-          onClick={() => setShowEditModal(true)}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 z-10 active:scale-95 transition-all duration-300 group"
-        >
-          <div className="hidden sm:flex items-center px-4 py-1.5 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 hover:shadow-blue-600/30 hover:-translate-y-0.5 transition-all text-[11px]">
-            <Edit size={13} className="mr-1.5" />
-            Edit Profile
+        {/* Header */}
+        <div className="flex justify-between items-center px-6 py-4 border-b border-slate-50 bg-slate-50/40">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+            <span className="text-[11px] font-semibold tracking-[0.15em] uppercase">
+              <span className="text-orange-600">HOT</span>
+              <span className="text-blue-600">DROP</span>
+            </span>
           </div>
-          <div className="sm:hidden w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-xl border border-white/20">
-            <Edit size={18} strokeWidth={2.5} />
-          </div>
-        </button>
+         <button
+  onClick={() => setShowEditModal(true)}
+  className="flex items-center gap-2 px-4 py-1.5 
+  rounded-full text-[10px] font-semibold text-white
+  bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600
+  shadow-lg shadow-blue-500/20
+  transition-all duration-300
+  hover:shadow-blue-600/30 hover:-translate-y-0.5
+  active:scale-95"
+>
+  <Edit size={12} />
+  EDIT
+</button>
+        </div>
 
-        <div className="p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left">
-            
-            {/* Avatar Section */}
-            <div className="shrink-0">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[2rem] overflow-hidden border-2 border-slate-50 shadow-md bg-slate-50">
-                {user?.profilePicture ? (
-                  <img src={user.profilePicture} alt="avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-3xl font-black text-slate-200 uppercase bg-slate-100">
-                    {user?.username?.charAt(0)}
-                  </div>
-                )}
-              </div>
+        <div className="p-6 sm:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+          
+          {/* Avatar */}
+          <div className="relative shrink-0 cursor-pointer group" onClick={() => setShowFullImage(true)}>
+            <div className="absolute -inset-1.5 bg-gradient-to-tr from-orange-500 to-blue-500 rounded-full blur-[2px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
+            <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full p-1 bg-white shadow-xl overflow-hidden ring-1 ring-slate-100">
+              {user?.profilePicture ? (
+                <img src={user.profilePicture} alt="p" className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-700" />
+              ) : (
+                <div className="w-full h-full rounded-full bg-slate-50 flex items-center justify-center text-3xl font-semibold text-slate-200 uppercase">
+                  {user?.username?.charAt(0)}
+                </div>
+              )}
+            </div>
+            <div className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-lg border border-slate-50">
+              <Award size={16} className="text-orange-500" />
+            </div>
+          </div>
+
+          {/* Details */}
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-4">
+              <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">{user?.username}</h1>
+              <span className="text-indigo-600 font-semibold text-[11px] bg-indigo-50 px-3 py-1 rounded-lg w-fit mx-auto md:mx-0 border border-indigo-100 shadow-sm">
+                @{user?.hotdropId}
+              </span>
             </div>
 
-            {/* Info Section */}
-            <div className="flex-1 space-y-4 pt-1 sm:pt-0">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-                  {user?.username}
-                </h1>
-                <p className="text-blue-600 font-bold text-xs uppercase tracking-wider">@{user?.hotdropId}</p>
-              </div>
-
-              {/* Stats Bar */}
-              <div className="flex justify-center sm:justify-start items-center gap-6 py-1 border-y border-slate-50 sm:border-none">
-                <div className="text-center sm:text-left">
-                  <span className="block text-base font-black text-slate-900 leading-none">{user?.posts?.length || 0}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Posts</span>
-                </div>
-                <button onClick={() => setShowFollowers(true)} className="text-center sm:text-left group outline-none">
-                  <span className="block text-base font-black text-slate-900 leading-none group-hover:text-blue-600 transition-colors">{user?.followers?.length || 0}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Followers</span>
+            {/* Stats */}
+            <div className="flex justify-center md:justify-start gap-10 mb-6 border-y md:border-none border-slate-50 py-4 md:py-0">
+              {[
+                { label: "Posts", count: user?.posts?.length || 0, action: null },
+                { label: "Followers", count: user?.followers?.length || 0, action: () => setShowFollowers(true) },
+                { label: "Following", count: user?.following?.length || 0, action: () => setShowFollowing(true) }
+              ].map((stat, i) => (
+                <button key={i} onClick={stat.action} disabled={!stat.action} className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 group">
+                  <span className="text-lg font-semibold text-slate-900 group-transition-colors">{stat.count}</span>
+                  <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest">{stat.label}</span>
                 </button>
-                <button onClick={() => setShowFollowing(true)} className="text-center sm:text-left group outline-none">
-                  <span className="block text-base font-black text-slate-900 leading-none group-hover:text-blue-600 transition-colors">{user?.following?.length || 0}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Following</span>
-                </button>
-              </div>
+              ))}
+            </div>
 
-              {/* Bio */}
-              <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed max-w-md">
-                {user?.bio || "No bio added yet."}
-              </p>
+            <p className="text-slate-500 text-xs leading-relaxed max-w-md font-normal mb-8 italic">
+              {user?.bio || "Minimalist Creator | Building HotDrop 🚀"}
+            </p>
 
-              {/* Action Buttons & Links */}
-              <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
-                <button 
-                  onClick={() => setShowEmailModal(true)} 
-                  className="w-full sm:w-auto px-5 py-2 bg-slate-900 text-white rounded-lg font-bold text-xs hover:bg-blue-600 transition-all active:scale-95 shadow-sm"
-                >
-                  Contact
-                </button>
-                
-                <div className="flex items-center gap-1.5">
-                  {['github', 'linkedin', 'portfolio'].map((key) => {
-                    const val = getSocialValue(key);
-                    const Icon = key === 'github' ? Github : key === 'linkedin' ? Linkedin : Globe;
-                    return val ? (
-                      <a key={key} href={val} target="_blank" rel="noreferrer" className="p-2 rounded-lg text-slate-900 hover:text-blue-600 hover:bg-blue-50 transition-all border border-transparent">
-                        <Icon size={16} />
-                      </a>
-                    ) : null;
-                  })}
-                </div>
+            {/* Socials */}
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <button onClick={() => setShowEmailModal(true)} className="w-full sm:w-auto px-8 py-2 bg-slate-900 text-white rounded-xl font-semibold text-[10px] tracking-widest  transition-all">
+                CONTACT
+              </button>
+              <div className="flex gap-6">
+                {['github', 'linkedin', 'portfolio'].map((key) => {
+                  const val = getSocialValue(key);
+                  const Icon = key === 'github' ? Github : key === 'linkedin' ? Linkedin : Globe;
+                  return val ? (
+                    <a key={key} href={val} target="_blank" rel="noreferrer" className="text-slate-900 hover:text-blue-500 transition-all hover:-translate-y-1">
+                      <Icon size={21} />
+                    </a>
+                  ) : null;
+                })}
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Profile Preview Modal */}
+      {showFullImage && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md" onClick={() => setShowFullImage(false)}>
+          <button className="absolute top-8 right-8 text-white/50 hover:text-white">
+            <X size={24} />
+          </button>
+          <img src={user.profilePicture} className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain" alt="P" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
+
       {/* Modals */}
-      {/* handleUpdate here will now receive the FormData from the child handleSubmit */}
       <EditProfileModal 
         isOpen={showEditModal} 
         onClose={() => setShowEditModal(false)} 
@@ -192,7 +210,6 @@ function EditUserProfile() {
         handleUpdate={handleUpdate} 
         loading={loading} 
       />
-      
       <FollowersModal isOpen={showFollowers} onClose={() => setShowFollowers(false)} users={user?.followers} />
       <FollowingModal isOpen={showFollowing} onClose={() => setShowFollowing(false)} users={user?.following} />
       <EmailModal isOpen={showEmailModal} onClose={() => setShowEmailModal(false)} email={user?.email} />
