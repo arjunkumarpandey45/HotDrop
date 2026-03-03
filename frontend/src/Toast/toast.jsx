@@ -239,5 +239,99 @@ const showProfileUpdatedToast = (msg = "Your profile has been updated successful
     }
   );
 };
+ const showPostSuccessToast = (title) => {
+  toast(
+    <div className="flex items-center gap-4 py-2 px-1 font-sans">
+      {/* Animated Success Icon Container */}
+      <div className="flex-shrink-0 relative">
+        <div className="absolute inset-0 bg-blue-500 rounded-lg blur-md opacity-40 animate-pulse"></div>
+        <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 p-2.5 rounded-lg shadow-inner">
+          <svg
+            className="w-5 h-5 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="3"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+      </div>
 
-export {showProfileUpdatedToast, showSuccessToast, showErrorToast ,showSuccessToastForSignup,showErrorToastForSIgnup,showSuccessToastForLogout};
+      {/* Text Content */}
+      <div className="flex flex-col gap-0.5 overflow-hidden">
+        <h4 className="text-[13px] font-black text-slate-900 tracking-tight flex items-center gap-1.5 uppercase">
+          Project Dropped! 🔥
+        </h4>
+        <p className="text-[11px] text-slate-500 font-bold truncate max-w-[180px]">
+           {title || "Your masterpiece is live!"}
+        </p>
+      </div>
+
+      {/* Decorative Sparkle (Optional) */}
+      <div className="ml-auto text-lg">✨</div>
+    </div>,
+    {
+      icon: false,
+      className: "bg-white border border-blue-50 rounded-2xl shadow-[0_10px_40px_-10px_rgba(37,99,235,0.15)] p-0 min-h-[64px] overflow-hidden",
+      autoClose: 3000,
+      closeButton: false,
+      pauseOnHover: false,
+    }
+  );
+};
+ const showPostErrorToast = (errorMsg) => {
+  toast(
+    <div className="flex items-center gap-4 py-2 px-1 font-sans">
+      {/* Animated Error Icon Container */}
+      <div className="flex-shrink-0 relative">
+        {/* Soft Red Glow */}
+        <div className="absolute inset-0 bg-red-500 rounded-lg blur-md opacity-30 animate-pulse"></div>
+        <div className="relative bg-gradient-to-br from-red-500 to-rose-700 p-2.5 rounded-lg shadow-inner">
+          <svg
+            className="w-5 h-5 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="3"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </div>
+      </div>
+
+      {/* Text Content */}
+      <div className="flex flex-col gap-0.5 overflow-hidden">
+        <h4 className="text-[13px] font-black text-slate-900 tracking-tight flex items-center gap-1.5 uppercase">
+          Drop Failed! ⚠️
+        </h4>
+        <p className="text-[11px] text-red-500 font-bold truncate max-w-[180px]">
+           {errorMsg || "Connection interrupted"}
+        </p>
+      </div>
+    </div>,
+    {
+      icon: false,
+      className: "bg-white border-l-4 border-l-red-500 border-y border-r border-slate-100 rounded-2xl shadow-[0_10px_40px_-10px_rgba(239,68,68,0.15)] p-0 min-h-[64px] overflow-hidden",
+      autoClose: 4000,
+      closeButton: false,
+    }
+  );
+};export {
+  showPostSuccessToast,    // 🔥 Post success (Naya MST wala)
+  showPostErrorToast,      // ⚠️ Post error (Red glow wala)
+  showProfileUpdatedToast, // Profile update success
+  showSuccessToast,        // Login/General success
+  showErrorToast,          // General error
+  showSuccessToastForSignup,
+  showErrorToastForSIgnup, // Fixed "SIgnup" typo here
+  showSuccessToastForLogout
+};

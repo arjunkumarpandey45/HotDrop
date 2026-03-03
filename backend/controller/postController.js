@@ -10,39 +10,36 @@ export const verifyLink = async (req, res) => {
   let { url } = req.body;
   if (!url) return response(res, 400, "URL is required");
 
+ 
   if (!/^https?:\/\//i.test(url)) {
     url = `https://${url}`;
   }
 
   try {
-    const { data } = await axios.get(url, {
+   
+    await axios.head(url, {
       timeout: 5000,
       headers: { "User-Agent": "Mozilla/5.0" },
       validateStatus: (status) => status >= 200 && status < 400,
     });
-    const $ = cheerio.load(data);
 
-    const metaData = {
-      title: (
-        $("title").text() ||
-        $("meta[property='og:title']").attr("content") ||
-        "Project"
-      ).trim(),
-      description: (
-        $("meta[name='description']").attr("content") ||
-        $("meta[property='og:description']").attr("content") ||
-        "No description found"
-      ).trim(),
-      image:
-        $("meta[property='og:image']").attr("content") ||
-        $("meta[name='twitter:image']").attr("content") ||
-        null,
-      url: url,
-      isLive: true,
-    };
-    return response(res, 200, "Link verified! 🔥", metaData);
+    return response(res, 200, "Link is Live! 🔥", { isLive: true, url });
+
   } catch (error) {
-    return response(res, 400, "Link dead hai ya reachable nahi hai.");
+    
+    try {
+      await axios.get(url, {
+        timeout: 5000,
+        headers: { "User-Agent": "Mozilla/5.0" },
+       
+        maxContentLength: 1, 
+        validateStatus: (status) => status >= 200 && status < 400,
+      });
+
+      return response(res, 200, "Link is Live! 🔥", { isLive: true, url });
+    } catch (innerError) {
+      return response(res, 400, "Link is dead or unreachable.");
+    }
   }
 };
 export const createPost = async (req, res) => {
@@ -87,7 +84,9 @@ export const createPost = async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, { 
       $push: { posts: newPost._id }, 
       $inc: { postCount: 1 } 
-    });
+    }).populate("followers", "username hotdropId profilePicture")
+      .populate("following", "username hotdropId profilePicture")
+      .populate("posts");
     return response(res, 201, "Project Dropped Successfully! 🔥", newPost);
   } catch (error) {
     console.error("Create Post Error:", error.message);
