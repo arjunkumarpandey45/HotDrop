@@ -4,7 +4,13 @@ export const useAuthStore = create((set) => ({
   user: null,
   isLoggedIn: false,
   isCheckingAuth: false,
-
+updatePostCountLocally: () => {
+    set((state) => ({
+      user: state.user 
+        ? { ...state.user, postCount: (state.user.postCount || 0) + 1 } 
+        : null
+    }));
+  },
   login: async (identifier, password) => {
     try {
       const payload = identifier.includes("@")

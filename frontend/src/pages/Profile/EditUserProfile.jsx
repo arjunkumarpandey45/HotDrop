@@ -163,7 +163,7 @@ function EditUserProfile() {
               {[
                 {
                   label: "Posts",
-                  count: user?.posts?.length || 0,
+                  count: user?.postCount || 0,
                   action: null,
                 },
                 {

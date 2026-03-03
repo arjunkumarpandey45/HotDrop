@@ -4,14 +4,15 @@ import {
   Globe,
   Tag,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Loader2 
 } from "lucide-react";
 
-const PostPreview = ({ data, isOpen, onConfirm, onClose }) => {
+const PostPreview = ({ data, isOpen, onConfirm, onClose, loading }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
 
         {/* Header */}
@@ -27,15 +28,15 @@ const PostPreview = ({ data, isOpen, onConfirm, onClose }) => {
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-slate-100 transition text-slate-500"
+            disabled={loading} // Loading ke waqt close disable
+            className="p-1.5 rounded-lg hover:bg-slate-100 transition text-slate-500 disabled:opacity-50"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Content */}
+        {/* Content Section */}
         <div className="px-6 py-5 overflow-y-auto max-h-[55vh] space-y-5">
-
           {/* Images */}
           <div className="grid grid-cols-3 gap-3">
             {data.images.length > 0 ? (
@@ -58,12 +59,11 @@ const PostPreview = ({ data, isOpen, onConfirm, onClose }) => {
             )}
           </div>
 
-          {/* Title & Description */}
+          {/* Text Content */}
           <div>
             <h1 className="text-lg font-bold text-slate-900 mb-1 truncate">
               {data.title || "Untitled Project"}
             </h1>
-
             <p className="text-slate-600 text-xs leading-relaxed line-clamp-3">
               {data.description || "No description provided."}
             </p>
@@ -82,59 +82,54 @@ const PostPreview = ({ data, isOpen, onConfirm, onClose }) => {
                 </span>
               ))
             ) : (
-              <span className="text-slate-400 text-xs italic">
-                No tags
-              </span>
+              <span className="text-slate-400 text-xs italic">No tags</span>
             )}
           </div>
 
           {/* Project Status */}
           <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
-
             <div className="flex items-center gap-3 truncate">
               <Globe className="h-4 w-4 text-slate-500 shrink-0" />
-
               <div className="truncate">
-                <p className="text-[9px] text-slate-400 uppercase tracking-wide">
-                  URL
-                </p>
+                <p className="text-[9px] text-slate-400 uppercase tracking-wide">URL</p>
                 <p className="text-xs font-medium text-slate-800 truncate">
-                  {data.projectLink || "hotdrop-demo.vercel.app"}
+                  {data.projectLink || "Not provided"}
                 </p>
               </div>
             </div>
 
-            <div
-              className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded-full ${
-                data.isLinkDead
-                  ? "bg-red-100 text-red-600"
-                  : "bg-green-100 text-green-600"
-              }`}
-            >
-              {data.isLinkDead ? (
-                <AlertCircle className="h-3 w-3" />
-              ) : (
-                <CheckCircle2 className="h-3 w-3" />
-              )}
+            <div className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded-full ${
+              data.isLinkDead ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
+            }`}>
+              {data.isLinkDead ? <AlertCircle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
               {data.isLinkDead ? "Dead" : "Live"}
             </div>
           </div>
         </div>
 
-      
+        {/* Footer with Loader Logic */}
         <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-slate-50 rounded-b-2xl">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-xs font-semibold hover:bg-slate-100 transition"
+            disabled={loading}
+            className="flex-1 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-xs font-semibold hover:bg-slate-100 transition disabled:opacity-50"
           >
             Back
           </button>
 
           <button
             onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition"
+            disabled={loading}
+            className="flex-[1.5] py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:bg-blue-400 shadow-lg shadow-blue-200"
           >
-            Publish
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Publish Drop"
+            )}
           </button>
         </div>
       </div>

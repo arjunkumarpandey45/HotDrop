@@ -11,9 +11,13 @@ import {
   ArrowRight,
 } from "lucide-react";
 import PostPreview from "./PostPreview";
-
+import API from "../api/Api";
+import { useAuthStore } from "../store/useAuthStore";
+import { showPostErrorToast, showPostSuccessToast } from "../Toast/toast";
 const CreatePost = ({ isOpen, onClose }) => {
   const [showPreview, setShowPreview] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -59,6 +63,42 @@ const CreatePost = ({ isOpen, onClose }) => {
     formData.title.trim() !== "" &&
     formData.description.trim() !== "";
 
+
+    const handleFinalSubmit = async () => {
+      setLoading(true);
+  try {
+    const data = new FormData();
+    
+ 
+    data.append("title", formData.title);
+    data.append("description", formData.description);
+    data.append("projectLink", formData.projectLink);
+    data.append("tags", formData.tags);
+
+    formData.images.forEach((file) => {
+      data.append("images", file); 
+    });
+
+    const response = await API.post("/post/createpost", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      timeout: 0,
+      withCredentials: true, 
+    });
+
+    if (response.status === 201) {
+     useAuthStore.getState().updatePostCountLocally();
+      showPostSuccessToast();
+      onClose(); 
+    }
+  } catch (error) {
+    console.error("Upload error:", error);
+    showPostErrorToast(error.response?.data?.message || "Something went wrong");
+  }finally {
+    setLoading(false); 
+  }
+};
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3">
 
@@ -230,7 +270,8 @@ const CreatePost = ({ isOpen, onClose }) => {
         isOpen={showPreview}
         data={formData}
         onClose={() => setShowPreview(false)}
-        onConfirm={() => console.log("Final Submit", formData)}
+        onConfirm={handleFinalSubmit}
+        loading={loading}
       />
     </div>
   );
