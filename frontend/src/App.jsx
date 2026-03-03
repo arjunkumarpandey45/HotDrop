@@ -14,8 +14,9 @@ import { useEffect } from "react";
 import Login from "./auth/Login.jsx";
 import { useAuthStore } from "./store/useAuthStore.js";
 import Verify from "./auth/Verify.jsx"
-
 import VerifyEmailPage from "./auth/VerifyEmail.jsx";
+import Reverify from "./auth/Reverify.jsx";
+import ForgotPassword from "./auth/Forgotpassword.jsx";
 
 const router = createBrowserRouter([
   {
@@ -72,6 +73,22 @@ const router = createBrowserRouter([
     path: "/verify-email/:token",
     element: <VerifyEmailPage/>,
   },
+  {
+    path: "/email-for-reverify",
+    element: (
+      <>
+       <Reverify></Reverify>
+      </>
+    ),
+  },
+  {
+    path:"/forgot-password",
+    element:(
+      <>
+<ForgotPassword></ForgotPassword>
+      </>
+    )
+  }
 ]);
 
 function HomeWrapper() {
