@@ -84,7 +84,10 @@ export const createPost = async (req, res) => {
       video: null,
       tags: tags ? tags.split(",").map((t) => t.trim().toLowerCase()) : [],
     });
-
+  await User.findByIdAndUpdate(req.user._id, { 
+      $push: { posts: newPost._id }, 
+      $inc: { postCount: 1 } 
+    });
     return response(res, 201, "Project Dropped Successfully! 🔥", newPost);
   } catch (error) {
     console.error("Create Post Error:", error.message);

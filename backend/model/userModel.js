@@ -43,10 +43,18 @@ const userSchema = new mongoose.Schema(
       default: "local",
     },
     socialLinks: {
-  github: { type: String, match: [urlRegex, "Invalid URL"], default: null },
-  portfolio: { type: String, match: [urlRegex, "Invalid URL"], default: null },
-  linkedin: { type: String, match: [urlRegex, "Invalid URL"], default: null },
-},
+      github: { type: String, match: [urlRegex, "Invalid URL"], default: null },
+      portfolio: {
+        type: String,
+        match: [urlRegex, "Invalid URL"],
+        default: null,
+      },
+      linkedin: {
+        type: String,
+        match: [urlRegex, "Invalid URL"],
+        default: null,
+      },
+    },
     bio: { type: String, maxLength: 200, default: "" },
     gender: {
       type: String,
@@ -57,10 +65,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    projectCount:{
-      type: Number,
-      default: 0
-    },
+  
     isVerified: {
       type: Boolean,
       default: false,
@@ -90,17 +95,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-  
 
-    followersCount: {
-      type: Number,
-      default: 0,
-    },
+    followers: [{ type: mongoose.Schema.Types.ObjectId,ref: "User" }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
 
-    followingCount: {
-      type: Number,
-      default: 0,
-    },
+   
+    followerCount: { type: Number, default: 0 },
+    followingCount: { type: Number, default: 0 },
+    postCount: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

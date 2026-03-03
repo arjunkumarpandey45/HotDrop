@@ -167,7 +167,8 @@ export const login = async (req, res) => {
       $or: [{ email: normalizedEmail }, { hotdropId: normalizedId }].filter(
         Boolean,
       ),
-    }).select("+password");
+    }).select("+password")
+    
 
     if (!existingUser) {
       return response(res, 400, "User not found");
@@ -185,19 +186,47 @@ export const login = async (req, res) => {
     }
 
     const accessToken = generateToken(existingUser);
-    res.cookie("auth_token", accessToken, email, {
+    const user = await User.findOneAndUpdate(
+      { _id: existingUser._id },
+      { $set: { isLoggedIn: true } },
+      { 
+        new: true,
+        runValidators: true 
+      }
+    )
+    .populate("followers", "username hotdropId profilePicture")
+    .populate("following", "username hotdropId profilePicture")
+    .populate("posts");
+    console.log("🔥 Followers Check:", user.followers);
+    res.cookie("auth_token", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 24 * 60 * 60 * 1000,
     });
-    existingUser.isLoggedIn = true;
-    await existingUser.save();
+   
 
-    return response(res, 200, `Welcome Mr ${existingUser.username}`, {
-      userId: existingUser._id,
+    return response(res, 200, `Welcome Mr ${user.username}`, {
+      userId: user._id,
+      username: user.username,
+      hotdropId: user.hotdropId,
+      email: user.email,
+      profilePicture: user.profilePicture,
+      bio: user.bio,
+      phoneNumber: user.phoneNumber,
+      gender: user.gender,
+      dateOfBirth: user.dateOfBirth,
+      portfolio: user.socialLinks?.portfolio || null,
+      github: user.socialLinks?.github || null,
+      linkedin: user.socialLinks?.linkedin || null,
+      followers: user.followers || [],
+      following: user.following || [],
+      posts: user.posts || [],
+
+      followerCount: user.followerCount || 0,
+      followingCount: user.followingCount || 0,
+      postCount: user.postCount || 0,
       accessToken: accessToken,
-      hotdropId: existingUser.hotdropId,
     });
   } catch (error) {
     console.log(error);
@@ -250,14 +279,14 @@ export const forgotPassword = async (req, res) => {
 export const verifyOtp = async (req, res) => {
   try {
     const { otp } = req.body;
-    const {email}=req.params
+    const { email } = req.params;
     if (!otp) {
       return response(res, 400, "otp requires");
     }
     if (!email) {
       return response(res, 400, "email requires");
     }
-   
+
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return response(res, 404, "user not found");
@@ -268,38 +297,37 @@ export const verifyOtp = async (req, res) => {
     if (otp !== user.otp) {
       return response(res, 400, "incorrect otp");
     }
-   
+
     user.otp = null;
     user.otpExpire = null;
     await user.save();
     const resetToken = jwt.sign(
-      { userId: user._id }, 
-      process.env.JWT_SECRET_KEY, 
-      { expiresIn: "10m" } 
+      { userId: user._id },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "10m" },
     );
-    return response(res, 200, "otp verified",{resetToken,user});
+    return response(res, 200, "otp verified", { resetToken, user });
   } catch (error) {
     console.log(error);
     return response(res, 500, "Internal server error");
   }
 };
-export const changePassword=async(req,res)=>{
-    try{
-const{resetToken,newPassword}=req.body
-if(!resetToken||!newPassword){
-    return response(res,404,"token or password missing")
-}
-const decoded=jwt.verify(resetToken,process.env.JWT_SECRET_KEY)
-const user=await User.findById(decoded.userId)
-if(!user){
-    return response(res,404,"user not found")
-}
-user.password=await bcryptjs.hash(newPassword,10)
-await user.save()
-return response(res,200,"password changed")
-
-    }catch (error) {
+export const changePassword = async (req, res) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+    if (!resetToken || !newPassword) {
+      return response(res, 404, "token or password missing");
+    }
+    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET_KEY);
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return response(res, 404, "user not found");
+    }
+    user.password = await bcryptjs.hash(newPassword, 10);
+    await user.save();
+    return response(res, 200, "password changed");
+  } catch (error) {
     console.log(error);
     return response(res, 500, "Internal server error");
   }
-}
+};
