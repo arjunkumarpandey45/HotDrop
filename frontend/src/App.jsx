@@ -18,6 +18,7 @@ import VerifyEmailPage from "./auth/VerifyEmail.jsx";
 
 import ForgotPassword from "./auth/Forgotpassword.jsx";
 import VerifyOtp from "./auth/VerifyOtp.jsx"
+import ResetPassword from "./auth/ResetPassword.jsx";
 
 const router = createBrowserRouter([
   {
@@ -95,6 +96,14 @@ const router = createBrowserRouter([
     element:(
       <>
 <VerifyOtp></VerifyOtp>
+      </>
+    )
+  },
+  {
+    path:"/reset-password",
+    element:(
+      <>
+<ResetPassword></ResetPassword>
       </>
     )
   },
