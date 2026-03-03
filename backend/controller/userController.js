@@ -8,45 +8,57 @@ export const toggleFollow = async (req, res) => {
     const myId = req.user._id;
 
     if (myId.toString() === userIdToFollow) {
-      return response(
-        res,
-        400,
-        "Bhai, khud ko follow/unfollow nahi kar sakte!",
-      );
+      return response(res, 400, "You cannot follow yourself!");
     }
 
+    const userToFollow = await User.findById(userIdToFollow);
+    if (!userToFollow) return response(res, 404, "User not found!");
+
     const existingFollow = await Follow.findOne({
-      followers: myId,
+      follower: myId,
       following: userIdToFollow,
     });
 
     if (existingFollow) {
       await Promise.all([
         Follow.deleteOne({ _id: existingFollow._id }),
-        User.findByIdAndUpdate(myId, { $inc: { followingCount: -1 } }),
-        User.findByIdAndUpdate(userIdToFollow, { $inc: { followerCount: -1 } }),
+        User.findByIdAndUpdate(myId, {
+          $pull: { following: userIdToFollow },
+          $inc: { followingCount: -1 },
+        }),
+        User.findByIdAndUpdate(userIdToFollow, {
+          $pull: { followers: myId },
+          $inc: { followerCount: -1 },
+        }),
       ]);
-      const unfollowed =
-        await User.findById(userIdToFollow).select("hotdropId");
-      return response(
-        res,
-        200,
-        `Unfollowed successfully ${unfollowed?.hotdropId}`,
-        { isFollowing: false },
+      const updatedTargetUser = await User.findById(userIdToFollow).select(
+        "followerCount followers hotdropId profilePicture",
       );
+      return response(res, 200, `Unfollowed @${updatedTargetUser.hotdropId}`, {
+        isFollowing: false,
+        followerCount: updatedTargetUser.followerCount,
+        profilePicture: updatedTargetUser.profilePicture,
+        followers: updatedTargetUser.followers, // Sending fresh list for the modal
+      });
     } else {
+      // --- FOLLOW LOGIC ---
       await Promise.all([
-        Follow.create({ followers: myId, following: userIdToFollow }),
-        User.findByIdAndUpdate(myId, { $inc: { followingCount: 1 } }),
-        User.findByIdAndUpdate(userIdToFollow, { $inc: { followerCount: 1 } }),
+        Follow.create({ follower: myId, following: userIdToFollow }),
+       
+        User.findByIdAndUpdate(myId, {
+          $push: { following: userIdToFollow },
+          $inc: { followingCount: 1 },
+        }),
+        // Update their account: Add my ID to their 'followers' array
+        User.findByIdAndUpdate(userIdToFollow, {
+          $push: { followers: myId },
+          $inc: { followerCount: 1 }, // Standardized name
+        }),
       ]);
-      const followed = await User.findById(userIdToFollow).select("hotdropId");
-      return response(
-        res,
-        200,
-        `Followed successfully ${followed?.hotdropId}`,
-        { isFollowing: true },
-      );
+
+      return response(res, 200, `Followed @${userToFollow.hotdropId}`, {
+        isFollowing: true,
+      });
     }
   } catch (error) {
     return response(res, 500, "Server error", null, error.message);
@@ -106,13 +118,11 @@ export const getUserByHotdropId = async (req, res) => {
 export const bioUpdate = async (req, res) => {
   const loggedInUserId = req.user._id.toString();
   const { userIdFromParams } = req.params;
-
+  console.log("--- DEBUG START ---");
+  console.log("1. Params ID:", req.params.id); // Check if this matches your route :id
+  console.log("2. Logged In User ID:", req.user?._id);
   if (userIdFromParams && loggedInUserId !== userIdFromParams) {
-    return response(
-      res,
-      403,
-      "Bhai, kisi aur ki profile edit karna paap hai! 🛑",
-    );
+    return response(res, 403, "You'r not Owner 🛑");
   }
 
   try {
@@ -135,23 +145,17 @@ export const bioUpdate = async (req, res) => {
         _id: { $ne: loggedInUserId },
       });
       if (existingUser) {
-        return response(
-          res,
-          400,
-          "Ye hotdropId already kisi aur ne le rakha hai! 😕",
-        );
+        return response(res, 400, " HotdropId already taken! 😕");
       }
     }
 
     if (req.file) {
-     
       if (user.profilePicture) {
         try {
-         
           const urlParts = user.profilePicture.split("/");
-          const fileNameWithExt = urlParts.pop(); 
-          const publicId = fileNameWithExt.split(".")[0]; 
-          const folderName = urlParts.pop(); 
+          const fileNameWithExt = urlParts.pop();
+          const publicId = fileNameWithExt.split(".")[0];
+          const folderName = urlParts.pop();
 
           const fullPublicId = `${folderName}/${publicId}`;
 
@@ -162,7 +166,6 @@ export const bioUpdate = async (req, res) => {
         }
       }
 
-      
       updateData.profilePicture = req.file.path;
     }
     const updatedUser = await User.findByIdAndUpdate(
@@ -173,12 +176,14 @@ export const bioUpdate = async (req, res) => {
 
     return response(res, 200, "Profile updated successfully! ✨", updatedUser);
   } catch (error) {
-    return response(res, 500, "Update fail ho gaya", null, error.message);
+    return response(res, 500, "Update failed", null, error.message);
   }
 };
 export const getMe = async (req, res) => {
   try {
-    const user = req.user;
+    const user = await User.findById(req.user._id).populate("followers", "username hotdropId profilePicture")
+      .populate("following", "username hotdropId profilePicture")
+      .populate("posts");
 
     if (!user) {
       return response(res, 404, "User not found");

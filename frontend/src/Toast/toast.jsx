@@ -186,9 +186,10 @@ const showSuccessToastForLogout= (msg) => {
       {/* Text */}
       <div className="flex flex-col leading-tight">
         
-        <h4 className="text-[11px] text-slate-500 font-medium">
-          Logout Successfull ✅
+        <h4 className="text-[11px] text-black font-medium">
+        Successfully Logout ✅
         </h4>
+        
       </div>
     </div>,
     {
