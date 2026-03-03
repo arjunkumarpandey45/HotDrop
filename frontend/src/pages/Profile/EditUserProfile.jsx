@@ -112,7 +112,7 @@ function EditUserProfile() {
          <button
   onClick={() => setShowEditModal(true)}
   className="flex items-center gap-2 px-4 py-1.5 
-  rounded-full text-[10px] font-semibold text-white
+  rounded-full text-[10px] font-semibold text-white hover:cursor-pointer
   bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600
   shadow-lg shadow-blue-500/20
   transition-all duration-300
@@ -147,9 +147,9 @@ function EditUserProfile() {
           <div className="flex-1 text-center md:text-left">
             <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-4">
               <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">{user?.username}</h1>
-              <span className="text-indigo-600 font-semibold text-[11px] bg-indigo-50 px-3 py-1 rounded-lg w-fit mx-auto md:mx-0 border border-indigo-100 shadow-sm">
-                @{user?.hotdropId}
-              </span>
+              <span className="inline-block px-3 py-1 text-[13px] font-bold lowercase w-fit mx-auto md:mx-0 tracking-tight bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-400 bg-clip-text text-transparent">
+  @{user?.hotdropId}
+</span>
             </div>
 
             {/* Stats */}
@@ -172,7 +172,7 @@ function EditUserProfile() {
 
             {/* Socials */}
             <div className="flex flex-col sm:flex-row items-center gap-6">
-              <button onClick={() => setShowEmailModal(true)} className="w-full sm:w-auto px-8 py-2 bg-slate-900 text-white rounded-xl font-semibold text-[10px] tracking-widest  transition-all">
+              <button onClick={() => setShowEmailModal(true)} className="w-full sm:w-auto px-8 py-2 bg-slate-900 text-white rounded-xl font-semibold text-[10px] tracking-widest hover:cursor-pointer  transition-all">
                 CONTACT
               </button>
               <div className="flex gap-6">

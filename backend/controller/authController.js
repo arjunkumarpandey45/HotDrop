@@ -167,7 +167,8 @@ export const login = async (req, res) => {
       $or: [{ email: normalizedEmail }, { hotdropId: normalizedId }].filter(
         Boolean,
       ),
-    }).select("+password");
+    }).select("+password")
+    
 
     if (!existingUser) {
       return response(res, 400, "User not found");
@@ -185,28 +186,47 @@ export const login = async (req, res) => {
     }
 
     const accessToken = generateToken(existingUser);
-    res.cookie("auth_token", accessToken, email, {
+    const user = await User.findOneAndUpdate(
+      { _id: existingUser._id },
+      { $set: { isLoggedIn: true } },
+      { 
+        new: true,
+        runValidators: true 
+      }
+    )
+    .populate("followers", "username hotdropId profilePicture")
+    .populate("following", "username hotdropId profilePicture")
+    .populate("posts");
+    console.log("🔥 Followers Check:", user.followers);
+    res.cookie("auth_token", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 24 * 60 * 60 * 1000,
     });
-    existingUser.isLoggedIn = true;
-    await existingUser.save();
+   
 
-    return response(res, 200, `Welcome Mr ${existingUser.username}`, {
-      profilePicture: existingUser.profilePicture,
-      username: existingUser.username,
-      portfolio: existingUser.socialLinks.portfolio,
-      github: existingUser.socialLinks.github,
-      linkedin: existingUser.socialLinks.linkedin,
-      bio: existingUser.bio,
-      email: existingUser.email,
-      userId: existingUser._id,
+    return response(res, 200, `Welcome Mr ${user.username}`, {
+      userId: user._id,
+      username: user.username,
+      hotdropId: user.hotdropId,
+      email: user.email,
+      profilePicture: user.profilePicture,
+      bio: user.bio,
+      phoneNumber: user.phoneNumber,
+      gender: user.gender,
+      dateOfBirth: user.dateOfBirth,
+      portfolio: user.socialLinks?.portfolio || null,
+      github: user.socialLinks?.github || null,
+      linkedin: user.socialLinks?.linkedin || null,
+      followers: user.followers || [],
+      following: user.following || [],
+      posts: user.posts || [],
+
+      followerCount: user.followerCount || 0,
+      followingCount: user.followingCount || 0,
+      postCount: user.postCount || 0,
       accessToken: accessToken,
-      hotdropId: existingUser.hotdropId,
-      followerCount: existingUser.followerCount,
-      followingCount: existingUser.followingCount,
     });
   } catch (error) {
     console.log(error);
