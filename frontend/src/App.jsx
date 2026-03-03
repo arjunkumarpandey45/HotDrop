@@ -13,54 +13,68 @@ import SplashScreen from "./animation/SplashScreen.jsx";
 import { useEffect } from "react";
 import Login from "./auth/Login.jsx";
 import { useAuthStore } from "./store/useAuthStore.js";
+import Verify from "./auth/Verify.jsx"
 
- const router = createBrowserRouter([
-    {
-      path: "/",
-      element: (
-        <>
-          <HomeWrapper></HomeWrapper>
-        </>
-      ),
-    },
+import VerifyEmailPage from "./auth/VerifyEmail.jsx";
 
-    {
-      path: "/Signup",
-      element: (
-        <>
-          <Signup></Signup>
-        </>
-      ),
-    },
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: (
+      <>
+        <HomeWrapper></HomeWrapper>
+      </>
+    ),
+  },
 
-    {
-      path: "/profile/:userId",
-      element: (
-        <>
-          <EditUserProfile  />
-        </>
-      ),
-    },
-    {
-      path: "/contact",
-      element: (
-        <>
-          <Contact></Contact>
-        </>
-      ),
-    },
-    {
-      path: "/login",
-      element: (
-        <>
-          <Login ></Login>
-        </>
-      ),
-    },
-  ]);
+  {
+    path: "/Signup",
+    element: (
+      <>
+        <Signup></Signup>
+      </>
+    ),
+  },
 
+  {
+    path: "/profile/:userId",
+    element: (
+      <>
+        <EditUserProfile />
+      </>
+    ),
+  },
+  {
+    path: "/contact",
+    element: (
+      <>
+        <Contact></Contact>
+      </>
+    ),
+  },
+  {
+    path: "/login",
+    element: (
+      <>
+        <Login></Login>
+      </>
+    ),
+  },
+  {
+    path: "/verify",
+    element: (
+      <>
+       <Verify></Verify>
+      </>
+    ),
+  },
+  {
+    path: "/verify-email/:token",
+    element: <VerifyEmailPage/>,
+  },
+]);
 
-  function HomeWrapper() {
+function HomeWrapper() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
@@ -71,10 +85,9 @@ import { useAuthStore } from "./store/useAuthStore.js";
   );
 }
 function App() {
-
   const [isLoading, setIsLoading] = useState(true);
-  const { checkAuth,isCheckingAuth} = useAuthStore();
- useEffect(() => {
+  const { checkAuth, isCheckingAuth } = useAuthStore();
+  useEffect(() => {
     // Auth check aur Timer dono ko handle karein
     const initApp = async () => {
       await checkAuth(); // Backend se check karein
@@ -85,15 +98,11 @@ function App() {
     initApp();
   }, [checkAuth]);
 
- 
-
- 
-
   return (
     <>
       {" "}
       <AnimatePresence>
-        {(isLoading || isCheckingAuth)? (
+        {isLoading || isCheckingAuth ? (
           <SplashScreen key="splash" />
         ) : (
           <RouterProvider router={router} />
