@@ -115,9 +115,9 @@ function EditUserProfile() {
           </div>
           <button
             onClick={() => setShowEditModal(true)}
-            className="flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md transition-all hover:scale-105"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-[9px] font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md transition-all hover:scale-105"
           >
-            <Edit size={10} /> EDIT
+            <Edit size={10} /> 
           </button>
         </div>
 
