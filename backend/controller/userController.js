@@ -119,7 +119,7 @@ export const bioUpdate = async (req, res) => {
   const loggedInUserId = req.user._id.toString();
   const { userIdFromParams } = req.params;
   console.log("--- DEBUG START ---");
-  console.log("1. Params ID:", req.params.id); // Check if this matches your route :id
+  console.log("1. Params ID:", userIdFromParams); // Check if this matches your route :id
   console.log("2. Logged In User ID:", req.user?._id);
   if (userIdFromParams && loggedInUserId !== userIdFromParams) {
     return response(res, 403, "You'r not Owner 🛑");
@@ -172,8 +172,10 @@ export const bioUpdate = async (req, res) => {
       loggedInUserId,
       { $set: updateData },
       { returnDocument: "after", runValidators: true },
-    ).select("-password");
-
+    ).select("-password").populate("followers", "username hotdropId profilePicture")
+      .populate("following", "username hotdropId profilePicture")
+      .populate("posts");
+console.log("🔥updated")
     return response(res, 200, "Profile updated successfully! ✨", updatedUser);
   } catch (error) {
     return response(res, 500, "Update failed", null, error.message);
