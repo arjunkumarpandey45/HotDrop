@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { CheckCircle, XCircle, Loader2 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { CheckCircle, XCircle, Loader2, Mail } from "lucide-react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
-import "../App.css";
 
 const Verify = () => {
   const [searchParams] = useSearchParams();
@@ -21,20 +20,16 @@ const Verify = () => {
           { withCredentials: true }
         );
 
-        // If status is 200 → success
         if (res.status === 200) {
           setVerified(true);
           toast.success("Email verified successfully!");
 
-          // Redirect ONLY on success
           setTimeout(() => navigate("/login"), 2000);
         }
       } catch (error) {
-        // Handle error messages correctly
         const msg =
-          error.response?.data?.message || "Verification failed, try again!";
+          error.response?.data?.message || "Verification failed!";
         toast.error(msg);
-
         setVerified(false);
       }
 
@@ -42,51 +37,87 @@ const Verify = () => {
     };
 
     if (token) verifyEmail();
-  }, [token]);
+  }, [token, navigate]);
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 px-4">
-      <div className="bg-white border border-slate-200 shadow-lg rounded-2xl p-8 w-full max-w-md text-center animate-fadeIn">
+    <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
 
-        {/* LOADING STATE */}
+      {/* CARD */}
+      <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8 border border-slate-200">
+
+        {/* HEADER */}
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-3">
+            <Mail className="text-blue-600 w-8 h-8" />
+          </div>
+
+          <h2 className="text-2xl font-bold text-slate-900">
+            Email Verification
+          </h2>
+
+          <p className="text-sm text-slate-600 mt-1">
+            Verifying your account email
+          </p>
+        </div>
+
+        {/* LOADING */}
         {loading && (
-          <div className="flex flex-col items-center gap-4 animate-slideUp">
-            <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-            <p className="text-slate-700 text-sm font-medium">
-              An email is sent to your Gmail...
-            </p>
-            <p className="text-slate-700 text-sm font-medium">
-              Kindly verify...
+          <div className="flex flex-col items-center gap-4 py-6">
+            <Loader2 className="animate-spin text-blue-600 w-8 h-8" />
+
+            <p className="text-slate-600 text-sm">
+              Please wait while we verify your email...
             </p>
           </div>
         )}
 
-        {/* SUCCESS STATE */}
+        {/* SUCCESS */}
         {!loading && verified && (
-          <div className="flex flex-col items-center gap-4 animate-slideUp">
-            <CheckCircle className="h-14 w-14 text-green-600 animate-bounceSlow" />
-            <h2 className="text-2xl font-bold text-slate-900">
-              Email Verified!
-            </h2>
-            <p className="text-slate-600 text-sm">
-              Redirecting to login page...
+          <div className="flex flex-col items-center gap-4 py-6 text-center">
+
+            <CheckCircle className="text-green-600 w-12 h-12" />
+
+            <h3 className="text-lg font-semibold text-slate-900">
+              Email Verified
+            </h3>
+
+            <p className="text-sm text-slate-600">
+              Your email has been successfully verified.
             </p>
+
+            <button
+              onClick={() => navigate("/login")}
+              className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition"
+            >
+              Continue to Login
+            </button>
+
           </div>
         )}
 
-        {/* FAILURE STATE */}
+        {/* FAILED */}
         {!loading && !verified && (
-          <div className="flex flex-col items-center gap-4 animate-slideUp">
-            <XCircle className="h-14 w-14 text-red-600 animate-bounceSlow" />
-            <h2 className="text-2xl font-bold text-slate-900">
+          <div className="flex flex-col items-center gap-4 py-6 text-center">
+
+            <XCircle className="text-red-600 w-12 h-12" />
+
+            <h3 className="text-lg font-semibold text-slate-900">
               Verification Failed
-            </h2>
-            <p className="text-slate-600 text-sm">
-              The verification link is invalid or expired.
+            </h3>
+
+            <p className="text-sm text-slate-600">
+              This verification link is invalid or expired.
             </p>
+
+            <Link
+              to="/login"
+              className="w-full mt-3 text-center bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium transition"
+            >
+              Back to Login
+            </Link>
+
           </div>
         )}
-
       </div>
     </div>
   );
