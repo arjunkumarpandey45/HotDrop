@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Lock } from "lucide-react";
 
 const ResetPassword = () => {
   const { state } = useLocation();
-  const navigate = useNavigate();
-
   const resetToken = state?.resetToken;
+  const navigate = useNavigate();
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -16,15 +15,6 @@ const ResetPassword = () => {
   const [showPass1, setShowPass1] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  if (!resetToken) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600 font-semibold">Invalid reset session</p>
-      </div>
-    );
-  }
-
-  // REAL-TIME PASSWORD MATCH CHECK
   const isMatch =
     newPassword.length > 0 &&
     confirmPassword.length > 0 &&
@@ -33,11 +23,17 @@ const ResetPassword = () => {
   const isMismatch =
     confirmPassword.length > 0 && newPassword !== confirmPassword;
 
+  const borderColor = isMatch
+    ? "border-green-500 ring-green-300"
+    : isMismatch
+    ? "border-red-500 ring-red-300"
+    : "border-slate-300";
+
   const handleReset = async (e) => {
     e.preventDefault();
 
     if (!isMatch) {
-      toast.error("Passwords do not match!");
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -49,7 +45,7 @@ const ResetPassword = () => {
         newPassword,
       });
 
-      toast.success("Password changed successfully!");
+      toast.success("Password Changed Successfully");
       navigate("/login");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to change password");
@@ -58,73 +54,80 @@ const ResetPassword = () => {
     setLoading(false);
   };
 
-  // Dynamic border color classes
-  const getBorderColor = () => {
-    if (isMatch) return "border-green-500 focus:ring-green-300";
-    if (isMismatch) return "border-red-500 focus:ring-red-300";
-    return "border-gray-300 focus:ring-blue-300";
-  };
+  if (!resetToken) {
+    return <div className="text-red-600 text-center mt-20">Invalid reset session</div>;
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-      <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-md text-center">
-        
-        <h2 className="text-xl font-bold mb-4">Reset Password</h2>
+    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 relative overflow-hidden font-sans">
 
-        <form onSubmit={handleReset} className="space-y-5">
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-100/50 rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-indigo-100/50 rounded-full blur-[100px]"></div>
+
+      <div className="relative z-10 w-full max-w-[400px] bg-white p-8 rounded-3xl shadow-xl border border-slate-200">
+
+        <h2 className="text-xl font-bold mb-4 text-center text-blue-600">Reset Password</h2>
+
+        <form onSubmit={handleReset} className="space-y-6">
 
           {/* NEW PASSWORD */}
-          <div className="relative">
+          <div className="relative group">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 text-slate-400" />
+
             <input
               type={showPass1 ? "text" : "password"}
-              className={`w-full border p-3 rounded-lg transition-all ${getBorderColor()}`}
+              required
               placeholder="Enter new password"
+              className={`w-full bg-slate-50 border rounded-xl py-3.5 pl-11 pr-12 text-sm outline-none focus:ring-4 transition ${borderColor}`}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              required
             />
 
-            {/* ONLY ONE EYE BUTTON HERE */}
             <button
               type="button"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
               onClick={() => setShowPass1(!showPass1)}
-              className="absolute right-3 top-3 text-slate-500"
             >
-              {showPass1 ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showPass1 ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
 
           {/* CONFIRM PASSWORD */}
-          <input
-            type="password"
-            className={`w-full border p-3 rounded-lg transition-all ${getBorderColor()}`}
-            placeholder="Confirm password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
+          <div className="relative group">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 text-slate-400" />
+
+            <input
+              type="password"
+              required
+              placeholder="Confirm password"
+              className={`w-full bg-slate-50 border rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none focus:ring-4 transition ${borderColor}`}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
 
           {/* SUBMIT BUTTON */}
           <button
+            type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white p-3 rounded-lg flex items-center justify-center"
+            className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 transition"
           >
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Reset Password"}
+            {loading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              "Reset Password"
+            )}
           </button>
 
         </form>
 
-        {/* REAL-TIME MATCH INFO */}
-        <p className="text-sm mt-3">
+        {/* MATCH INDICATOR */}
+        <p className="text-center text-sm mt-3">
           {isMatch && (
-            <span className="text-green-600 font-semibold">
-              ✔ Passwords match
-            </span>
+            <span className="text-green-600 font-semibold">✔ Passwords match</span>
           )}
           {isMismatch && (
-            <span className="text-red-600 font-semibold">
-              ❌ Passwords do not match
-            </span>
+            <span className="text-red-600 font-semibold">❌ Passwords don’t match</span>
           )}
         </p>
 

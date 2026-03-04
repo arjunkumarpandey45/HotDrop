@@ -1,30 +1,34 @@
 import React, { useState } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
 import { useParams, useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, KeyRound } from "lucide-react";
+import toast from "react-hot-toast";
 
 const VerifyOtp = () => {
   const { email } = useParams();
   const navigate = useNavigate();
+
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleOtpSubmit = async (e) => {
+  const handleOtp = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
+    if (loading) return;
 
     try {
+      setLoading(true);
+
       const res = await axios.post(
         `http://localhost:8080/auth/verifyotp/${email}`,
         { otp }
       );
 
-      toast.success("OTP verified");
+      toast.success("OTP Verified");
 
-      const resetToken = res.data.data.resetToken;
-
-      navigate("/reset-password", { state: { resetToken } });
+      navigate("/reset-password", {
+        state: { resetToken: res.data.data.resetToken },
+      });
     } catch (err) {
       toast.error(err.response?.data?.message || "Invalid OTP");
     }
@@ -33,30 +37,50 @@ const VerifyOtp = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-      <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-md text-center">
+    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 relative overflow-hidden font-sans">
 
-        <h2 className="text-xl font-bold mb-4">Verify OTP</h2>
-        <p className="text-sm text-slate-600 mb-2">OTP sent to <b>{email}</b></p>
+      {/* Blur BG */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-100/50 rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-indigo-100/50 rounded-full blur-[100px]"></div>
 
-        <form onSubmit={handleOtpSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Enter OTP"
-            className="w-full border p-3 rounded-lg"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            required
-          />
+      <div className="relative z-10 w-full max-w-[400px]">
 
-          <button
-            disabled={loading}
-            className="w-full bg-blue-600 text-white p-3 rounded-lg flex items-center justify-center"
-          >
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify OTP"}
-          </button>
-        </form>
+        <div className="text-center mb-10">
+          <span className="text-blue-600 font-bold text-xl">Verify OTP</span>
+        </div>
 
+        <div className="bg-white border border-slate-200 shadow-xl rounded-3xl p-8">
+
+          <p className="text-sm text-slate-500 mb-4 text-center">
+            OTP sent to <b>{email}</b>
+          </p>
+
+          <form onSubmit={handleOtp} className="space-y-6">
+
+            {/* OTP FIELD */}
+            <div className="relative group">
+              <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-4 text-slate-400 group-focus-within:text-blue-500" />
+              <input
+                type="text"
+                required
+                placeholder="Enter OTP"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3.5 pl-12 pr-4 text-sm text-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                onChange={(e) => setOtp(e.target.value)}
+              />
+            </div>
+
+            {/* BUTTON */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-semibold flex justify-center items-center gap-2 hover:bg-blue-700 transition"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify OTP"}
+            </button>
+
+          </form>
+
+        </div>
       </div>
     </div>
   );
