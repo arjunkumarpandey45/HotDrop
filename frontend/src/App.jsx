@@ -19,6 +19,8 @@ import VerifyEmailPage from "./auth/VerifyEmail.jsx";
 import ForgotPassword from "./auth/Forgotpassword.jsx";
 import VerifyOtp from "./auth/VerifyOtp.jsx"
 import ResetPassword from "./auth/ResetPassword.jsx";
+// import Post from "../../backend/model/postModel.js";
+import UserPost from "./pages/Profile/Post/UserPost.jsx";
 
 const router = createBrowserRouter([
   {
@@ -43,7 +45,7 @@ const router = createBrowserRouter([
     path: "/profile/:userId",
     element: (
       <>
-        <EditUserProfile />
+        <EditUserProfile /><UserPost></UserPost>
       </>
     ),
   },
@@ -107,6 +109,7 @@ const router = createBrowserRouter([
       </>
     )
   },
+  
 ]);
 
 function HomeWrapper() {
