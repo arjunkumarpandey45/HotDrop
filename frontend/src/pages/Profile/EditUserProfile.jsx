@@ -92,7 +92,7 @@ function EditUserProfile() {
   const getSocialValue = (key) => user.socialLinks?.[key] || user[key];
 
   return (
-    <div className="w-full min-h-screen flex  justify-center p-4  bg-[#F9FAFB]">
+    <div className="w-full  flex  justify-center p-4  bg-[#F9FAFB]">
       <ToastContainer
         position="top-center"
         autoClose={3000}

@@ -11,6 +11,7 @@ updatePostCountLocally: () => {
         : null
     }));
   },
+  
   login: async (identifier, password) => {
     try {
       const payload = identifier.includes("@")

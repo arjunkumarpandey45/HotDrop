@@ -20,6 +20,8 @@ import ForgotPassword from "./auth/Forgotpassword.jsx";
 import VerifyOtp from "./auth/VerifyOtp.jsx"
 import ResetPassword from "./auth/ResetPassword.jsx";
 
+import UserPost from "./pages/Profile/Post/UserPost.jsx";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -43,7 +45,7 @@ const router = createBrowserRouter([
     path: "/profile/:userId",
     element: (
       <>
-        <EditUserProfile />
+        <EditUserProfile /><UserPost></UserPost>
       </>
     ),
   },
@@ -107,6 +109,7 @@ const router = createBrowserRouter([
       </>
     )
   },
+  
 ]);
 
 function HomeWrapper() {

@@ -185,7 +185,15 @@ export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate("followers", "username hotdropId profilePicture")
       .populate("following", "username hotdropId profilePicture")
-      .populate("posts");
+      .populate({
+        path: "posts",
+        options: { sort: { createdAt: -1 } }, 
+        populate: [{
+          path: "comments.user", 
+          select: "hotdropId profilePicture"
+        },{ path: "likes", select: "hotdropId profilePicture" }]
+      });
+    
 
     if (!user) {
       return response(res, 404, "User not found");

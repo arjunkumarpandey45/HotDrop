@@ -56,7 +56,7 @@ export const createPost = async (req, res) => {
       return response(
         res,
         400,
-        "All fields are required, and at least 1 image must be uploaded.",
+        "All fields are required, and at least 1 image must be uploaded."
       );
     }
 
@@ -67,36 +67,39 @@ export const createPost = async (req, res) => {
 
     const shareUrl = `${slugify(title || "hotdrop", { lower: true })}-${Date.now()}`;
 
-    const isLinkDeadStatus = false;
     const newPost = await Post.create({
-      postId: new mongoose.Types.ObjectId(),
       user: req.user._id,
       title,
       description,
-      projectLink: projectLink || null,
-      isLinkDead: isLinkDeadStatus,
+      projectLink,
+      isLinkDead: false,
       lastChecked: projectLink ? new Date() : null,
       shareUrl,
       images,
       video: null,
       tags: tags ? tags.split(",").map((t) => t.trim().toLowerCase()) : [],
     });
-  await User.findByIdAndUpdate(req.user._id, { 
-      $push: { posts: newPost._id }, 
-      $inc: { postCount: 1 } 
-    }).populate("followers", "username hotdropId profilePicture")
-      .populate("following", "username hotdropId profilePicture")
-      .populate("posts");
-    return response(res, 201, "Project Dropped Successfully! 🔥", newPost);
+
+    await User.findByIdAndUpdate(req.user._id, {
+      $push: { posts: newPost._id },
+      $inc: { postCount: 1 },
+    });
+
+    const populatedPost = await Post.findById(newPost._id)
+      .populate("user", "hotdropId profilePicture")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user",
+          select: "hotdropId profilePicture",
+        },
+      });
+
+    return response(res, 201, "Project Dropped Successfully! 🔥", populatedPost);
+
   } catch (error) {
     console.error("Create Post Error:", error.message);
-    return response(
-      res,
-      500,
-      "Post create karne mein error aaya",
-      null,
-      error.message,
-    );
+    return response(res, 500, "Post create karne mein error aaya", null, error.message);
   }
 };
 
@@ -129,8 +132,11 @@ export const deletePost = async (req, res) => {
       await Promise.all(deletePromises);
     }
 
-    await Post.findByIdAndDelete(postId);
-
+    await Post.findByIdAndDelete(postId,);
+await User.findByIdAndUpdate(loggedInUserId, {
+      $inc: { postCount: -1 },
+      $pull: { posts: postId } 
+    });
     return response(
       res,
       200,
@@ -253,7 +259,8 @@ export const likePost = async (req, res) => {
     const updatedPost = await Post.findByIdAndUpdate(postId, updateOperation, {
       returnDocument: "after",
       select: "likeCount likes",
-    });
+    }).populate("likes", "hotdropId profilePicture")
+.select("likeCount likes");
 
     return response(
       res,
@@ -316,17 +323,24 @@ export const deleteComment = async (req, res) => {
     const { postId, commentId } = req.params;
     const loggedUserId = req.user._id;
 
-    const post = await Post.findById(postId).select("comments");
+    // 1. Post dhoondo aur uske owner (user field) ko bhi select karo
+    const post = await Post.findById(postId).select("comments user"); 
     if (!post) return response(res, 404, "Post not found");
 
     const comment = post.comments.id(commentId);
     if (!comment) return response(res, 404, "Comment not found");
 
-    if (comment.user.toString() !== loggedUserId.toString()) {
-      return response(res, 403, "You can only delete your own comments");
+    // 2. ASLI LOGIC: 
+    // Check karo ki (Logged User hi Comment karne wala hai) OR (Logged User hi Post ka Owner hai)
+    const isCommentAuthor = comment.user.toString() === loggedUserId.toString();
+    const isPostOwner = post.user.toString() === loggedUserId.toString();
+
+    if (!isCommentAuthor && !isPostOwner) {
+      return response(res, 403, "You don't have permission to delete this comment");
     }
 
-    const updatedPost = await Post.findByIdAndUpdate(
+    // 3. Delete Operation
+    await Post.findByIdAndUpdate(
       postId,
       {
         $pull: { comments: { _id: commentId } },

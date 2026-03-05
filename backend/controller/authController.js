@@ -190,7 +190,7 @@ export const login = async (req, res) => {
       { _id: existingUser._id },
       { $set: { isLoggedIn: true } },
       { 
-        new: true,
+        returnDocument: "after",
         runValidators: true 
       }
     )
