@@ -21,6 +21,7 @@ import VerifyOtp from "./auth/VerifyOtp.jsx"
 import ResetPassword from "./auth/ResetPassword.jsx";
 
 import UserPost from "./pages/Profile/Post/UserPost.jsx";
+import FromShare from "./pages/Profile/Post/FromShare.jsx";
 
 const router = createBrowserRouter([
   {
@@ -108,7 +109,10 @@ const router = createBrowserRouter([
 <ResetPassword></ResetPassword>
       </>
     )
-  },
+  },{
+    path:"/getpost/:postId",
+    element:<><FromShare></FromShare></>
+  }
   
 ]);
 

@@ -92,7 +92,7 @@ const isLiked = livePost.likes?.some(l => (l._id || l) === user._id)
               </div>
             </div>
 
-            <p className="text-[12px] text-slate-500 leading-relaxed italic">
+            <p className="text-[12px] text-slate-500 leading-relaxed ">
               "{livePost.description}"
             </p>
 
@@ -109,7 +109,27 @@ const isLiked = livePost.likes?.some(l => (l._id || l) === user._id)
                       {livePost.projectLink?.replace("https://", "").replace("www.", "")}
                     </span>
                   </div>
-                  <ExternalLink size={11} className="text-slate-300" />
+                   <div className="flex items-center gap-2">
+                      {/* Minimal Live/Dead Pill */}
+                      <div
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${
+                          livePost.isLinkDead
+                            ? "bg-red-50 text-red-500"
+                            : "bg-emerald-50 text-emerald-600 group-hover/link:bg-emerald-500 group-hover/link:text-white"
+                        }`}
+                      >
+                        <span
+                          className={`w-1 h-1 rounded-full ${livePost.isLinkDead ? "bg-red-500" : "bg-emerald-500 group-hover/link:bg-white"} animate-pulse`}
+                        />
+                        {livePost.isLinkDead ? "Dead" : "Live"}
+                      </div>
+
+                      <ExternalLink
+                        size={11}
+                        className="text-slate-300 group-hover/link:text-blue-500 transition-all"
+                      />
+                    </div>
+                 
                 </div>
               </a>
             </div>
