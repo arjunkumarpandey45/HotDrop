@@ -10,13 +10,11 @@ export const verifyLink = async (req, res) => {
   let { url } = req.body;
   if (!url) return response(res, 400, "URL is required");
 
- 
   if (!/^https?:\/\//i.test(url)) {
     url = `https://${url}`;
   }
 
   try {
-   
     await axios.head(url, {
       timeout: 5000,
       headers: { "User-Agent": "Mozilla/5.0" },
@@ -24,15 +22,13 @@ export const verifyLink = async (req, res) => {
     });
 
     return response(res, 200, "Link is Live! 🔥", { isLive: true, url });
-
   } catch (error) {
-    
     try {
       await axios.get(url, {
         timeout: 5000,
         headers: { "User-Agent": "Mozilla/5.0" },
-       
-        maxContentLength: 1, 
+
+        maxContentLength: 1,
         validateStatus: (status) => status >= 200 && status < 400,
       });
 
@@ -56,7 +52,7 @@ export const createPost = async (req, res) => {
       return response(
         res,
         400,
-        "All fields are required, and at least 1 image must be uploaded."
+        "All fields are required, and at least 1 image must be uploaded.",
       );
     }
 
@@ -95,11 +91,21 @@ export const createPost = async (req, res) => {
         },
       });
 
-    return response(res, 201, "Project Dropped Successfully! 🔥", populatedPost);
-
+    return response(
+      res,
+      201,
+      "Project Dropped Successfully! 🔥",
+      populatedPost,
+    );
   } catch (error) {
     console.error("Create Post Error:", error.message);
-    return response(res, 500, "Post create karne mein error aaya", null, error.message);
+    return response(
+      res,
+      500,
+      "Post create karne mein error aaya",
+      null,
+      error.message,
+    );
   }
 };
 
@@ -132,10 +138,10 @@ export const deletePost = async (req, res) => {
       await Promise.all(deletePromises);
     }
 
-    await Post.findByIdAndDelete(postId,);
-await User.findByIdAndUpdate(loggedInUserId, {
+    await Post.findByIdAndDelete(postId);
+    await User.findByIdAndUpdate(loggedInUserId, {
       $inc: { postCount: -1 },
-      $pull: { posts: postId } 
+      $pull: { posts: postId },
     });
     return response(
       res,
@@ -220,7 +226,8 @@ export const getPostsByUserId = async (req, res) => {
         .skip(skip)
         .limit(limit)
         .populate("user", "hotdropId username email profilePicture")
-        .populate("comments.user", "hotdropId profilePicture").lean(),
+        .populate("comments.user", "hotdropId profilePicture")
+        .lean(),
       Post.countDocuments({ user: userId }),
     ]);
 
@@ -259,8 +266,9 @@ export const likePost = async (req, res) => {
     const updatedPost = await Post.findByIdAndUpdate(postId, updateOperation, {
       returnDocument: "after",
       select: "likeCount likes",
-    }).populate("likes", "hotdropId profilePicture")
-.select("likeCount likes");
+    })
+      .populate("likes", "hotdropId profilePicture")
+      .select("likeCount likes");
 
     return response(
       res,
@@ -324,19 +332,23 @@ export const deleteComment = async (req, res) => {
     const loggedUserId = req.user._id;
 
     // 1. Post dhoondo aur uske owner (user field) ko bhi select karo
-    const post = await Post.findById(postId).select("comments user"); 
+    const post = await Post.findById(postId).select("comments user");
     if (!post) return response(res, 404, "Post not found");
 
     const comment = post.comments.id(commentId);
     if (!comment) return response(res, 404, "Comment not found");
 
-    // 2. ASLI LOGIC: 
+    // 2. ASLI LOGIC:
     // Check karo ki (Logged User hi Comment karne wala hai) OR (Logged User hi Post ka Owner hai)
     const isCommentAuthor = comment.user.toString() === loggedUserId.toString();
     const isPostOwner = post.user.toString() === loggedUserId.toString();
 
     if (!isCommentAuthor && !isPostOwner) {
-      return response(res, 403, "You don't have permission to delete this comment");
+      return response(
+        res,
+        403,
+        "You don't have permission to delete this comment",
+      );
     }
 
     // 3. Delete Operation
@@ -380,6 +392,35 @@ export const sharePost = async (req, res) => {
       shareUrl: `https://hotdrop.com/post/${post.shareUrl}`,
     });
   } catch (error) {
+    return response(res, 500, "Server error", null, error.message);
+  }
+};
+export const getPostByPostId = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    // 1. Validation check
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return response(res, 400, "Invalid Post ID format");
+    }
+
+    // 2. Fetch Post with full data
+    const post = await Post.findById(postId)
+      .populate("user", "hotdropId profilePicture username") 
+      .populate("comments.user", "hotdropId profilePicture")
+      .populate("likes", "hotdropId profilePicture")
+     
+      
+    if (!post) {
+      return response(res, 404, "Post not found");
+    }
+
+    const postObj = post.toObject();
+    postObj.likeCount = post.likes ? post.likes.length : 0;
+    postObj.commentCount = post.comments ? post.comments.length : 0;
+    return response(res, 200, "Post fetched successfully", postObj);
+  } catch (error) {
+    console.error("Get Post Error:", error.message);
     return response(res, 500, "Server error", null, error.message);
   }
 };
