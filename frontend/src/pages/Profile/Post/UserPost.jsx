@@ -331,12 +331,12 @@ if (imagePost && imagePost._id === commentPost._id) {
                 >
                   {/* Border Glow Layer */}
                   <div
-                    className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${
-                      post.isLinkDead
-                        ? "from-blue-500 via-cyan-400 to-emerald-400"
-                        : "from-red-500 to-orange-500"
-                    }`}
-                  />
+                className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${
+                  post.isLinkDead
+                    ? "from-red-500 to-orange-500"
+                    :"from-blue-500 via-cyan-400 to-emerald-400"
+                }`}
+              /> 
 
                   {/* Main Compact Body */}
                   <div className="relative w-full flex items-center justify-between bg-white/90 backdrop-blur-md border border-slate-200/50 rounded-[11px] px-3 py-1.5 shadow-sm">
@@ -389,7 +389,7 @@ if (imagePost && imagePost._id === commentPost._id) {
                   {/* Subtle Vertical Accent Line */}
                   <div className="absolute -left-3 top-0 bottom-0 w-[2px] bg-slate-100 group-hover/desc:bg-blue-500/30 transition-colors duration-500 rounded-full" />
 
-                  <p className="text-[11px] leading-[1.6] text-slate-500 font-medium line-clamp-2 transition-colors duration-300 group-hover/desc:text-slate-700 italic">
+                  <p className="text-[11px] leading-[1.6] text-slate-500 font-medium line-clamp-2 transition-colors duration-300 group-hover/desc:text-slate-700 ">
                     <span className="text-blue-500/50 font-black text-sm leading-none mr-0.5 select-none inline-block transform translate-y-1">
                       &ldquo;
                     </span>
