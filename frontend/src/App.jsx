@@ -22,13 +22,14 @@ import ResetPassword from "./auth/ResetPassword.jsx";
 
 import UserPost from "./pages/Profile/Post/UserPost.jsx";
 import FromShare from "./pages/Profile/Post/FromShare.jsx";
+import Hero from "../src/pages/Hero/Hero.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: (
       <>
-        <HomeWrapper></HomeWrapper>
+        <HomeWrapper></HomeWrapper><Hero/>
       </>
     ),
   },

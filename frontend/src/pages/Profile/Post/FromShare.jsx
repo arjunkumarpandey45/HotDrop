@@ -10,13 +10,14 @@ import {
   Globe,
   ExternalLink,
   ArrowLeft,
+  Clock,
 } from "lucide-react";
-
+import { formatDistanceToNow } from "date-fns";
 import CommentModal from "../Post/CommentModal";
 import LikeModal from "../Post/LikeModal";
 import ShareModal from "./ShareModal";
 import API from "../../../api/Api";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 
 function FromShare() {
   const { postId } = useParams();
@@ -52,7 +53,7 @@ function FromShare() {
 
   try {
     const res = await API.post(`/post/like/${postToLike._id}`);
-
+if(!user) return toast.info("Login to like! 😊")
     if (res.status === 200) {
       const { isLiked, likeCount } = res.data.data; // Backend se likeCount mangwao
 
@@ -87,8 +88,7 @@ function FromShare() {
         } : null
       }));
 
-      if (isLiked) toast.success("Liked 🔥");
-      else toast.info("Unliked");
+
     }
   } catch (error) {
     toast.error("Action failed");
@@ -96,14 +96,14 @@ function FromShare() {
 };
 const submitComment = async (e) => {
   e.preventDefault();
-  if (!user) return toast.info("Login to comment!");
+  if (!user) return toast.warning("Login to comment!");
   if (!commentText.trim()) return;
 
   try {
     const res = await API.post(`/post/comment/${post._id}`, {
       text: commentText,
     });
-
+if(!user) return toast.info("Login to comment! 😊")
     const newComment = res.data.data;
 
     // 1. LOCAL STATE UPDATE
@@ -125,7 +125,7 @@ const submitComment = async (e) => {
     }));
 
     setCommentText("");
-    toast.success("Commented 💬");
+   
   } catch (error) {
     toast.error("Error adding comment");
   }
@@ -158,7 +158,21 @@ const submitComment = async (e) => {
           >
             <ArrowLeft size={18} />
           </button>
-
+<ToastContainer
+  position="top-center"  
+  autoClose={2000}         
+  hideProgressBar={false}  
+  newestOnTop={true}       
+  closeOnClick
+  rtl={false}
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+  theme="light"           
+  toastClassName={() => 
+    "relative flex p-5 min-h-10 rounded-2xl justify-between overflow-hidden cursor-pointer bg-white text-slate-800 shadow-2xl border border-slate-100 mb-2 font-bold text-[12px] uppercase tracking-wider"
+  }
+/>
          <div className="text-[14px] font-black tracking-[0.2em] uppercase ">
   <span className="text-orange-500">Hot</span>
   <span className="text-blue-600">Drop</span>
@@ -184,9 +198,14 @@ const submitComment = async (e) => {
                   {owner.username}
                 </span>
 
-                <span className="text-[10px] font-semibold text-blue-600">
-                  @{owner.hotdropId}
-                </span>
+                <div className="flex items-center  text-[9px] font-bold text-slate-400 ">
+
+  {post.createdAt ? (
+    <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+  ) : (
+    <span>just now</span>
+  )}
+</div>
               </div>
             </div>
           </div>
@@ -323,7 +342,7 @@ const submitComment = async (e) => {
             <p className="text-[12px] text-slate-600  leading-relaxed mb-4">
               "{post.description}"
             </p>
-
+ 
             {/* ACTION BAR */}
             <div className="flex justify-between items-center border-t pt-3">
               <div className="flex gap-6">

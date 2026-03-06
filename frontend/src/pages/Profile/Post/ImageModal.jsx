@@ -1,6 +1,6 @@
 import { X, ChevronLeft, ChevronRight, Globe, ExternalLink, Heart, MessageCircle, Share2 } from "lucide-react";
 import { useAuthStore } from "../../../store/useAuthStore";
-
+import { formatDistanceToNow } from "date-fns";
 function ImageModal({ post, modalIndex, setModalIndex,handleLike, onClose, setLikePost, setCommentPost, setSharePost }) {
   const { user } = useAuthStore();
 
@@ -67,9 +67,17 @@ const isLiked = livePost.likes?.some(l => (l._id || l) === user._id)
                 className="w-9 h-9 rounded-full object-cover"
               />
               <div className="flex flex-col">
-                <span className="font-semibold text-sm text-slate-800">
+                <span  className="text-[12px] font-bold lowercase tracking-tight bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent w-fit mx-auto md:mx-0">
                   @{user?.hotdropId || "user"}
                 </span>
+                <div className="flex items-center  text-[9px] font-bold text-slate-400 ">
+                
+                  {post.createdAt ? (
+                    <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+                  ) : (
+                    <span>just now</span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="font-black text-sm tracking-wide">
