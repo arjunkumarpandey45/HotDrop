@@ -22,7 +22,13 @@ import ResetPassword from "./auth/ResetPassword.jsx";
 
 import UserPost from "./pages/Profile/Post/UserPost.jsx";
 import FromShare from "./pages/Profile/Post/FromShare.jsx";
+<<<<<<< HEAD
+import ResendVerification from "./auth/ResendVerification.jsx";
+
+import AiBot from "./ai/Aibot.jsx";
+=======
 import Hero from "../src/pages/Hero/Hero.jsx";
+>>>>>>> 9fa39e83ac3e25c1744daecff9c8d044433cb1ef
 
 const router = createBrowserRouter([
   {
@@ -79,14 +85,14 @@ const router = createBrowserRouter([
     path: "/verify-email/:token",
     element: <VerifyEmailPage/>,
   },
-  // {
-  //   path: "/email-for-reverify",
-  //   element: (
-  //     <>
-  //      <Reverify></Reverify>
-  //     </>
-  //   ),
-  // },
+  {
+    path: "/email-for-reverify",
+    element: (
+      <>
+       <ResendVerification></ResendVerification>
+      </>
+    ),
+  },
   {
     path:"/forgot-password",
     element:(
@@ -113,7 +119,8 @@ const router = createBrowserRouter([
   },{
     path:"/getpost/:postId",
     element:<><FromShare></FromShare></>
-  }
+  },
+  
   
 ]);
 
@@ -135,7 +142,7 @@ function App() {
     const initApp = async () => {
       await checkAuth(); // Backend se check karein
       setTimeout(() => {
-        setIsLoading(false); // 3.5s ke baad loading khatam
+        setIsLoading(false); // 2s ke baad loading khatam
       }, 2000);
     };
     initApp();
@@ -151,6 +158,7 @@ function App() {
           <RouterProvider router={router} />
         )}
       </AnimatePresence>
+      <AiBot></AiBot>
     </>
   );
 }
