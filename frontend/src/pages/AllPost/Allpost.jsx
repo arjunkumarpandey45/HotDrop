@@ -201,7 +201,7 @@ function Allpost() {
   if (loading) return <div className="h-screen flex items-center justify-center font-black text-indigo-400 animate-pulse uppercase tracking-[0.3em]">Loading Feed...</div>;
 
   return (
-    <div className="min-h-screen bg-[#fcfcfd] py-10 mt-10 px-4">
+    <div className="min-h-screen bg-[#fcfcfd] py-10 mt-12 px-4">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-10">
         <div className="hidden lg:block"></div>
 
@@ -248,7 +248,11 @@ function Allpost() {
 
                 {/* Post Body */}
                 <div className="p-4 flex flex-col">
-                  <h3 className="text-[14px] font-black uppercase text-slate-800 mb-4 tracking-tight">{post.title}</h3>
+                  <h3 className="group/title text-[14px] font-black uppercase text-slate-800 mb-4 tracking-tight leading-none">
+  {post.title}
+ 
+  <div className="h-[2px] w-8 bg-blue-600 mt-2 transition-all duration-300 group-hover/title:w-16 shadow-[0_0_8px_rgba(37,99,235,0.5)]" />
+</h3>
 
                   {/* Auth Protected Link Section */}
                   <div 

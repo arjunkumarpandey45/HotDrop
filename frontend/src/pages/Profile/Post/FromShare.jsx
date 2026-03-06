@@ -142,7 +142,7 @@ function FromShare() {
         }
       />
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-10">
+      <div className="max-w-4xl mx-auto grid grid-cols-1  lg:grid-cols-4 ">
         {/* Left Side Desktop */}
         <div className="hidden lg:block">
            <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-[10px] font-black uppercase text-slate-400 hover:text-indigo-600 transition-all">
@@ -162,7 +162,7 @@ function FromShare() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-700 overflow-hidden flex flex-col">
+          <div className="bg-white rounded-[1.5rem]  px-2 border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-700 overflow-hidden flex flex-col">
             {/* PROFILE */}
             <div className="px-5 py-4 flex items-center justify-between border-b border-slate-50/50">
               <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate(`/user/userprofile/${owner.hotdropId}`)}>
@@ -179,13 +179,13 @@ function FromShare() {
             </div>
 
             {/* IMAGE AREA */}
-            <div className="relative bg-black group aspect-[16/9] flex items-center justify-center overflow-hidden cursor-pointer" onClick={() => !user && setShowAuthModal(true)}>
-              <img src={images?.[currentImage]?.url} className={`w-full h-full object-contain transition-all duration-700 group-hover:scale-105 ${!user ? 'blur-sm opacity-60' : ''}`} alt="project" />
+            <div className="relative bg-black group aspect-[9/5] rounded-[1.8rem]  flex items-center  justify-center overflow-hidden cursor-pointer" onClick={() => !user && setShowAuthModal(true)}>
+              <img src={images?.[currentImage]?.url} className={`w-full h-full   object-contain transition-all duration-700 group-hover:scale-105 ${!user ? 'blur-sm opacity-60' : ''}`} alt="project" />
               
               {!user && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="bg-white/90 px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase shadow-xl">
-                    <Lock size={12} className="text-indigo-600" /> Member Content
+                    <Lock size={12} className="text-indigo-600" /> Exclusive Content
                   </div>
                 </div>
               )}
@@ -205,7 +205,11 @@ function FromShare() {
 
             {/* CONTENT AREA */}
             <div className="p-5 flex flex-col">
-              <h2 className="text-[15px] font-black uppercase text-slate-800 mb-4 tracking-tight">{post.title}</h2>
+             <h3 className="group/title text-[14px] font-black uppercase text-slate-800 mb-4 tracking-tight leading-none">
+  {post.title}
+  
+  <div className="h-[2px] w-8 bg-blue-600 mt-2 transition-all duration-300 group-hover/title:w-16 shadow-[0_0_8px_rgba(37,99,235,0.5)]" />
+</h3>
 
               {/* STYLED LINK SECTION */}
               <div 
@@ -249,7 +253,7 @@ function FromShare() {
                     <span className="text-xs font-black text-slate-800">{post.commentCount || post.comments?.length || 0}</span>
                   </div>
                 </div>
-                <button onClick={() => setSharePost(post)} className="p-2 rounded-full hover:bg-slate-50 transition-all text-slate-400 hover:text-indigo-500"><Share2 size={18} /></button>
+          
               </div>
             </div>
           </div>
