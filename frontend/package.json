@@ -15,6 +15,7 @@
     "axios": "^1.13.6",
     "canvas-confetti": "^1.9.4",
     "chrome": "^0.1.0",
+    "date-fns": "^4.1.0",
     "emailjs": "^5.0.0",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",

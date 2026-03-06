@@ -13,7 +13,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-
+import { formatDistanceToNow } from "date-fns";
 import ImageModal from "../Post/ImageModal";
 import CommentModal from "../Post/CommentModal";
 import LikeModal from "../Post/LikeModal";
@@ -399,7 +399,14 @@ if (imagePost && imagePost._id === commentPost._id) {
                     </span>
                   </p>
                 </div>
+ <div className="flex items-center  text-[9px] font-bold text-slate-400 ">
 
+  {post.createdAt ? (
+    <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+  ) : (
+    <span>just now</span>
+  )}
+</div>
                 {/* FOOTER */}
                 <div className="flex justify-between  md:hidden items-center mt-auto border-t pt-3">
                   <div className="flex gap-5 items-center">
