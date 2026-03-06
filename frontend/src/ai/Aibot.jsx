@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { Bot, Send, Loader2, MessageCircle, Trash2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 const AiBot = () => {
 
@@ -57,25 +58,32 @@ const AiBot = () => {
       {/* Floating Button */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 w-16 h-16 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl flex items-center justify-center transition"
+        className="fixed bottom-6 right-6 w-16 h-16 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl flex items-center justify-center transition z-50"
       >
         <MessageCircle size={28} />
       </button>
 
+      {/* Background Blur */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
       {/* Chat Window */}
       {open && (
 
-        <div className="fixed bottom-24 right-6 w-[340px] h-[460px] bg-white shadow-xl border border-slate-200 rounded-xl flex flex-col overflow-hidden">
+        <div className="fixed bottom-24 right-6 w-[340px] h-[460px] bg-white shadow-xl border border-slate-200 rounded-xl flex flex-col overflow-hidden z-50">
 
           {/* Header */}
           <div className="flex items-center justify-between bg-blue-600 text-white px-4 py-3">
 
             <div className="flex items-center gap-2 font-semibold">
               <Bot size={20} />
-              HOTDROP Assistant
+              HOT DROP Assistant
             </div>
 
-            {/* Clear Chat Button */}
             <button
               onClick={clearChat}
               className="hover:bg-blue-500 p-1 rounded transition"
@@ -107,14 +115,21 @@ const AiBot = () => {
                       : "bg-white border border-slate-200 text-slate-800"
                   }`}
                 >
-                  {msg.text}
+
+                  {msg.role === "ai" ? (
+                    <ReactMarkdown>
+                      {msg.text}
+                    </ReactMarkdown>
+                  ) : (
+                    msg.text
+                  )}
+
                 </div>
 
               </div>
 
             ))}
 
-            {/* Loading Indicator */}
             {loading && (
 
               <div className="flex items-center gap-2 text-slate-500 text-sm">
