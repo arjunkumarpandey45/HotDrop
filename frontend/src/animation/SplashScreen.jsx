@@ -96,7 +96,7 @@ const SplashScreen = () => {
           transition={{ delay: 0.4 }}
           className="text-[9px] text-blue-300 font-mono tracking-widest"
         >
-          INITIALIZING_SYSTEM...
+        
         </motion.span>
       </div>
 

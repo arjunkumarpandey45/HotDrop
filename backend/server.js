@@ -8,6 +8,7 @@ import  postRouter from './routes/postRoute.js'
 import userRouter from './routes/userRoute.js'
 import { startLiveTracking } from './utils/cronJobs.js'
 import passport from 'passport'
+import botRouter from './routes/botRoute.js'
 const app = express()
 const PORT = process.env.PORT || 3000
 
@@ -22,6 +23,7 @@ app.use(passport.initialize())
 app.use('/auth',authRouter)
 app.use('/post',postRouter)
 app.use('/user',userRouter)
+app.use('/bot',botRouter);
 app.listen(PORT, () => {
     connectDB(),
     startLiveTracking();
