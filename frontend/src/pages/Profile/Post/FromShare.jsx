@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "../../../store/useAuthStore";
 import {
   Heart,
@@ -11,6 +11,9 @@ import {
   ExternalLink,
   ArrowLeft,
   Clock,
+  Lock,
+  X,
+  ShieldCheck,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import CommentModal from "../Post/CommentModal";
@@ -31,6 +34,7 @@ function FromShare() {
   const [likePost, setLikePost] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
   const [sharePost, setSharePost] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     const fetchSinglePost = async () => {
@@ -44,372 +48,173 @@ function FromShare() {
         setLoading(false);
       }
     };
-
     if (postId) fetchSinglePost();
   }, [postId]);
 
   const handleLike = async (postToLike) => {
-  if (!user) return toast.warning("Login to like this Drop!");
+    if (!user) return setShowAuthModal(true);
+    try {
+      const res = await API.post(`/post/like/${postToLike._id}`);
+      if (res.status === 200) {
+        const { isLiked } = res.data.data;
+        const currentUserObj = { _id: user._id, hotdropId: user.hotdropId, profilePicture: user.profilePicture };
+        setPost((prev) => ({
+          ...prev,
+          likes: isLiked ? [currentUserObj, ...(prev.likes || [])] : (prev.likes || []).filter((l) => (l._id || l) !== user._id),
+        }));
+      }
+    } catch (error) { toast.error("Action failed"); }
+  };
 
-  try {
-    const res = await API.post(`/post/like/${postToLike._id}`);
-if(!user) return toast.info("Login to like! 😊")
-    if (res.status === 200) {
-      const { isLiked, likeCount } = res.data.data; // Backend se likeCount mangwao
-
-      const currentUserObj = {
-        _id: user._id,
-        hotdropId: user.hotdropId,
-        profilePicture: user.profilePicture,
-      };
-
-      // logic: LOCAL STATE UPDATE (For FromShare Page)
-      setPost((prev) => ({
-        ...prev,
-        likes: isLiked
-          ? [...(prev.likes || []), currentUserObj]
-          : (prev.likes || []).filter((l) => (l._id || l) !== user._id),
+  const submitComment = async (e) => {
+    e.preventDefault();
+    if (!user) return setShowAuthModal(true);
+    if (!commentText.trim()) return;
+    try {
+      const res = await API.post(`/post/comment/${post._id}`, { text: commentText });
+      const newComment = res.data.data;
+      setPost((prev) => ({ 
+        ...prev, 
+        comments: [newComment, ...(prev.comments || [])],
+        commentCount: (prev.commentCount || 0) + 1
       }));
+      setCommentText("");
+      toast.success("Comment added!");
+    } catch (error) { toast.error("Error adding comment"); }
+  };
 
-      // logic: ZUSTAND STORE UPDATE (For Modals & Global Sync)
-      useAuthStore.setState((state) => ({
-        user: state.user ? {
-          ...state.user,
-          posts: state.user.posts?.map((p) =>
-            p._id === postToLike._id
-              ? { 
-                  ...p, 
-                  likes: isLiked 
-                    ? [...(p.likes || []), currentUserObj] 
-                    : (p.likes || []).filter(l => (l._id || l) !== user._id)
-                }
-              : p
-          )
-        } : null
-      }));
-
-
-    }
-  } catch (error) {
-    toast.error("Action failed");
-  }
-};
-const submitComment = async (e) => {
-  e.preventDefault();
-  if (!user) return toast.warning("Login to comment!");
-  if (!commentText.trim()) return;
-
-  try {
-    const res = await API.post(`/post/comment/${post._id}`, {
-      text: commentText,
-    });
-if(!user) return toast.info("Login to comment! 😊")
-    const newComment = res.data.data;
-
-    // 1. LOCAL STATE UPDATE
-    setPost((prev) => ({
-      ...prev,
-      comments: [...(prev.comments || []), newComment],
-    }));
-
-    // 2. ZUSTAND STORE UPDATE
-    useAuthStore.setState((state) => ({
-      user: state.user ? {
-        ...state.user,
-        posts: state.user.posts?.map((p) =>
-          p._id === post._id
-            ? { ...p, comments: [...(p.comments || []), newComment] }
-            : p
-        )
-      } : null
-    }));
-
-    setCommentText("");
-   
-  } catch (error) {
-    toast.error("Error adding comment");
-  }
-};
-  if (loading)
-    return (
-      <div className="h-screen flex items-center justify-center font-black text-slate-300 tracking-widest uppercase animate-pulse">
-        Loading...
-      </div>
-    );
-
-  if (!post)
-    return (
-      <div className="h-screen flex items-center justify-center font-black text-slate-800">
-        404 NOT FOUND
-      </div>
-    );
+  if (loading) return <div className="h-screen flex items-center justify-center font-black text-indigo-400 animate-pulse tracking-[0.3em]">HOTDROP...</div>;
+  if (!post) return <div className="h-screen flex items-center justify-center font-black text-slate-800 uppercase">404 Drop Not Found</div>;
 
   const images = post.images || [];
   const owner = post.user || {};
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] py-8 px-4 flex justify-center">
-      <div className="w-full max-w-[360px]">
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-white rounded-full transition text-slate-400 hover:text-slate-900 shadow-sm"
-          >
-            <ArrowLeft size={18} />
-          </button>
-<ToastContainer
-  position="top-center"  
-  autoClose={2000}         
-  hideProgressBar={false}  
-  newestOnTop={true}       
-  closeOnClick
-  rtl={false}
-  pauseOnFocusLoss
-  draggable
-  pauseOnHover
-  theme="light"           
-  toastClassName={() => 
-    "relative flex p-5 min-h-10 rounded-2xl justify-between overflow-hidden cursor-pointer bg-white text-slate-800 shadow-2xl border border-slate-100 mb-2 font-bold text-[12px] uppercase tracking-wider"
-  }
-/>
-         <div className="text-[14px] font-black tracking-[0.2em] uppercase ">
-  <span className="text-orange-500">Hot</span>
-  <span className="text-blue-600">Drop</span>
-</div>
+    <div className="min-h-screen bg-[#fcfcfd] py-10 px-4">
+      <ToastContainer position="top-center" autoClose={2000} theme="light" />
+      
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-10">
+        <div className="hidden lg:block">
+           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-[10px] font-black uppercase text-slate-400 hover:text-indigo-600 transition-all">
+              <ArrowLeft size={16} /> Back
+           </button>
         </div>
 
-        {/* CARD */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-lg overflow-hidden">
-          {/* PROFILE */}
-          <div className="px-4 py-3 flex items-center justify-between border-b border-slate-100">
-            <div
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => navigate(`/user/userprofile/${owner.hotdropId}`)}
-            >
-              <img
-                src={owner.profilePicture}
-                className="w-8 h-8 rounded-full object-cover"
-                alt="avatar"
-              />
-
-              <div className="flex flex-col">
-                <span className="text-[11px] font-bold text-slate-800">
-                  {owner.username}
-                </span>
-
-                <div className="flex items-center  text-[9px] font-bold text-slate-400 ">
-
-  {post.createdAt ? (
-    <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
-  ) : (
-    <span>just now</span>
-  )}
-</div>
-              </div>
-            </div>
-          </div>
-
-          {/* IMAGE */}
-          <div className="relative bg-black group">
-            <div className="aspect-[5/3] flex items-center justify-center overflow-hidden">
-              <img
-                src={images?.[currentImage]?.url}
-                className="w-full h-1000 object-contain"
-                alt="project"
-              />
-            </div>
-
-            {images.length > 1 && (
-              <>
-                <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between">
-                  <button
-                    onClick={() =>
-                      setCurrentImage(
-                        (p) => (p - 1 + images.length) % images.length,
-                      )
-                    }
-                    className="bg-black/40 text-white p-2 rounded-lg"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setCurrentImage((p) => (p + 1) % images.length)
-                    }
-                    className="bg-black/40 text-white p-2 rounded-lg"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-
-                {/* DOTS */}
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                  {images.map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-1 rounded-full ${
-                        i === currentImage ? "w-4 bg-white" : "w-1 bg-white/40"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* CONTENT */}
-          <div className="p-4 flex flex-col">
-            <h2 className="text-[15px] font-bold text-slate-900 mb-3">
-              {post.title}
-            </h2>
-
-            {/* PROJECT LINK */}
-            <a
-              href={post.projectLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group/link relative flex items-center justify-between p-[1px] rounded-xl mb-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
-            >
+        <div className="col-span-1 lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-700 overflow-hidden flex flex-col">
             
-              <div
-                className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${
-                  post.isLinkDead
-                    ? "from-red-500 to-orange-500"
-                    :"from-blue-500 via-cyan-400 to-emerald-400"
-                }`}
-              /> 
-              <div className="relative w-full flex items-center justify-between bg-white/90 backdrop-blur-md border border-slate-200/50 rounded-[11px] px-3 py-1.5 shadow-sm">
-           
-                <div className="flex items-center gap-2.5 truncate">
-              
-                  <div
-                    className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-500 ${
-                      post.isLinkDead
-                        ? "bg-red-50 text-red-500"
-                        : "bg-blue-50 text-blue-600 group-hover/link:bg-blue-600 group-hover/link:text-white"
-                    }`}
-                  >
-                                           {" "}
-                    <Globe size={13} strokeWidth={2.5} />                   
-                     {" "}
+            {/* Header */}
+            <div className="p-5 flex items-center justify-between">
+              <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate(`/user/userprofile/${owner.hotdropId}`)}>
+                <img src={owner.profilePicture} className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-50 transition-all" alt="u" />
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-black lowercase text-indigo-600 leading-none">@{owner.hotdropId}</span>
+                  <div className="flex items-center gap-1 text-[9px] font-bold text-slate-400 uppercase mt-1">
+                    <Clock size={10} /> {post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : "just now"}
                   </div>
-                                       {" "}
-                  <div className="flex flex-col truncate">
-                                           {" "}
-                    <span className="text-[10px] font-bold text-slate-700 truncate tracking-tight group-hover/link:text-blue-700 transition-colors">
-                                               {" "}
-                      {post.projectLink
-                        ?.replace("https://", "")
-                        .replace("www.", "")}
-                                             {" "}
-                    </span>
-                                         {" "}
-                  </div>
-                                     {" "}
-                </div>
-                                   {" "}
-                <div className="flex items-center gap-2">
-                                 
-                  <div
-                    className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${
-                      post.isLinkDead
-                        ? "bg-red-50 text-red-500"
-                        : "bg-emerald-50 text-emerald-600 group-hover/link:bg-emerald-500 group-hover/link:text-white"
-                    }`}
-                  >
-                                           {" "}
-                    <span
-                      className={`w-1 h-1 rounded-full ${post.isLinkDead ? "bg-red-500" : "bg-emerald-500 group-hover/link:bg-white"} animate-pulse`}
-                    />
-                                            {post.isLinkDead ? "Dead" : "Live"} 
-                                       {" "}
-                  </div>
-                                       {" "}
-                  <ExternalLink
-                    size={11}
-                    className="text-slate-300 group-hover/link:text-blue-500 transition-all"
-                  />
-                                     {" "}
-                </div>
-                                 {" "}
-              </div>
-                             {" "}
-            </a>
-
-            {/* DESCRIPTION */}
-            <p className="text-[12px] text-slate-600  leading-relaxed mb-4">
-              "{post.description}"
-            </p>
- 
-            {/* ACTION BAR */}
-            <div className="flex justify-between items-center border-t pt-3">
-              <div className="flex gap-6">
-                <div
-                  className="flex items-center gap-2 cursor-pointer"
-                  onClick={() => handleLike(post)}
-                >
-                  <Heart
-                    size={20}
-                    className={`${
-                      post.likes?.some((l) => (l._id || l) === user?._id)
-                        ? "fill-red-500 text-red-500"
-                        : "text-slate-400"
-                    }`}
-                  />
-
-                  <span
-                    className="text-xs font-semibold"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLikePost(post);
-                    }}
-                  >
-                    {post.likes?.length || 0}
-                  </span>
-                </div>
-
-                <div
-                  className="flex items-center gap-2 cursor-pointer"
-                  onClick={() => setCommentPost(post)}
-                >
-                  <MessageCircle size={20} className="text-slate-400" />
-
-                  <span className="text-xs font-semibold">
-                    {post.comments?.length || 0}
-                  </span>
                 </div>
               </div>
+              <Share2 size={18} className="text-slate-400 cursor-pointer hover:text-indigo-400" onClick={() => setSharePost(post)} />
+            </div>
 
-              <button
-                onClick={() => setSharePost(post)}
-                className="p-2 rounded-full hover:bg-slate-100"
+            {/* Image Box */}
+            <div className="relative mx-3 bg-slate-950 rounded-[1rem] aspect-[16/9] flex items-center justify-center overflow-hidden border border-slate-900 group cursor-pointer" onClick={() => !user && setShowAuthModal(true)}>
+              <img src={images[currentImage]?.url} className={`w-full h-full object-contain transition-all duration-700 group-hover:scale-105 ${!user ? 'blur-sm opacity-50' : ''}`} alt="post" />
+              {!user && (
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+                  <div className="bg-white/90 px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase shadow-xl">
+                    <Lock size={12} className="text-indigo-600" /> Private Content
+                  </div>
+                </div>
+              )}
+              {user && images.length > 1 && (
+                <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-between opacity-0 group-hover:opacity-100 transition-all">
+                  <button onClick={(e) => { e.stopPropagation(); setCurrentImage((p) => (p - 1 + images.length) % images.length)}} className="bg-white/10 p-2 rounded-2xl text-white"><ChevronLeft size={18} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setCurrentImage((p) => (p + 1) % images.length)}} className="bg-white/10 p-2 rounded-2xl text-white"><ChevronRight size={18} /></button>
+                </div>
+              )}
+            </div>
+
+            {/* Body */}
+            <div className="p-5 flex flex-col">
+              <h3 className="text-[14px] font-black uppercase text-slate-800 mb-4 tracking-tight">{post.title}</h3>
+
+              {/* STYLED & PROTECTED PROJECT LINK */}
+              <div 
+                className="group/link relative flex items-center justify-between p-[1px] rounded-xl mb-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                onClick={() => !user ? setShowAuthModal(true) : window.open(post.projectLink, "_blank")}
               >
-                <Share2 size={18} className="text-slate-400" />
-              </button>
+                {/* Border Glow Layer */}
+                <div className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${post.isLinkDead ? "from-red-500 to-orange-500" : "from-blue-500 via-cyan-400 to-emerald-400"}`} /> 
+
+                {/* Main Compact Body */}
+                <div className="relative w-full flex items-center justify-between bg-white border border-slate-200/50 rounded-[11px] px-3 py-1.5 shadow-sm">
+                  <div className="flex items-center gap-2.5 truncate">
+                    <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-500 ${post.isLinkDead ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-600 group-hover/link:bg-blue-600 group-hover/link:text-white"}`}>
+                      <Globe size={13} strokeWidth={2.5} />
+                    </div>
+
+                    <div className={`flex flex-col truncate transition-all duration-700 ${!user ? "blur-[4px] select-none" : ""}`}>
+                      <span className="text-[10px] font-bold text-slate-700 truncate tracking-tight group-hover/link:text-blue-700 transition-colors">
+                        {user ? post.projectLink?.replace("https://", "").replace("www.", "") : "hidden-project-url-protected"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {!user ? (
+                      <div className="bg-indigo-600 text-white px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+                        <Lock size={10} /><span className="text-[9px] font-black uppercase">Unlock</span>
+                      </div>
+                    ) : (
+                      <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${post.isLinkDead ? "bg-red-50 text-red-500" : "bg-emerald-50 text-emerald-600 group-hover/link:bg-emerald-500 group-hover/link:text-white"}`}>
+                        <span className={`w-1 h-1 rounded-full ${post.isLinkDead ? "bg-red-500" : "bg-emerald-500 group-hover/link:bg-white"} animate-pulse`} />
+                        {post.isLinkDead ? "Dead" : "Live"}
+                      </div>
+                    )}
+                    <ExternalLink size={11} className="text-slate-300 group-hover/link:text-blue-500 transition-all" />
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-[12px] text-slate-600 leading-relaxed mb-6 italic">"{post.description}"</p>
+              
+              <div className="flex gap-8 border-t pt-5">
+                <div className="flex items-center gap-2 cursor-pointer group" onClick={() => handleLike(post)}>
+                  <Heart size={22} className={`${post.likes?.some(l => (l._id || l) === user?._id) ? "fill-red-500 text-red-500 scale-125" : "text-slate-300 group-hover:text-red-400"} transition-all`} />
+                  <span className="text-xs font-black text-slate-800 hover:text-indigo-600">{post.likes?.length || 0}</span>
+                </div>
+                <div className="flex items-center gap-2 cursor-pointer group" onClick={() => !user ? setShowAuthModal(true) : setCommentPost(post)}>
+                  <MessageCircle size={22} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                  <span className="text-xs font-black text-slate-800">{post.comments?.length || 0}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        <div className="hidden lg:block"></div>
       </div>
 
+      {/* COMPACT AUTH MODAL */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAuthModal(false)}></div>
+          <div className="relative bg-white w-full max-w-[300px] rounded-2xl p-6 shadow-xl text-center border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4"><ShieldCheck size={24} /></div>
+            <h2 className="text-base font-bold text-slate-900 mb-1">Sign in required</h2>
+            <p className="text-[12px] text-slate-500 mb-6">Please login to access links and comments.</p>
+            <div className="flex flex-col gap-2">
+              <button onClick={() => navigate("/login")} className="w-full bg-indigo-600 text-white text-[13px] font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition-all">Sign In</button>
+              <button onClick={() => setShowAuthModal(false)} className="w-full bg-slate-50 text-slate-600 text-[13px] font-semibold py-2.5 rounded-lg hover:bg-slate-100">Cancel</button>
+            </div>
+            <p className="mt-4 text-[11px] text-slate-400">New here? <Link to="/signup" className="text-indigo-600 font-bold hover:underline">Create account</Link></p>
+          </div>
+        </div>
+      )}
+
       {/* MODALS */}
-
-      {commentPost && (
-        <CommentModal
-          post={post}
-          commentText={commentText}
-          setCommentText={setCommentText}
-          submitComment={submitComment}
-          onClose={() => setCommentPost(null)}
-          setCommentPost={setPost}
-        />
-      )}
-
-      {sharePost && (
-        <ShareModal post={post} onClose={() => setSharePost(null)} />
-      )}
-
+      {commentPost && <CommentModal post={post} commentText={commentText} setCommentText={setCommentText} submitComment={submitComment} onClose={() => setCommentPost(null)} setCommentPost={(upd) => setPost(upd)} />}
+      {sharePost && <ShareModal post={post} onClose={() => setSharePost(null)} />}
       {likePost && <LikeModal post={post} onClose={() => setLikePost(null)} />}
     </div>
   );
