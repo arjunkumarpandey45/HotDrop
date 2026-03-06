@@ -150,7 +150,7 @@ function EditUserProfile() {
           {/* Details - Reorganized for vertical Name/ID */}
           <div className="flex-1 text-center md:text-left overflow-hidden">
             <div className="flex flex-col mb-3">
-              <h1 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-xl md:text-xl font-semibold text-slate-900 tracking-tight leading-tight">
                 {user?.username}
               </h1>
               <span className="text-[12px] font-bold lowercase tracking-tight bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent w-fit mx-auto md:mx-0">
@@ -194,7 +194,7 @@ function EditUserProfile() {
             </div>
 
             <p className="text-slate-600 text-[13px] leading-relaxed max-w-sm font-normal mb-5  line-clamp-2">
-              {user?.bio || "Minimalist Creator | Building HotDrop 🚀"}
+              {user?.bio || "Minimalist Creator | Tech Enthusiast "}
             </p>
 
             {/* Socials & Contact */}
