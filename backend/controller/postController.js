@@ -183,6 +183,8 @@ export const getAllPosts = async (req, res) => {
         .limit(limit)
         .populate("user", "hotdropId username email profilePicture")
         .populate("comments.user", "hotdropId profilePicture")
+         .populate("likes", "hotdropId profilePicture")
+    
         .lean(),
 
       Post.countDocuments(query),
@@ -277,6 +279,7 @@ export const likePost = async (req, res) => {
       {
         likeCount: Math.max(updatedPost.likeCount, 0),
         isLiked: !alreadyLiked,
+        likes: updatedPost.likes,
       },
       userId,
     );
@@ -331,14 +334,14 @@ export const deleteComment = async (req, res) => {
     const { postId, commentId } = req.params;
     const loggedUserId = req.user._id;
 
-    // 1. Post dhoondo aur uske owner (user field) ko bhi select karo
+    
     const post = await Post.findById(postId).select("comments user");
     if (!post) return response(res, 404, "Post not found");
 
     const comment = post.comments.id(commentId);
     if (!comment) return response(res, 404, "Comment not found");
 
-    // 2. ASLI LOGIC:
+   
     // Check karo ki (Logged User hi Comment karne wala hai) OR (Logged User hi Post ka Owner hai)
     const isCommentAuthor = comment.user.toString() === loggedUserId.toString();
     const isPostOwner = post.user.toString() === loggedUserId.toString();
