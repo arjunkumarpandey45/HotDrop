@@ -65,7 +65,7 @@ const AiBot = () => {
       {/* Chat Window */}
       {open && (
 
-        <div className="fixed bottom-24 right-6 w-[340px] h-[460px] bg-white shadow-xl border border-slate-200 rounded-xl flex flex-col overflow-hidden">
+        <div className="fixed bottom-24 right-6 w-[340px] h-[460px] bg-white z-[1000] shadow-xl border border-slate-200 rounded-xl flex flex-col overflow-hidden">
 
           {/* Header */}
           <div className="flex items-center justify-between bg-blue-600 text-white px-4 py-3">

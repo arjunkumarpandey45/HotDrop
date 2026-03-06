@@ -1,13 +1,18 @@
 import { X, ChevronLeft, ChevronRight, Globe, ExternalLink, Heart, MessageCircle, Share2 } from "lucide-react";
 import { useAuthStore } from "../../../store/useAuthStore";
 import { formatDistanceToNow } from "date-fns";
-function ImageModal({ post, modalIndex, setModalIndex,handleLike, onClose, setLikePost, setCommentPost, setSharePost }) {
-  const { user } = useAuthStore();
 
-  // ASLI FIX: Zustand store se is specific post ka live data nikalna
-  // Taaki jab delete ho, toh ye variable apne aap update ho jaye
-  const livePost = user?.posts?.find((p) => p._id === post._id) || post;
-const isLiked = livePost.likes?.some(l => (l._id || l) === user._id)
+function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setLikePost, setCommentPost, setSharePost }) {
+  const { user: currentUser } = useAuthStore();
+
+  // 1. SMART DETECTION: Pehle post ka user check karo, nahi toh current user (profile sync)
+  // Isse My Profile aur All Post dono jagah sahi naam dikhega
+  const postOwner = post?.user?.hotdropId ? post.user : currentUser;
+
+  // 2. LIVE DATA SYNC
+  const livePost = post;
+  const isLiked = livePost.likes?.some(l => (l._id || l) === currentUser?._id);
+
   const next = (e) => {
     e.stopPropagation();
     setModalIndex((prev) => (prev + 1) % livePost.images.length);
@@ -25,7 +30,7 @@ const isLiked = livePost.likes?.some(l => (l._id || l) === user._id)
     >
       <button
         onClick={(e) => { e.stopPropagation(); onClose(); }}
-        className="absolute top-5 right-5 text-white/70 hover:text-white transition-transform hover:scale-110 z-[110]"
+        className="absolute top-5 right-5 text-white/70 hover:text-white transition-transform hover:scale-110 z-[1100]"
       >
         <X size={26} />
       </button>
@@ -44,12 +49,8 @@ const isLiked = livePost.likes?.some(l => (l._id || l) === user._id)
 
           {livePost.images.length > 1 && (
             <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-between opacity-0 group-hover:opacity-100 transition z-10">
-              <button onClick={prev} className="bg-white/20 text-white p-2 rounded-lg hover:bg-white/40">
-                <ChevronLeft size={20} />
-              </button>
-              <button onClick={next} className="bg-white/20 text-white p-2 rounded-lg hover:bg-white/40">
-                <ChevronRight size={20} />
-              </button>
+              <button onClick={prev} className="bg-white/20 text-white p-2 rounded-lg hover:bg-white/40"><ChevronLeft size={20} /></button>
+              <button onClick={next} className="bg-white/20 text-white p-2 rounded-lg hover:bg-white/40"><ChevronRight size={20} /></button>
             </div>
           )}
 
@@ -62,16 +63,17 @@ const isLiked = livePost.likes?.some(l => (l._id || l) === user._id)
         <div className="md:w-[35%] w-full flex flex-col bg-white overflow-hidden">
           <div className="p-5 border-b flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
+              {/* postOwner dynamic hai - Profile aur Feed dono handle karega */}
               <img
-                src={user?.profilePicture || "https://i.pravatar.cc/100"}
+                src={postOwner?.profilePicture || "https://i.pravatar.cc/100"}
                 className="w-9 h-9 rounded-full object-cover"
+                alt="avatar"
               />
               <div className="flex flex-col">
-                <span  className="text-[12px] font-bold lowercase tracking-tight bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent w-fit mx-auto md:mx-0">
-                  @{user?.hotdropId || "user"}
+                <span className="text-[12px] font-bold lowercase tracking-tight bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
+                  @{postOwner?.hotdropId || "user"}
                 </span>
-                <div className="flex items-center  text-[9px] font-bold text-slate-400 ">
-                
+                <div className="flex items-center text-[9px] font-bold text-slate-400">
                   {post.createdAt ? (
                     <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
                   ) : (
@@ -88,21 +90,15 @@ const isLiked = livePost.likes?.some(l => (l._id || l) === user._id)
 
           <div className="p-5 space-y-5 flex-1 overflow-y-auto">
             <div>
-              <h2 className="font-semibold text-lg text-slate-900 mb-2 leading-tight">
-                {livePost.title}
-              </h2>
+              <h2 className="font-semibold text-lg text-slate-900 mb-2 leading-tight">{livePost.title}</h2>
               <div className="flex flex-wrap gap-1">
                 {livePost.tags?.map((tag, i) => (
-                  <span key={i} className="text-[9px] font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded uppercase tracking-wider">
-                    #{tag}
-                  </span>
+                  <span key={i} className="text-[9px] font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded uppercase tracking-wider">#{tag}</span>
                 ))}
               </div>
             </div>
 
-            <p className="text-[12px] text-slate-500 leading-relaxed ">
-              "{livePost.description}"
-            </p>
+            <p className="text-[12px] text-slate-500 leading-relaxed ">"{livePost.description}"</p>
 
             <div className="space-y-2">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Project Link</span>
@@ -110,34 +106,16 @@ const isLiked = livePost.likes?.some(l => (l._id || l) === user._id)
                 <div className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${livePost.isLinkDead ? 'from-red-500 to-orange-500' : 'from-blue-500 via-cyan-400 to-emerald-400'}`} />
                 <div className="relative w-full flex items-center justify-between bg-white/90 backdrop-blur-md border border-slate-200/50 rounded-[11px] px-3 py-1.5 shadow-sm">
                   <div className="flex items-center gap-2.5 truncate">
-                    <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-500 ${livePost.isLinkDead ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600 group-hover/link:bg-blue-600 group-hover/link:text-white'}`}>
-                      <Globe size={13} strokeWidth={2.5} />
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-700 truncate">
-                      {livePost.projectLink?.replace("https://", "").replace("www.", "")}
-                    </span>
+                    <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-500 ${livePost.isLinkDead ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600 group-hover/link:bg-blue-600 group-hover/link:text-white'}`}><Globe size={13} strokeWidth={2.5} /></div>
+                    <span className="text-[10px] font-bold text-slate-700 truncate">{livePost.projectLink?.replace("https://", "").replace("www.", "")}</span>
                   </div>
-                   <div className="flex items-center gap-2">
-                      {/* Minimal Live/Dead Pill */}
-                      <div
-                        className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${
-                          livePost.isLinkDead
-                            ? "bg-red-50 text-red-500"
-                            : "bg-emerald-50 text-emerald-600 group-hover/link:bg-emerald-500 group-hover/link:text-white"
-                        }`}
-                      >
-                        <span
-                          className={`w-1 h-1 rounded-full ${livePost.isLinkDead ? "bg-red-500" : "bg-emerald-500 group-hover/link:bg-white"} animate-pulse`}
-                        />
-                        {livePost.isLinkDead ? "Dead" : "Live"}
-                      </div>
-
-                      <ExternalLink
-                        size={11}
-                        className="text-slate-300 group-hover/link:text-blue-500 transition-all"
-                      />
+                  <div className="flex items-center gap-2">
+                    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${livePost.isLinkDead ? "bg-red-50 text-red-500" : "bg-emerald-50 text-emerald-600 group-hover/link:bg-emerald-500 group-hover/link:text-white"}`}>
+                      <span className={`w-1 h-1 rounded-full ${livePost.isLinkDead ? "bg-red-500" : "bg-emerald-500 group-hover/link:bg-white"} animate-pulse`} />
+                      {livePost.isLinkDead ? "Dead" : "Live"}
                     </div>
-                 
+                    <ExternalLink size={11} className="text-slate-300 group-hover/link:text-blue-500 transition-all" />
+                  </div>
                 </div>
               </a>
             </div>
@@ -148,40 +126,19 @@ const isLiked = livePost.likes?.some(l => (l._id || l) === user._id)
             <div className="flex gap-6 items-center">
               <div className="flex items-center gap-1.5 group/stat">
                 <Heart 
-            size={20} 
-            onClick={(e) => {
-              e.stopPropagation();
-              handleLike(livePost); 
-            }}
-            className={`cursor-pointer transition-all duration-300 hover:scale-110 ${
-              isLiked 
-                ? "fill-red-500 text-red-500" 
-                : "text-slate-400 group-hover/stat:text-red-500"
-            }`} 
-          />
-                <span 
-                  onClick={(e) => { e.stopPropagation(); setLikePost(livePost); }}
-                  className="text-xs font-black text-slate-700 cursor-pointer hover:text-blue-600 px-1 py-1"
-                >
-                  {livePost.likeCount || livePost.likes?.length || 0}
+                  size={20} 
+                  onClick={(e) => { e.stopPropagation(); handleLike(livePost); }}
+                  className={`cursor-pointer transition-all duration-300 hover:scale-110 ${isLiked ? "fill-red-500 text-red-500" : "text-slate-400 group-hover/stat:text-red-500"}`} 
+                />
+                <span onClick={(e) => { e.stopPropagation(); setLikePost(livePost); }} className="text-xs font-black text-slate-700 cursor-pointer hover:text-blue-600 px-1 py-1">
+                  {livePost.likes?.length || 0}
                 </span>
               </div>
-
               <div className="flex items-center gap-1.5 group/stat">
-                <MessageCircle 
-                  onClick={(e) => { e.stopPropagation(); setCommentPost(livePost); }} 
-                  size={20} 
-                  className="text-slate-400 group-hover/stat:text-blue-500 transition-colors cursor-pointer" 
-                />
-                <span 
-                  className="text-xs font-black text-slate-700 cursor-pointer hover:text-blue-600 px-1 py-1"
-                >
-                  {/* UPDATE YAHAN HOGA */}
-                {livePost.commentCount || livePost.comments?.length || 0}
-                </span>
+                <MessageCircle onClick={(e) => { e.stopPropagation(); setCommentPost(livePost); }} size={20} className="text-slate-400 group-hover/stat:text-blue-500 transition-colors cursor-pointer" />
+                <span className="text-xs font-black text-slate-700 cursor-pointer hover:text-blue-600 px-1 py-1">{livePost.comments?.length || 0}</span>
               </div>
             </div>
-
             <button onClick={(e) => { e.stopPropagation(); setSharePost(livePost); }} className="p-2 hover:bg-white rounded-full transition-all shadow-sm group/share">
               <Share2 size={18} className="text-slate-400 group-hover/share:text-emerald-500" />
             </button>
