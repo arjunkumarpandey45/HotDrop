@@ -22,13 +22,10 @@ import ResetPassword from "./auth/ResetPassword.jsx";
 
 import UserPost from "./pages/Profile/Post/UserPost.jsx";
 import FromShare from "./pages/Profile/Post/FromShare.jsx";
-<<<<<<< HEAD
 import ResendVerification from "./auth/ResendVerification.jsx";
 
 import AiBot from "./ai/Aibot.jsx";
-=======
 import Hero from "../src/pages/Hero/Hero.jsx";
->>>>>>> 9fa39e83ac3e25c1744daecff9c8d044433cb1ef
 
 const router = createBrowserRouter([
   {
