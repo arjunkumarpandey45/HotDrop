@@ -10,8 +10,9 @@ import {
   Globe,
   ExternalLink,
   ArrowLeft,
+  Clock,
 } from "lucide-react";
-
+import { formatDistanceToNow } from "date-fns";
 import CommentModal from "../Post/CommentModal";
 import LikeModal from "../Post/LikeModal";
 import ShareModal from "./ShareModal";
@@ -197,9 +198,14 @@ if(!user) return toast.info("Login to comment! 😊")
                   {owner.username}
                 </span>
 
-                <span className="text-[10px] font-semibold text-blue-600">
-                  @{owner.hotdropId}
-                </span>
+                <div className="flex items-center  text-[9px] font-bold text-slate-400 ">
+
+  {post.createdAt ? (
+    <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+  ) : (
+    <span>just now</span>
+  )}
+</div>
               </div>
             </div>
           </div>
@@ -336,7 +342,7 @@ if(!user) return toast.info("Login to comment! 😊")
             <p className="text-[12px] text-slate-600  leading-relaxed mb-4">
               "{post.description}"
             </p>
-
+ 
             {/* ACTION BAR */}
             <div className="flex justify-between items-center border-t pt-3">
               <div className="flex gap-6">
