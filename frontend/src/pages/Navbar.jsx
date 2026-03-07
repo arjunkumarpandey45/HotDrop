@@ -252,7 +252,14 @@ const Navbar = () => {
       >
         <div className="p-8 h-full flex flex-col">
           <div className="flex items-center justify-between mb-10">
-            <span className="font-black text-xl">Hotdrop</span>
+           <div className="flex items-center tracking-tighter">
+  <span className="font-black text-2xl text-orange-500  uppercase">
+    Hot
+  </span>
+  <span className="font-black text-2xl text-blue-600 px-1 uppercase">
+    Drop
+  </span>
+</div>
             <button
               onClick={() => setIsSidebarOpen(false)}
               className="p-2 hover:bg-slate-100 rounded-xl transition"

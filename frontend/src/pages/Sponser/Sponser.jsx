@@ -110,9 +110,7 @@ function Sponser() {
                    <div className={`w-1.5 h-1.5 rounded-full ${item.id === 1 ? 'bg-amber-500 animate-pulse shadow-[0_0_8px_#FF9900]' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`} />
                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Active Partner</span>
                 </div>
-                <div className="bg-slate-50 px-2 py-0.5 rounded text-[8px] font-black text-slate-400 uppercase group-hover:bg-slate-900 group-hover:text-white transition-all">
-                  Elite Drop
-                </div>
+                
               </div>
             </div>
           </a>
