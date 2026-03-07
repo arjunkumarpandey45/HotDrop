@@ -1,24 +1,33 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import emailjs from "@emailjs/browser";
 import "react-toastify/dist/ReactToastify.css";
-
 function Contact() {
   const form = useRef();
   const [loading, setLoading] = useState(false);
-
+const service =import.meta.env.VITE_EMAILJS_SERVICE_ID;
+const template = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+useEffect(() => {
+    if (publicKey) {
+      emailjs.init(publicKey);
+    }
+  }, [publicKey]);
   const sendEmail = async (e) => {
     e.preventDefault();
     if (loading) return;
-
+if (!service || !template || !publicKey) {
+      toast.error("Config missing! Check .env file 🔑");
+      return;
+    }
     setLoading(true);
 
     try {
       await emailjs.sendForm(
-        "service_r1cdcul",
-        "template_hxgtnmm",
+        service,
+        template,
         form.current,
-        "k-N0Zz9Ja_7XbVk8O"
+        publicKey
       );
 
       form.current.reset();

@@ -3,6 +3,7 @@ import { CheckCircle, XCircle, Loader2, Mail } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
+import API from "../api/Api";
 
 const VerifyEmailPage = () => {
   const { token } = useParams();
@@ -20,10 +21,9 @@ const VerifyEmailPage = () => {
       requestSent.current = true;
 
       try {
-        const res = await axios.get(
-          `http://localhost:8080/auth/verification/${token}`,
-          { withCredentials: true }
-        );
+        const res = await API.get(`/auth/verification/${token}`, {
+          withCredentials: true,
+        });
 
         if (res.status === 200) {
           if (!toastShown.current) {
@@ -52,10 +52,8 @@ const VerifyEmailPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-
       {/* AUTH CARD */}
       <div className="w-full max-w-md bg-white shadow-lg border border-slate-200 rounded-xl p-8">
-
         {/* HEADER */}
         <div className="text-center mb-6">
           <div className="flex justify-center mb-3">
@@ -77,16 +75,13 @@ const VerifyEmailPage = () => {
         {loading && (
           <div className="flex flex-col items-center gap-4 py-6">
             <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-            <p className="text-slate-600 text-sm">
-              Verifying your email...
-            </p>
+            <p className="text-slate-600 text-sm">Verifying your email...</p>
           </div>
         )}
 
         {/* SUCCESS */}
         {!loading && verified && (
           <div className="flex flex-col items-center gap-4 py-6 text-center">
-
             <CheckCircle className="h-14 w-14 text-green-600" />
 
             <h2 className="text-lg font-semibold text-slate-900">
@@ -103,14 +98,12 @@ const VerifyEmailPage = () => {
             >
               Continue to Login
             </button> */}
-
           </div>
         )}
 
         {/* FAILURE */}
         {!loading && !verified && (
           <div className="flex flex-col items-center gap-4 py-6 text-center">
-
             <XCircle className="h-14 w-14 text-red-600" />
 
             <h2 className="text-lg font-semibold text-slate-900">
@@ -127,10 +120,8 @@ const VerifyEmailPage = () => {
             >
               Back to Registration
             </Link>
-
           </div>
         )}
-
       </div>
     </div>
   );

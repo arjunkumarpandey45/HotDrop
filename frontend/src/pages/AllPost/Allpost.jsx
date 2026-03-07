@@ -20,6 +20,7 @@ import LikeModal from "../Profile/Post/LikeModal";
 import ShareModal from "../Profile/Post/ShareModal";
 import ImageModal from "../Profile/Post/ImageModal"; 
 import API from "../../api/Api";
+import Sponser from "../Sponser/Sponser";
 
 function Allpost() {
   const { user } = useAuthStore();
@@ -203,7 +204,8 @@ function Allpost() {
   return (
     <div className="min-h-screen bg-[#fcfcfd] py-10 mt-12 px-4">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-10">
-        <div className="hidden lg:block"></div>
+        <div className="hidden lg:block">
+        </div>
 
         <div className="col-span-1 lg:col-span-2 space-y-12">
           {posts.map((post) => {
@@ -219,7 +221,7 @@ function Allpost() {
                   <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate(`/user/userprofile/${owner.hotdropId}`)}>
                     <img src={owner.profilePicture} className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-50 group-hover:ring-indigo-100 transition-all" alt="u" />
                     <div className="flex flex-col">
-                      <span className="text-[12px] font-black lowercase text-indigo-600 leading-none">@{owner.hotdropId}</span>
+                      <span className="text-[12px] font-black lowercase leading-none">@{owner.hotdropId}</span>
                       <div className="flex items-center gap-1 text-[9px] font-bold text-slate-500 mt-1">
                          <Clock size={10} /> {formatTime(post.createdAt)}
                       </div>
@@ -314,7 +316,9 @@ function Allpost() {
             </div>
           )}
         </div>
-        <div className="hidden lg:block"></div>
+        <div className="hidden lg:block">
+          <Sponser></Sponser>
+        </div>
       </div>
 
      

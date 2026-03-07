@@ -46,7 +46,7 @@ const SplashScreen = () => {
         <motion.img
           src={logo}
           alt="HotDrop Logo"
-          fetchpriority="high" 
+          fetchPriority="high" 
   initial={{ x: -20, scale: 0.95, opacity: 0.5 }} 
   animate={{ x: 0, scale: 1, opacity: 1 }}
   transition={{ duration: 0.5, ease: "easeOut" }}
