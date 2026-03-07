@@ -46,9 +46,10 @@ const SplashScreen = () => {
         <motion.img
           src={logo}
           alt="HotDrop Logo"
-          initial={{ x: -40, scale: 0.85, opacity: 0 }}
-          animate={{ x: 0, scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          fetchPriority="high" 
+  initial={{ x: -20, scale: 0.95, opacity: 0.5 }} 
+  animate={{ x: 0, scale: 1, opacity: 1 }}
+  transition={{ duration: 0.5, ease: "easeOut" }}
           className="w-28 sm:w-32 md:w-36 lg:w-40 mb-4 drop-shadow-[0_0_25px_rgba(59,130,246,0.7)]"
         />
 

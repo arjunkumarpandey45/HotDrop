@@ -1,196 +1,353 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react"; // useCallback add kiya
+import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
-import {
-  Heart,
-  MessageCircle,
-  Share2,
-  Globe,
-  ExternalLink,
-  ChevronLeft,
-  ChevronRight,
-  Clock
+import { 
+  Heart, 
+  MessageCircle, 
+  Share2, 
+  Globe, 
+  ExternalLink, 
+  ChevronLeft, 
+  ChevronRight, 
+  Clock, 
+  Lock, 
+  X, 
+  ShieldCheck, 
+  
 } from "lucide-react";
-
+import Sidebar from "../../leftSide/SideBar";
 import { toast } from "react-toastify";
 import CommentModal from "../Profile/Post/CommentModal";
 import LikeModal from "../Profile/Post/LikeModal";
 import ShareModal from "../Profile/Post/ShareModal";
+import ImageModal from "../Profile/Post/ImageModal"; 
 import API from "../../api/Api";
+import Sponser from "../Sponser/Sponser";
 
 function Allpost() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
-  // FIX: Initialize as empty array to prevent .map error
   const [posts, setPosts] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [commentPost, setCommentPost] = useState(null);
   const [likePost, setLikePost] = useState(null);
   const [sharePost, setSharePost] = useState(null);
+  const [imagePost, setImagePost] = useState(null); 
+  const [modalIndex, setModalIndex] = useState(0);
   const [currentImage, setCurrentImage] = useState({});
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  
+  // States for Infinite Scroll
+  const [fetchingMore, setFetchingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  useEffect(() => {
-    const fetchGlobalFeed = async () => {
-      try {
-        setLoading(true);
-        const res = await API.get("/post/getallposts");
-        
-        // FIX: Add safety check for array
-        const fetchedData = res.data?.data || [];
-        setPosts(Array.isArray(fetchedData) ? fetchedData : []);
-        
-      } catch (error) {
-        console.error("Feed Error:", error);
-        toast.error("Failed to load feed! 🛑");
-        setPosts([]); // Fallback to empty array
-      } finally {
-        setLoading(false);
+  const shuffleArray = (array) => {
+    let shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // 1. DATA FETCHING (Wrapped in useCallback to fix infinite loop)
+  const fetchGlobalFeed = useCallback(async (pageNum) => {
+    try {
+      if (pageNum === 1) setLoading(true);
+      else setFetchingMore(true);
+
+      const res = await API.get(`/post/getallposts?page=${pageNum}&limit=10`); 
+      const { posts: fetchedPosts, hasMore: moreAvailable } = res.data?.data || {};
+
+      if (fetchedPosts) {
+        // logic: Pehle batch ko shuffle karo
+        const processedBatch = pageNum === 1 
+          ? (fetchedPosts.length > 3 
+              ? [...fetchedPosts.slice(0, 3), ...shuffleArray(fetchedPosts.slice(3))] 
+              : shuffleArray(fetchedPosts))
+          : shuffleArray(fetchedPosts);
+
+        // logic: Naya data purane data ke end mein append karo
+        setPosts((prev) => (pageNum === 1 ? processedBatch : [...prev, ...processedBatch]));
+        setHasMore(moreAvailable); 
       }
-    };
-    fetchGlobalFeed();
+    } catch (error) {
+      toast.error("Failed to load more posts.");
+    } finally {
+      setLoading(false);
+      setFetchingMore(false);
+    }
   }, []);
 
+  // Initial Load
+  useEffect(() => {
+    fetchGlobalFeed(1);
+  }, [fetchGlobalFeed]);
+
+  // 2. SCROLL LISTENER (Infinite Scroll Logic)
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const currentHeight = window.innerHeight + document.documentElement.scrollTop;
+
+      // logic: Bottom se 200px pehle hi naya data mangwa lo smooth experience ke liye
+      if (currentHeight >= scrollHeight - 200 && hasMore && !loading && !fetchingMore) {
+        setPage((prevPage) => {
+          const nextPage = prevPage + 1;
+          fetchGlobalFeed(nextPage);
+          return nextPage;
+        });
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasMore, loading, fetchingMore, fetchGlobalFeed]);
+
   const formatTime = (dateString) => {
+    if(!dateString) return "just now";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
+  // 2. LIKE LOGIC (Real-time Sync)
   const handleLike = async (postToLike) => {
-    if (!user) return toast.info("Login to like! 😊");
+    if (!user) return setShowAuthModal(true);
     try {
       const res = await API.post(`/post/like/${postToLike._id}`);
       if (res.status === 200) {
         const { isLiked } = res.data.data;
-        const currentUserObj = { _id: user._id, hotdropId: user.hotdropId, profilePicture: user.profilePicture };
+        const currentUserObj = { 
+          _id: user._id, 
+          hotdropId: user.hotdropId, 
+          username: user.username, 
+          profilePicture: user.profilePicture 
+        };
 
-        setPosts(prev => prev.map(p => 
-          p._id === postToLike._id 
-            ? { ...p, likes: isLiked ? [...(p.likes || []), currentUserObj] : p.likes.filter(l => (l._id || l) !== user._id) }
-            : p
-        ));
+        const updateFn = (prev) => prev.map(p => {
+          if (p._id === postToLike._id) {
+            const filtered = (p.likes || []).filter(l => (l._id || l) !== user._id);
+            const updatedLikes = isLiked ? [currentUserObj, ...filtered] : filtered;
+            return { ...p, likes: updatedLikes, likeCount: updatedLikes.length };
+          }
+          return p;
+        });
+
+        setPosts(updateFn);
+        if (imagePost && imagePost._id === postToLike._id) {
+            setImagePost(prev => {
+                const filtered = (prev.likes || []).filter(l => (l._id || l) !== user._id);
+                const newLikes = isLiked ? [currentUserObj, ...filtered] : filtered;
+                return { ...prev, likes: newLikes, likeCount: newLikes.length };
+            });
+        }
         if(isLiked) toast.success("Liked! 🔥", { autoClose: 800 });
       }
-    } catch (err) { console.error(err); }
+    } catch (err) { toast.error("Action failed"); }
   };
 
+  // 3. COMMENT LOGIC
   const submitComment = async (e) => {
     e.preventDefault();
-    if (!user || !commentText.trim()) return;
-    try {
-      const res = await API.post(`/post/comment/${commentPost._id}`, { text: commentText });
-      const newComment = res.data.data;
+    if (!user) return setShowAuthModal(true);
+    if (!commentText.trim()) return;
 
-      setPosts(prev => prev.map(p => 
-        p._id === commentPost._id 
-          ? { ...p, comments: [...(p.comments || []), newComment], commentCount: (p.commentCount || 0) + 1 } 
-          : p
+    try {
+      const res = await API.post(`/post/comment/${commentPost._id}`, { 
+        text: commentText 
+      });
+      
+      toast.success("Comment added! ✅");
+      const newPopulatedComment = res.data.data;
+
+      const updatedPostObj = { 
+        ...commentPost, 
+        comments: [newPopulatedComment, ...(commentPost.comments || [])], 
+        commentCount: (commentPost.commentCount || 0) + 1 
+      };
+
+      setPosts((prevPosts) => prevPosts.map((p) => 
+        p._id === commentPost._id ? updatedPostObj : p
       ));
-      setCommentText("");
-      toast.success("Commented! 💬");
-    } catch (err) { console.error(err); }
+
+      setCommentPost(updatedPostObj);
+
+      if (imagePost && imagePost._id === commentPost._id) {
+        setImagePost(updatedPostObj);
+      }
+
+      useAuthStore.setState((state) => ({
+        user: state.user ? {
+          ...state.user,
+          posts: state.user.posts.map((p) =>
+            p._id === commentPost._id ? updatedPostObj : p
+          )
+        } : null
+      }));
+
+      setCommentText(""); 
+    } catch (error) {
+      console.error("Comment error:", error);
+      toast.error("Failed to post comment");
+    }
   };
 
-  if (loading) return (
-    <div className="h-screen flex flex-col items-center justify-center space-y-4">
-      <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      <div className="font-black text-slate-300 uppercase tracking-[0.3em] text-[10px]">Dripping Global Drops...</div>
-    </div>
-  );
+  const handleImageClick = (post, index) => {
+    if (!user) return setShowAuthModal(true);
+    setImagePost(post);
+    setModalIndex(index);
+  };
+
+  if (loading) return <div className="h-screen flex items-center justify-center font-black text-indigo-400 animate-pulse uppercase tracking-[0.3em]">Loading Feed...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-10 flex items-center justify-between border-b border-slate-100 pb-5">
-        <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900">
-          Explore <span className="text-blue-600 italic">Drops</span>
-        </h1>
-        <div className="bg-slate-900 text-[9px] font-black text-white px-4 py-1.5 rounded-full uppercase tracking-widest">
-          Live Feed
+    <div className="min-h-screen bg-[#fcfcfd] py-10 mt-12 px-4">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-10">
+        <div className="hidden lg:block">
+          <Sidebar></Sidebar>
+        </div>
+
+        <div className="col-span-1 lg:col-span-2 space-y-12">
+          {posts.map((post) => {
+            const imgIndex = currentImage[post._id] || 0;
+            const owner = post.user || {};
+            const images = post.images || [];
+
+            return (
+              <div key={post._id} className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-700 overflow-hidden flex flex-col">
+                
+                {/* Header */}
+                <div className="p-5 flex items-center justify-between">
+                  <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate(`/user/userprofile/${owner.hotdropId}`)}>
+                    <img src={owner.profilePicture} className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-50 group-hover:ring-indigo-100 transition-all" alt="u" />
+                    <div className="flex flex-col">
+                      <span className="text-[12px] font-black lowercase leading-none">@{owner.hotdropId}</span>
+                      <div className="flex items-center gap-1 text-[9px] font-bold text-slate-500 mt-1">
+                         <Clock size={10} /> {formatTime(post.createdAt)}
+                      </div>
+                    </div>
+                  </div>
+                  <Share2 size={18} className="text-slate-400 cursor-pointer hover:text-indigo-400" onClick={() => setSharePost(post)} />
+                </div>
+
+                {/* Post Image Area */}
+                <div className="relative mx-3 bg-slate-950 rounded-[1rem] aspect-[10/5] flex items-center justify-center overflow-hidden border border-slate-900 group cursor-pointer" onClick={() => handleImageClick(post, imgIndex)}>
+                  <img src={images[imgIndex]?.url} className="w-full h-full object-contain transition-all duration-700 group-hover:scale-105" alt="post" />
+                  {!user && (
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+                      <div className="bg-white/90 px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase shadow-xl">
+                        <Lock size={12} className="text-indigo-600" /> Exclusive Content
+                      </div>
+                    </div>
+                  )}
+                  {images.length > 1 && (
+                    <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-between opacity-0 group-hover:opacity-100 transition-all">
+                      <button onClick={(e) => { e.stopPropagation(); setCurrentImage(prev => ({ ...prev, [post._id]: (imgIndex - 1 + images.length) % images.length }))}} className="bg-white/10 p-2 rounded-2xl text-white"><ChevronLeft size={18} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); setCurrentImage(prev => ({ ...prev, [post._id]: (imgIndex + 1) % images.length }))}} className="bg-white/10 p-2 rounded-2xl text-white"><ChevronRight size={18} /></button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Post Body */}
+                <div className="p-4 flex flex-col">
+                  <h3 className="group/title text-[14px] font-black uppercase text-slate-800 mb-4 tracking-tight leading-none">
+  {post.title}
+ 
+  <div className="h-[2px] w-8 bg-blue-600 mt-2 transition-all duration-300 group-hover/title:w-16 shadow-[0_0_8px_rgba(37,99,235,0.5)]" />
+</h3>
+
+                  {/* Auth Protected Link Section */}
+                  <div 
+                    onClick={() => !user ? setShowAuthModal(true) : window.open(post.projectLink, "_blank")}
+                    className="group/link relative flex items-center justify-between p-[1px] rounded-xl mb-6 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                  >
+                    <div className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${post.isLinkDead ? "from-red-500 to-orange-500" : "from-indigo-500 via-blue-400 to-emerald-400"}`} /> 
+                    <div className="relative w-full flex items-center justify-between bg-white border border-slate-200/50 rounded-[11px] px-3 py-2 shadow-sm">
+                      <div className="flex items-center gap-2.5 truncate">
+                        <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-500 ${post.isLinkDead ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-600 group-hover/link:bg-blue-600 group-hover/link:text-white"}`}><Globe size={13} strokeWidth={2.5} /></div>
+                        <div className={`flex flex-col truncate transition-all duration-700 ${!user ? "blur-[4px] select-none" : ""}`}>
+                          <span className="text-[10px] font-bold text-slate-700 truncate tracking-tight group-hover/link:text-blue-700 transition-colors">
+                            {user ? post.projectLink?.replace("https://", "").replace("www.", "") : "hidden-project-url-protected"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!user ? (
+                          <div className="bg-indigo-600 text-white px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-md"><Lock size={10} /><span className="text-[9px] font-black uppercase tracking-tighter">Unlock</span></div>
+                        ) : (
+                          <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${post.isLinkDead ? "bg-red-50 text-red-500" : "bg-emerald-50 text-emerald-600 group-hover/link:bg-emerald-500 group-hover/link:text-white"}`}>
+                            <span className={`w-1 h-1 rounded-full ${post.isLinkDead ? "bg-red-500" : "bg-emerald-500 group-hover/link:bg-white"} animate-pulse`} />{post.isLinkDead ? "Dead" : "Live"}
+                          </div>
+                        )}
+                        <ExternalLink size={11} className="text-slate-300 group-hover/link:text-blue-500 transition-all" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-slate-900 font-medium mb-4 line-clamp-2">{post.description}</p>
+                  
+                  {/* Interactions */}
+                  <div className="flex gap-8 border-t pt-4">
+                    <div className="flex items-center gap-2 cursor-pointer group">
+                      <Heart onClick={() => handleLike(post)} size={22} className={`${post.likes?.some(l => (l._id || l) === user?._id) ? "fill-red-500 text-red-500 scale-125" : "text-slate-300 group-hover:text-red-400"} transition-all`} />
+                      <span onClick={() => { !user ? setShowAuthModal(true) : setLikePost(post)}} className="text-xs font-black text-slate-800 hover:text-indigo-600">{post.likes?.length || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-2 cursor-pointer group" onClick={() => { if(!user) return setShowAuthModal(true); setCommentPost(post); }}>
+                      <MessageCircle size={22} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                      <span className="text-xs font-black text-slate-800">{post.comments?.length || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* logic: Loading Indicator at bottom */}
+          {fetchingMore && (
+            <div className="py-10 text-center font-black text-indigo-400 animate-pulse text-[10px] uppercase tracking-widest">
+              fetching more drops...
+            </div>
+          )}
+
+          {/* logic: End message */}
+          {!hasMore && posts.length > 0 && (
+            <div className="py-20 text-center opacity-20">
+               <p className="text-[10px] font-black uppercase tracking-[0.5em]">You've reached the end</p>
+            </div>
+          )}
+        </div>
+        <div className="hidden lg:block">
+          <Sponser></Sponser>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {/* FIX: Optional chaining before mapping */}
-        {posts?.map((post) => {
-          const imgIndex = currentImage[post._id] || 0;
-          const owner = post.user || {};
-
-          return (
-            <div key={post._id} className="group bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
-              
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/user/userprofile/${owner.hotdropId}`)}>
-                  <img src={owner.profilePicture || "https://i.pravatar.cc/100"} className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-50 group-hover:ring-blue-500 transition-all" alt="u" />
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-black uppercase text-slate-800 leading-none">@{owner.hotdropId}</span>
-                    <div className="flex items-center gap-1 text-[9px] font-bold text-slate-300 mt-1">
-                       <Clock size={10} /> {formatTime(post.createdAt)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative mx-3 bg-slate-950 rounded-3xl aspect-[16/10] flex items-center justify-center overflow-hidden border border-slate-900 shadow-inner group/img">
-                <img src={post.images?.[imgIndex]?.url} className="w-full h-full object-contain transition-transform duration-700 group-hover/img:scale-105" alt="post" />
-                
-                {post.images?.length > 1 && (
-                  <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between opacity-0 group-hover/img:opacity-100 transition-all">
-                    <button onClick={() => setCurrentImage(prev => ({ ...prev, [post._id]: (imgIndex - 1 + post.images.length) % post.images.length }))} className="bg-black/40 backdrop-blur-md p-1.5 rounded-xl text-white hover:bg-black/60"><ChevronLeft size={16} /></button>
-                    <button onClick={() => setCurrentImage(prev => ({ ...prev, [post._id]: (imgIndex + 1) % post.images.length }))} className="bg-black/40 backdrop-blur-md p-1.5 rounded-xl text-white hover:bg-black/60"><ChevronRight size={16} /></button>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-5 flex flex-col flex-1">
-                <h3 className="text-[14px] font-black uppercase text-slate-800 mb-4 line-clamp-1">{post.title}</h3>
-
-                <a href={post.projectLink} target="_blank" rel="noreferrer" className="group/link relative flex items-center justify-between p-[1px] rounded-xl mb-5 transition-all">
-                  <div className={`absolute inset-0 rounded-xl opacity-10 bg-gradient-to-r ${post.isLinkDead ? 'from-red-500 to-orange-500' : 'from-blue-500 to-cyan-400'}`} />
-                  <div className="relative w-full flex items-center justify-between bg-slate-50 border border-slate-100 rounded-[12px] px-3 py-2 shadow-sm group-hover/link:bg-white transition-all">
-                    <div className="flex items-center gap-2 truncate">
-                      <Globe size={13} className={post.isLinkDead ? "text-red-500" : "text-blue-500"} />
-                      <span className="text-[10px] font-black text-slate-700 truncate">{post.projectLink?.replace("https://", "").replace("www.", "")}</span>
-                    </div>
-                    <ExternalLink size={12} className="text-slate-300 group-hover:text-blue-600" />
-                  </div>
-                </a>
-
-                <div className="mt-auto pt-4 border-t border-slate-50 flex justify-between items-center">
-                  <div className="flex gap-6">
-                    <div className="flex items-center gap-2 cursor-pointer group" onClick={() => handleLike(post)}>
-                      <Heart size={20} className={`${post.likes?.some(l => (l._id || l) === user?._id) ? "fill-red-500 text-red-500 scale-110" : "text-slate-300 group-hover:text-red-400"} transition-all`} />
-                      <span className="text-[11px] font-black text-slate-800">{post.likes?.length || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setCommentPost(post)}>
-                      <MessageCircle size={20} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
-                      <span className="text-[11px] font-black text-slate-800">{post.comments?.length || 0}</span>
-                    </div>
-                  </div>
-                  <button onClick={() => setSharePost(post)} className="text-slate-300 hover:text-emerald-500 transition-all">
-                    <Share2 size={18} />
-                  </button>
-                </div>
-              </div>
+     
+      {showAuthModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAuthModal(false)}></div>
+          <div className="relative bg-white w-full max-w-[300px] rounded-2xl p-6 shadow-xl text-center border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4"><ShieldCheck size={24} /></div>
+            <h2 className="text-base font-bold text-slate-900 mb-1">Sign in required</h2>
+            <p className="text-[12px] text-slate-500 mb-6">Please login to access links and comments.</p>
+            <div className="flex flex-col gap-2">
+              <button onClick={() => navigate("/login")} className="w-full bg-indigo-600 text-white text-[13px] font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition-all">Sign In</button>
+              <button onClick={() => setShowAuthModal(false)} className="w-full bg-slate-50 text-slate-600 text-[13px] font-semibold py-2.5 rounded-lg hover:bg-slate-100">Cancel</button>
             </div>
-          );
-        })}
-      </div>
-
-      {/* MODALS */}
-      {commentPost && (
-        <CommentModal 
-          post={commentPost} 
-          commentText={commentText} 
-          setCommentText={setCommentText} 
-          submitComment={submitComment} 
-          onClose={() => setCommentPost(null)} 
-          setCommentPost={(updatedPost) => {
-             // FIX: Modal updates grid state directly
-             setPosts(prev => prev.map(p => p._id === updatedPost._id ? updatedPost : p));
-          }} 
-        />
+            <p className="mt-4 text-[11px] text-slate-400">New here? <Link to="/signup" className="text-indigo-600 font-bold hover:underline">Create account</Link></p>
+          </div>
+        </div>
       )}
+
+      {/* Modals synced with posts state */}
+      {imagePost && <ImageModal post={imagePost} modalIndex={modalIndex} setModalIndex={setModalIndex} handleLike={handleLike} onClose={() => setImagePost(null)} setLikePost={setLikePost} setCommentPost={setCommentPost} setSharePost={setSharePost} />}
+      {commentPost && <CommentModal post={commentPost} commentText={commentText} setCommentText={setCommentText} submitComment={submitComment} onClose={() => setCommentPost(null)} setCommentPost={(upd) => {
+          setPosts(prev => prev.map(p => p._id === upd._id ? upd : p));
+          setCommentPost(upd);
+          if(imagePost && imagePost._id === upd._id) setImagePost(upd);
+      }} />}
       {sharePost && <ShareModal post={sharePost} onClose={() => setSharePost(null)} />}
       {likePost && <LikeModal post={likePost} onClose={() => setLikePost(null)} />}
     </div>

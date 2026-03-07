@@ -139,7 +139,7 @@ function CommentModal({
         {/* COMMENT LIST */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {post.comments?.length > 0 ? (
-            [...post.comments].reverse().map((c, i) => {
+            [...post.comments].map((c, i) => {
               // PERMISSION CHECK LOGIC
               const currentUserId = String(user?._id || "");
               const commentAuthorId = String(c.user?._id || c.user || "");
@@ -206,6 +206,7 @@ function CommentModal({
             <input
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
+              autoFocus
               placeholder="Share your thoughts..."
               className="flex-1 text-[13px] outline-none"
               disabled={isSubmitting}
