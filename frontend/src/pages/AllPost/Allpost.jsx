@@ -12,8 +12,10 @@ import {
   Clock, 
   Lock, 
   X, 
-  ShieldCheck 
+  ShieldCheck, 
+  
 } from "lucide-react";
+import Sidebar from "../../leftSide/SideBar";
 import { toast } from "react-toastify";
 import CommentModal from "../Profile/Post/CommentModal";
 import LikeModal from "../Profile/Post/LikeModal";
@@ -205,6 +207,7 @@ function Allpost() {
     <div className="min-h-screen bg-[#fcfcfd] py-10 mt-12 px-4">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-10">
         <div className="hidden lg:block">
+          <Sidebar></Sidebar>
         </div>
 
         <div className="col-span-1 lg:col-span-2 space-y-12">
