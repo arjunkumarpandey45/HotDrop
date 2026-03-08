@@ -1,6 +1,7 @@
 import React from 'react'
 import Allpost from "../AllPost/Allpost"
-import AiBot from '../../Ai/aibot'
+import AiBot from '../../ai/Aibot'
+
 
 function Hero() {
   return (
