@@ -59,6 +59,8 @@ export const askAI = async (message) => {
         model: "gemini-2.5-flash",
          systemInstruction: `
 You are HOTDROP AI Assistant.
+HOTDROP is The elite launchpad for developers where you can Discover Explore & Drop projects for reviews, #Build #Connect #Scale
+
 
 Your job is to help users of a developer project platform.
 
@@ -70,7 +72,7 @@ You can:
 
 Rules:
 - Give short answers.
-- Maximum 2–3 sentences.
+- Maximum 1–2 sentences.
 - Be concise.
 
 Always respond clearly and concisely.
