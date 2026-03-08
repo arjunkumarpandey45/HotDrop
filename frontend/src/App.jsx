@@ -24,7 +24,7 @@ import UserPost from "./pages/Profile/Post/UserPost.jsx";
 import FromShare from "./pages/Profile/Post/FromShare.jsx";
 import ResendVerification from "./auth/ResendVerification.jsx";
 
-import AiBot from "./ai/Aibot.jsx";
+// import AiBot from "./ai/Aibot.jsx";
 import Hero from "../src/pages/Hero/Hero.jsx";
 
 const router = createBrowserRouter([
@@ -155,7 +155,7 @@ function App() {
           <RouterProvider router={router} />
         )}
       </AnimatePresence>
-      <AiBot></AiBot>
+      {/* <AiBot></AiBot> */}
     </>
   );
 }
