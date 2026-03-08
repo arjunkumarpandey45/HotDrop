@@ -26,6 +26,8 @@ import ResendVerification from "./auth/ResendVerification.jsx";
 
 // import AiBot from "./ai/Aibot.jsx";
 import Hero from "../src/pages/Hero/Hero.jsx";
+import NotFound from "./404/NotFound.jsx";
+import About from "./pages/About.jsx";
 
 const router = createBrowserRouter([
   {
@@ -117,7 +119,13 @@ const router = createBrowserRouter([
     path:"/getpost/:postId",
     element:<><FromShare></FromShare></>
   },
-  
+  {
+    path:"*",
+    element:<><NotFound></NotFound></>
+  },{
+    path:"/about",
+    element:<><About></About></>
+  }
   
 ]);
 
