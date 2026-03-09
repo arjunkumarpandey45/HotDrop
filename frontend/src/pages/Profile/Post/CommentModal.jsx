@@ -4,7 +4,7 @@ import api from "../../../api/Api";
 import { useAuthStore } from "../../../store/useAuthStore";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-
+import dp from "../../../assets/dp.jpg";
 function CommentModal({
   post,
   commentText,
@@ -139,7 +139,7 @@ function CommentModal({
         {/* COMMENT LIST */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {post.comments?.length > 0 ? (
-            [...post.comments].map((c, i) => {
+            [...(post.comments || [])].slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((c, i) => {
               // PERMISSION CHECK LOGIC
               const currentUserId = String(user?._id || "");
               const commentAuthorId = String(c.user?._id || c.user || "");
@@ -150,7 +150,7 @@ function CommentModal({
               return (
                 <div key={c._id || i} className="flex gap-3 group">
                   <img
-                    src={c.user?.profilePicture || "https://i.pravatar.cc/100"}
+                    src={c.user?.profilePicture || dp}
                     className="w-9 h-9 rounded-full object-cover"
                   />
                   <div className="flex flex-col flex-1 min-w-0">
