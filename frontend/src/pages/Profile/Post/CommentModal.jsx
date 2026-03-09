@@ -139,7 +139,7 @@ function CommentModal({
         {/* COMMENT LIST */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {post.comments?.length > 0 ? (
-            [...post.comments].map((c, i) => {
+            [...(post.comments || [])].slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((c, i) => {
               // PERMISSION CHECK LOGIC
               const currentUserId = String(user?._id || "");
               const commentAuthorId = String(c.user?._id || c.user || "");
