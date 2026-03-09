@@ -23,7 +23,7 @@ import ShareModal from "../Profile/Post/ShareModal";
 import ImageModal from "../Profile/Post/ImageModal"; 
 import API from "../../api/Api";
 import Sponser from "../Sponser/Sponser";
-
+import dp from "../../assets/dp.jpg";
 function Allpost() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
@@ -222,7 +222,7 @@ function Allpost() {
                 {/* Header */}
                 <div className="p-5 flex items-center justify-between">
                   <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate(`/user/userprofile/${owner.hotdropId}`)}>
-                    <img src={owner.profilePicture} className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-50 group-hover:ring-indigo-100 transition-all" alt="u" />
+                    <img src={owner.profilePicture|| dp} className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-50 group-hover:ring-indigo-100 transition-all" alt="u" />
                     <div className="flex flex-col">
                       <span className="text-[12px] font-black lowercase leading-none">@{owner.hotdropId}</span>
                       <div className="flex items-center gap-1 text-[9px] font-bold text-slate-500 mt-1">
@@ -331,7 +331,7 @@ function Allpost() {
           <div className="relative bg-white w-full max-w-[300px] rounded-2xl p-6 shadow-xl text-center border border-slate-100 animate-in fade-in zoom-in duration-200">
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4"><ShieldCheck size={24} /></div>
             <h2 className="text-base font-bold text-slate-900 mb-1">Sign in required</h2>
-            <p className="text-[12px] text-slate-500 mb-6">Please login to access links and comments.</p>
+            <p className="text-[12px] text-slate-500 mb-6">Please login to access DROP.</p>
             <div className="flex flex-col gap-2">
               <button onClick={() => navigate("/login")} className="w-full bg-indigo-600 text-white text-[13px] font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition-all">Sign In</button>
               <button onClick={() => setShowAuthModal(false)} className="w-full bg-slate-50 text-slate-600 text-[13px] font-semibold py-2.5 rounded-lg hover:bg-slate-100">Cancel</button>
