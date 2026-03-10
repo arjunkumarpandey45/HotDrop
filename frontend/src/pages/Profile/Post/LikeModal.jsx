@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // Navigation ke liye import
-
+import dp from "../../../assets/dp.jpg";
 function LikeModal({ post, onClose }) {
   const navigate = useNavigate(); // Hook initialize karo
 
@@ -38,7 +38,7 @@ function LikeModal({ post, onClose }) {
               >
                 {/* Avatar */}
                 <img
-                  src={likedUser.profilePicture || "https://i.pravatar.cc/100"}
+                  src={likedUser.profilePicture || dp}
                   className="w-10 h-10 rounded-xl object-cover ring-2 ring-slate-50 shadow-sm group-hover:ring-blue-100 transition-all"
                   alt="avatar"
                 />

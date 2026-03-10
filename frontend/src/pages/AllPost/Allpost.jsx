@@ -331,7 +331,7 @@ function Allpost() {
           <div className="relative bg-white w-full max-w-[300px] rounded-2xl p-6 shadow-xl text-center border border-slate-100 animate-in fade-in zoom-in duration-200">
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4"><ShieldCheck size={24} /></div>
             <h2 className="text-base font-bold text-slate-900 mb-1">Sign in required</h2>
-            <p className="text-[12px] text-slate-500 mb-6">Please login to access DROP.</p>
+            <p className="text-[12px] text-slate-500 mb-6">Please login to access this DROP.</p>
             <div className="flex flex-col gap-2">
               <button onClick={() => navigate("/login")} className="w-full bg-indigo-600 text-white text-[13px] font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition-all">Sign In</button>
               <button onClick={() => setShowAuthModal(false)} className="w-full bg-slate-50 text-slate-600 text-[13px] font-semibold py-2.5 rounded-lg hover:bg-slate-100">Cancel</button>
