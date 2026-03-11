@@ -28,7 +28,7 @@ const Sidebar = () => {
             <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/10">
               <Zap size={14} className="fill-white text-white" />
             </div>
-            <span className="text-[9px] font-black uppercase tracking-[0.3em] opacity-80">v1.0.4</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] opacity-80">v1.0</span>
           </div>
           
           <div className="space-y-3 relative z-10">
@@ -141,7 +141,7 @@ const Sidebar = () => {
           </div>
           <div className="flex items-center justify-between opacity-60">
              <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest ">Built for builders</span>
-             <span className="text-[8px] font-black text-indigo-500 uppercase">v1.0.4</span>
+             <span className="text-[8px] font-black text-indigo-500 uppercase">v1.0</span>
           </div>
         </div>
       </div>
