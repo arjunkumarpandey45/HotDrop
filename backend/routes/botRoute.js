@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post("/chat", async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message,username } = req.body;
 
     if (!message) {
       return res.status(400).json({
@@ -14,8 +14,8 @@ router.post("/chat", async (req, res) => {
       });
     }
 
-    const reply = await askAI(message);
-
+    const reply = await askAI(message,username);
+console.log("AI Reply:", username);
     res.status(200).json({
       success: true,
       reply,

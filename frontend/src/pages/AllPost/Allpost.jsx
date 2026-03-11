@@ -244,7 +244,7 @@ function Allpost() {
                     </div>
                   )}
                   {images.length > 1 && (
-                    <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-between opacity-0 group-hover:opacity-100 transition-all">
+                    <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-between transition-all">
                       <button onClick={(e) => { e.stopPropagation(); setCurrentImage(prev => ({ ...prev, [post._id]: (imgIndex - 1 + images.length) % images.length }))}} className="bg-white/10 p-2 rounded-2xl text-white"><ChevronLeft size={18} /></button>
                       <button onClick={(e) => { e.stopPropagation(); setCurrentImage(prev => ({ ...prev, [post._id]: (imgIndex + 1) % images.length }))}} className="bg-white/10 p-2 rounded-2xl text-white"><ChevronRight size={18} /></button>
                     </div>
