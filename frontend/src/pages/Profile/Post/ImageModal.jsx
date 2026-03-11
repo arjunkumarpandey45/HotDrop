@@ -1,7 +1,7 @@
 import { X, ChevronLeft, ChevronRight, Globe, ExternalLink, Heart, MessageCircle, Share2 } from "lucide-react";
 import { useAuthStore } from "../../../store/useAuthStore";
 import { formatDistanceToNow } from "date-fns";
-
+import dp from "../../../assets/dp.jpg";
 function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setLikePost, setCommentPost, setSharePost }) {
   const { user: currentUser } = useAuthStore();
 
@@ -65,7 +65,7 @@ function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setL
             <div className="flex items-center gap-3">
               {/* postOwner dynamic hai - Profile aur Feed dono handle karega */}
               <img
-                src={postOwner?.profilePicture || "https://i.pravatar.cc/100"}
+                src={postOwner?.profilePicture || dp}
                 className="w-9 h-9 rounded-full object-cover"
                 alt="avatar"
               />

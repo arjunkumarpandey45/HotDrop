@@ -3,7 +3,7 @@ import {
   Search,
   User,
   LogOut,
-  Settings,
+
   Plus,
   X,
   Menu,
@@ -219,13 +219,7 @@ const Navbar = () => {
                         <User className="h-4 w-4" /> Profile
                       </Link>
 
-                      <Link
-                        to="/setting"
-                        onClick={() => setIsProfileOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 transition"
-                      >
-                        <Settings className="h-4 w-4" /> Settings
-                      </Link>
+                     
 
                       <div className="h-px bg-slate-100 my-1"></div>
 

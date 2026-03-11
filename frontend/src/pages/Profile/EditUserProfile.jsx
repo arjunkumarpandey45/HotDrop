@@ -8,7 +8,7 @@ import EditProfileModal from "./EditProfileModal";
 import FollowersModal from "./FollowersModal";
 import FollowingModal from "./FollowingModal";
 import { Slide, ToastContainer } from "react-toastify";
-
+import dp from "../../assets/dp.jpg";
 function EditUserProfile() {
   const { user, setUser } = useAuthStore();
 
@@ -137,9 +137,11 @@ function EditUserProfile() {
                   className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-700"
                 />
               ) : (
-                <div className="w-full h-full rounded-full bg-slate-50 flex items-center justify-center text-2xl font-semibold text-slate-200 uppercase">
-                  {user?.username?.charAt(0)}
-                </div>
+                 <img
+                  src={dp}
+                  alt="p"
+                  className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-700"
+                />
               )}
             </div>
             <div className="absolute bottom-1 right-1 bg-white p-1.5 rounded-full shadow-md border border-slate-50">

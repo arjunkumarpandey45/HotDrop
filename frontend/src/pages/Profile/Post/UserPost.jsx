@@ -117,7 +117,7 @@ toast.success("Comment added!");
           p._id === commentPost._id
             ? { 
                 ...p, 
-                comments: [...(p.comments || []), newPopulatedComment], 
+                comments: [newPopulatedComment, ...(p.comments || [])], 
                 commentCount: (p.commentCount || 0) + 1 
               }
             : p
@@ -128,13 +128,13 @@ toast.success("Comment added!");
     // Local state update taaki Modal refresh ho jaye
     setCommentPost((prev) => ({
       ...prev,
-      comments: [...(prev.comments || []), newPopulatedComment],
+      comments: [newPopulatedComment, ...(prev.comments || [])],
       commentCount: (prev.commentCount || 0) + 1
     }));
 if (imagePost && imagePost._id === commentPost._id) {
       setImagePost((prev) => ({
         ...prev,
-        comments: [...(prev.comments || []), newPopulatedComment],
+        comments: [newPopulatedComment, ...(prev.comments || [])],
         commentCount: (prev.commentCount || 0) + 1
       }));
     }
