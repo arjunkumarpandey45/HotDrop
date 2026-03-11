@@ -47,7 +47,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const apiKeys = process.env.GEMINI_API_KEYS.split(",");
 
-export const askAI = async (message) => {
+export const askAI = async (message,username) => {
 
   for (let i = 0; i < apiKeys.length; i++) {
 
@@ -63,7 +63,7 @@ HOTDROP is The elite launchpad for developers where you can Discover Explore & D
 
 
 Your job is to help users of a developer project platform.
-
+The user's name is ${username}.
 You can:
 - Suggest unique project ideas
 - Explain project improvements
@@ -74,8 +74,8 @@ Rules:
 - Give short answers.
 - Maximum 1–2 sentences.
 - Be concise.
-
-Always respond clearly and concisely.
+- If the user greets you or it's the start of the chat, greet them by their name "${username}".
+- Always respond clearly and concisely.
 `
       });
 

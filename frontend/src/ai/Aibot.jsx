@@ -56,7 +56,7 @@ const AiBot = () => {
     setLoading(true);
 
     try {
-      const res = await API.post("/bot/chat", { message });
+      const res = await API.post("/bot/chat", { message ,username: user?.username || "Developer"});
 
       setChat((prev) => [...prev, { role: "ai", text: res.data.reply }]);
     } catch {
@@ -83,18 +83,24 @@ const AiBot = () => {
 
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 z-50 bg-gradient-to-br from-indigo-600 to-purple-700 hover:scale-110"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)] z-50 transition-all duration-300 hover:scale-110 hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] bg-gradient-to-br from-indigo-600 to-purple-600 ai-float"
       >
         {open ? (
-          <X size={26} className="text-white" />
+          <X size={22} className="text-white" />
         ) : (
-          <div className="relative flex items-center justify-center">
-            <div className="absolute w-16 h-16 rounded-full bg-indigo-500 blur-xl opacity-40 animate-pulse"></div>
-
-            <Bot size={30} className="text-white relative z-10" />
-          </div>
+          <Bot size={24} className="text-white" />
         )}
       </button>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .ai-float {
+          animation: ai-float 3s ease-in-out infinite;
+        }
+        @keyframes ai-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+      `}} />
 
       {/* CHAT WINDOW */}
 

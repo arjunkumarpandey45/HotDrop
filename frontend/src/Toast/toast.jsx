@@ -313,7 +313,7 @@ const showProfileUpdatedToast = (msg = "Your profile has been updated successful
         <h4 className="text-[13px] font-black text-slate-900 tracking-tight flex items-center gap-1.5 uppercase">
           Drop Failed! ⚠️
         </h4>
-        <p className="text-[11px] text-red-500 font-bold truncate max-w-[180px]">
+        <p className="text-[10px] text-red-500 font-bold truncate max-w-[180px]">
            {errorMsg || "Connection interrupted"}
         </p>
       </div>
