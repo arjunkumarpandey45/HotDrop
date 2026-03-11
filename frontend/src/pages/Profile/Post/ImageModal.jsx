@@ -48,7 +48,7 @@ function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setL
           />
 
           {livePost.images.length > 1 && (
-            <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-between opacity-0 group-hover:opacity-100 transition z-10">
+            <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-between z-10">
               <button onClick={prev} className="bg-white/20 text-white p-2 rounded-lg hover:bg-white/40"><ChevronLeft size={20} /></button>
               <button onClick={next} className="bg-white/20 text-white p-2 rounded-lg hover:bg-white/40"><ChevronRight size={20} /></button>
             </div>

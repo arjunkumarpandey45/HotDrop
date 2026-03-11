@@ -43,19 +43,21 @@ export const createPost = async (req, res) => {
     const { title, description, projectLink, tags } = req.body;
 
     if (
-      !req.files ||
-      req.files.length === 0 ||
+     
       !title ||
       !description ||
-      !projectLink
+      !projectLink||      !tags
+
     ) {
       return response(
         res,
         400,
-        "All fields are required, and at least 1 image must be uploaded.",
+        "All fields are required",
       );
     }
-
+if( !req.files ||  req.files.length === 0 ){
+      return response(res, 400, "At least 1 image must be uploaded.")
+      }
     const images = req.files.map((file) => ({
       url: file.path,
       public_id: file.filename,

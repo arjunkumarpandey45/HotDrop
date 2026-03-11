@@ -33,7 +33,7 @@ const About = () => {
           >
             <Sparkles size={14} className="text-orange-400" />
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">
-              HotDrop Protocol v1.0.4
+              HotDrop Protocol v1.0
             </span>
           </motion.div>
 

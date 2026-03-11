@@ -19,6 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 import CommentModal from "../Post/CommentModal";
 import LikeModal from "../Post/LikeModal";
 import ShareModal from "./ShareModal";
+import ImageModal from "../Post/ImageModal";
 import API from "../../../api/Api";
 import { toast, ToastContainer } from "react-toastify";
 import dp from "../../../assets/dp.jpg";
@@ -35,6 +36,8 @@ function FromShare() {
   const [currentImage, setCurrentImage] = useState(0);
   const [sharePost, setSharePost] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [imagePost, setImagePost] = useState(null);
+  const [modalIndex, setModalIndex] = useState(0);
 
   useEffect(() => {
     const fetchSinglePost = async () => {
@@ -133,6 +136,12 @@ function FromShare() {
 
   return (
     <div className="min-h-screen bg-[#fcfcfd] py-10 px-4">
+      {/* Top Bar with HotDrop branding (desktop only) */}
+      <div className="hidden lg:block fixed top-0 right-0 z-50 py-9 p-4">
+        <span className="font-black text-xl text-orange-500 uppercase">Hot</span>
+        <span className="font-black text-xl text-blue-600  uppercase">Drop</span>
+      </div>
+
       <ToastContainer
         position="top-center"
         autoClose={2000}
@@ -154,7 +163,7 @@ function FromShare() {
         <div className="col-span-1 lg:col-span-2 space-y-6">
           
           <div className="lg:hidden flex justify-between items-center mb-4">
-            <button onClick={() => navigate(-1)} className="p-2 bg-white rounded-full shadow-sm text-slate-400">
+            <button onClick={() => navigate(-1)} className="px-2 bg-white rounded-full shadow-sm text-slate-400">
                <ArrowLeft size={18} />
             </button>
             <div className="text-[14px] font-black tracking-[0.2em] uppercase ">
@@ -179,7 +188,7 @@ function FromShare() {
             </div>
 
             {/* IMAGE AREA */}
-            <div className="relative bg-black group aspect-[9/5] rounded-[1.8rem]  flex items-center  justify-center overflow-hidden cursor-pointer" onClick={() => !user && setShowAuthModal(true)}>
+            <div className="relative bg-black group aspect-[9/5] rounded-[1.8rem]  flex items-center  justify-center overflow-hidden cursor-pointer" onClick={() => { if (!user) return setShowAuthModal(true); setImagePost(post); setModalIndex(currentImage); }}>
               <img src={images?.[currentImage]?.url} className={`w-full h-full   object-contain transition-all duration-700 group-hover:scale-105 ${!user ? 'blur-sm opacity-60' : ''}`} alt="project" />
               
               {!user && (
@@ -192,7 +201,7 @@ function FromShare() {
 
               {user && images.length > 1 && (
                 <>
-                  <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between opacity-0 group-hover:opacity-100 transition-all">
+                  <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between transition-all">
                     <button onClick={(e) => { e.stopPropagation(); setCurrentImage((p) => (p - 1 + images.length) % images.length) }} className="bg-white/10 text-white p-2 rounded-lg backdrop-blur-md"><ChevronLeft size={18} /></button>
                     <button onClick={(e) => { e.stopPropagation(); setCurrentImage((p) => (p + 1) % images.length) }} className="bg-white/10 text-white p-2 rounded-lg backdrop-blur-md"><ChevronRight size={18} /></button>
                   </div>
@@ -279,6 +288,7 @@ function FromShare() {
       )}
 
       {/* MODALS */}
+      {imagePost && <ImageModal post={post} modalIndex={modalIndex} setModalIndex={setModalIndex} handleLike={handleLike} onClose={() => setImagePost(null)} setLikePost={setLikePost} setCommentPost={setCommentPost} setSharePost={setSharePost} />}
       {commentPost && <CommentModal post={post} commentText={commentText} setCommentText={setCommentText} submitComment={submitComment} onClose={() => setCommentPost(null)} setCommentPost={setPost} />}
       {sharePost && <ShareModal post={post} onClose={() => setSharePost(null)} />}
       {likePost && <LikeModal post={post} onClose={() => setLikePost(null)} />}

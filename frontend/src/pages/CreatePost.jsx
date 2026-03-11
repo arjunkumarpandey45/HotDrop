@@ -201,7 +201,9 @@ const CreatePost = ({ isOpen, onClose }) => {
               onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
             />
           </div>
-
+          <p className="text-[11px] text-slate-500/60 mt-1">
+          Please compress images larger than 6 MB before uploading.
+          </p>
           {/* Images */}
           <div className="flex gap-2 flex-wrap">
             {formData.images.map((img, i) => (
