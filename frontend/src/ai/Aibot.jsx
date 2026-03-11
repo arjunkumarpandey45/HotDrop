@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import { Bot, Send, Trash2, X, Loader2 } from "lucide-react";
@@ -18,6 +19,7 @@ const AiBot = () => {
 
   const { user } = useAuthStore();
   const isLoggedIn = !!user;
+  const navigate = useNavigate();
 
   /* AUTO SCROLL */
 
@@ -114,7 +116,7 @@ const AiBot = () => {
               </p>
 
               <button
-                onClick={() => (window.location.href = "/signup")}
+                onClick={() => navigate("/signup")}
                 className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
               >
                 Sign Up
