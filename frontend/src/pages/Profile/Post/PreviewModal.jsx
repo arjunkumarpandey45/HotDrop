@@ -172,7 +172,7 @@ const PreviewModal = ({ url, onClose }) => {
           <div className="px-6 py-4 bg-white border-t border-slate-50 flex flex-col items-center justify-center gap-3">
             {/* Note Centered as requested */}
             <p className="text-[10px] text-slate-600 font-medium text-center leading-relaxed">
-              "Note: If the preview is blank, use the{" "}
+              "Note : In case the preview is blank, or to experience the all functionality, use the{" "}
               <a
                 href={url}
                 target="_blank"
@@ -180,7 +180,7 @@ const PreviewModal = ({ url, onClose }) => {
               >
                 Launch
               </a>{" "}
-              button to view the site."
+              button."
             </p>
           </div>
         </motion.div>
