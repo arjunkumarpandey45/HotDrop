@@ -7,11 +7,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Globe,
+  Lock,
   Trash2,
   ExternalLink,
   MoreVertical,
   AlertCircle,
   Loader2,
+  ShieldCheck,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import ImageModal from "../Post/ImageModal";
@@ -22,8 +24,10 @@ import API from "../../../api/Api";
 import { toast} from "react-toastify";
 import PreviewModal from "./PreviewModal";
 import { AnimatePresence } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
 function UserPost({ postsOverride, isOwnerOverride, hideOptions }) {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [previewUrl, setPreviewUrl] = useState(null);
 const [commentText, setCommentText] = useState("");
   const [imagePost, setImagePost] = useState(null);
@@ -36,6 +40,7 @@ const [commentText, setCommentText] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [sharePost, setSharePost] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     const resize = () => setIsMobile(window.innerWidth < 768);
@@ -157,6 +162,13 @@ const [commentText, setCommentText] = useState("");
   }
 
   const handleLike = async (postToLike) => {
+    if (!user?._id) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    const currentUserId = String(user._id);
+
     try {
       const res = await API.post(`/post/like/${postToLike._id}`);
       
@@ -181,7 +193,7 @@ const [commentText, setCommentText] = useState("");
                     likeCount: likeCount,
                     likes: isLiked 
                       ? [...(p.likes || []), currentUserObj] 
-                      : (p.likes || []).filter(l => (l._id || l) !== user._id)
+                      : (p.likes || []).filter(l => String(l._id || l) !== currentUserId)
                   }
                 : p
             )
@@ -194,7 +206,7 @@ const [commentText, setCommentText] = useState("");
             likeCount: likeCount,
             likes: isLiked 
               ? [...(prev.likes || []), currentUserObj] 
-              : (prev.likes || []).filter(l => (l._id || l) !== user._id)
+              : (prev.likes || []).filter(l => String(l._id || l) !== currentUserId)
           }));
         }
 
@@ -221,6 +233,10 @@ const [commentText, setCommentText] = useState("");
               <div
                 className="relative bg-slate-100 cursor-pointer flex items-center justify-center max-h-[260px] overflow-hidden"
                 onClick={() => {
+                  if (!user) {
+                    setShowAuthModal(true);
+                    return;
+                  }
                   setImagePost(post);
                   setModalIndex(imgIndex);
                 }}
@@ -231,8 +247,16 @@ const [commentText, setCommentText] = useState("");
                   alt="post"
                 />
 
+                {!user && (
+                  <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+                    <div className="bg-white/90 px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase shadow-xl">
+                      <Lock size={12} className="text-indigo-600" /> Login to access
+                    </div>
+                  </div>
+                )}
+
                 {/* IMAGE SLIDER */}
-                {images.length > 1 && (
+                {user && images.length > 1 && (
                   <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-between">
                     <button
                       onClick={(e) => prevImage(e, post._id, images.length)}
@@ -251,7 +275,7 @@ const [commentText, setCommentText] = useState("");
                 )}
 
                 {/* DOTS */}
-                {images.length > 1 && (
+                {user && images.length > 1 && (
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
                     {images.map((_, i) => (
                       <div
@@ -314,14 +338,17 @@ const [commentText, setCommentText] = useState("");
                 {/* PROJECT LINK */}
                 <div
                 onClick={(e) => {
-    e.preventDefault();
-    // Agar link live hai toh modal kholo, warna dead link ka error dikhao
-    if (!post.isLinkDead) {
-      setPreviewUrl(post.projectLink);
-    } else {
-      toast.error("This project link appears to be dead")
-    }
-  }}
+                  e.preventDefault();
+                  if (!user) {
+                    setShowAuthModal(true);
+                    return;
+                  }
+                  if (!post.isLinkDead) {
+                    setPreviewUrl(post.projectLink);
+                  } else {
+                    toast.error("This project link appears to be dead")
+                  }
+                }}
             
                   className="group/link relative flex items-center justify-between p-[1px] rounded-xl mb-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
                 >
@@ -348,29 +375,35 @@ const [commentText, setCommentText] = useState("");
                         <Globe size={13} strokeWidth={2.5} />
                       </div>
 
-                      <div className="flex flex-col truncate">
+                      <div className={`flex flex-col truncate transition-all duration-700 ${!user ? "blur-[4px] select-none" : ""}`}>
                         <span className="text-[10px] font-bold text-slate-700 truncate tracking-tight group-hover/link:text-blue-700 transition-colors">
-                          {post.projectLink
-                            ?.replace("https://", "")
-                            .replace("www.", "")}
+                          {user
+                            ? post.projectLink?.replace("https://", "").replace("www.", "")
+                            : "hidden-project-url-protected"}
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {/* Minimal Live/Dead Pill */}
-                      <div
-                        className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${
-                          post.isLinkDead
-                            ? "bg-red-50 text-red-500"
-                            : "bg-emerald-50 text-emerald-600 group-hover/link:bg-emerald-500 group-hover/link:text-white"
-                        }`}
-                      >
-                        <span
-                          className={`w-1 h-1 rounded-full ${post.isLinkDead ? "bg-red-500" : "bg-emerald-500 group-hover/link:bg-white"} animate-pulse`}
-                        />
-                        {post.isLinkDead ? "Dead" : "Live"}
-                      </div>
+                      {!user ? (
+                        <div className="bg-indigo-600 text-white px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-md">
+                          <Lock size={10} />
+                          <span className="text-[9px] font-black uppercase tracking-tighter">Unlock</span>
+                        </div>
+                      ) : (
+                        <div
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${
+                            post.isLinkDead
+                              ? "bg-red-50 text-red-500"
+                              : "bg-emerald-50 text-emerald-600 group-hover/link:bg-emerald-500 group-hover/link:text-white"
+                          }`}
+                        >
+                          <span
+                            className={`w-1 h-1 rounded-full ${post.isLinkDead ? "bg-red-500" : "bg-emerald-500 group-hover/link:bg-white"} animate-pulse`}
+                          />
+                          {post.isLinkDead ? "Dead" : "Live"}
+                        </div>
+                      )}
 
                       <ExternalLink
                         size={11}
@@ -406,15 +439,23 @@ const [commentText, setCommentText] = useState("");
                 <div className="flex justify-between  md:hidden items-center mt-auto border-t pt-3">
                   <div className="flex gap-5 items-center">
                     <div className="flex items-center gap-1">
+                      {(() => {
+                        const currentUserId = String(user?._id || "");
+                        const isLikedByCurrentUser = !!currentUserId &&
+                          post.likes?.some((l) => String(l._id || l) === currentUserId);
+
+                        return (
                       <Heart  size={18} onClick={() => handleLike(post)} 
                         className={`cursor-pointer transition-colors ${
-                          post.likes?.some(l => (l._id || l) === user._id)
+                          isLikedByCurrentUser
                             ? "fill-red-500 text-red-500" 
                             : "text-slate-400" 
                         }`} 
                       />
+                        );
+                      })()}
                       <span
-                        onClick={() => setLikePost(post)}
+                        onClick={() => { if(!user) return setShowAuthModal(true); setLikePost(post); }}
                         className="text-xs cursor-pointer font-semibold"
                       >
                         {post.likeCount || post.likes?.length || 0}
@@ -423,7 +464,7 @@ const [commentText, setCommentText] = useState("");
 
                     <div
                       className="flex items-center gap-1 cursor-pointer"
-                      onClick={() => setCommentPost(post)}
+                      onClick={() => { if(!user) return setShowAuthModal(true); setCommentPost(post); }}
                     >
                       <MessageCircle size={18} className="text-slate-400" />
                       <span className="text-xs font-semibold">
@@ -432,7 +473,7 @@ const [commentText, setCommentText] = useState("");
                     </div>
                   </div>
 
-                  <button onClick={() => setSharePost(post)} className="p-1">
+                  <button onClick={() => { if(!user) return setShowAuthModal(true); setSharePost(post); }} className="p-1">
                     <Share2 size={16} className="text-slate-400" />
                   </button>
                 </div>
@@ -484,6 +525,22 @@ const [commentText, setCommentText] = useState("");
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showAuthModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAuthModal(false)}></div>
+          <div className="relative bg-white w-full max-w-[300px] rounded-2xl p-6 shadow-xl text-center border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4"><ShieldCheck size={24} /></div>
+            <h2 className="text-base font-bold text-slate-900 mb-1">Sign in required</h2>
+            <p className="text-[12px] text-slate-500 mb-6">Please login to access this DROP.</p>
+            <div className="flex flex-col gap-2">
+              <button onClick={() => navigate("/login")} className="w-full bg-indigo-600 text-white text-[13px] font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition-all">Sign In</button>
+              <button onClick={() => setShowAuthModal(false)} className="w-full bg-slate-50 text-slate-600 text-[13px] font-semibold py-2.5 rounded-lg hover:bg-slate-100">Cancel</button>
+            </div>
+            <p className="mt-4 text-[11px] text-slate-400">New here? <Link to="/signup" className="text-indigo-600 font-bold hover:underline">Create account</Link></p>
           </div>
         </div>
       )}

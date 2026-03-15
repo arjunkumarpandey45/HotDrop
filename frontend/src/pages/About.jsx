@@ -136,6 +136,7 @@ const About = () => {
               github="https://github.com/arjunkumarpandey45"
               linkedin="https://www.linkedin.com/in/arjun-kumar-pandey-b2a24a330/"
               portfolio="https://arjunkumarpandey45.vercel.app/"
+              instagram="https://www.instagram.com/ig_arjunpandit45"
             />
             <FounderCard
               type="co-founder"

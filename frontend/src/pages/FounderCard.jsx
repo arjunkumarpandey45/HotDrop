@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Github, Linkedin, Globe, X, ExternalLink } from "lucide-react";
+import { Github, Linkedin, Globe, X, ExternalLink, InstagramIcon } from "lucide-react";
 
-const FounderCard = ({ type, name, role, image, bio, github, linkedin, portfolio }) => {
+const FounderCard = ({ type, name, role, image, bio, github, linkedin,instagram, portfolio }) => {
 
   const [openImage, setOpenImage] = useState(false);
 
@@ -76,7 +76,9 @@ const FounderCard = ({ type, name, role, image, bio, github, linkedin, portfolio
                 <IconLink href={portfolio}>
                   <Globe size={18}/>
                 </IconLink>
-
+ <IconLink href={instagram}>
+                  <InstagramIcon size={18}/>
+                </IconLink>
               </div>
 
               
