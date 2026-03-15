@@ -56,8 +56,14 @@ export const toggleFollow = async (req, res) => {
         }),
       ]);
 
+      const updatedTargetUser = await User.findById(userIdToFollow).select(
+        "followerCount followers hotdropId profilePicture",
+      );
       return response(res, 200, `Followed @${userToFollow.hotdropId}`, {
         isFollowing: true,
+        followerCount: updatedTargetUser.followerCount,
+        profilePicture: updatedTargetUser.profilePicture,
+        followers: updatedTargetUser.followers,
       });
     }
   } catch (error) {
@@ -100,7 +106,7 @@ export const getUserByHotdropId = async (req, res) => {
 
   const loggedInUserId = req.user?._id;
   try {
-    const user = await User.findOne({ hotdropId }).select("-password");
+    const user = await User.findOne({ hotdropId }).select("-password").populate('followers', 'username hotdropId profilePicture').populate('following', 'username hotdropId profilePicture').populate({ path: 'posts', populate: [{ path: 'likes', select: 'username hotdropId profilePicture' }, { path: 'comments.user', select: 'username hotdropId profilePicture' }] });
     if (!user || user.length === 0) {
       return response(res, 404, "User not found with this hotdropId");
     }

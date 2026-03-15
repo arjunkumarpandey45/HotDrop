@@ -28,6 +28,7 @@ import ResendVerification from "./auth/ResendVerification.jsx";
 import Hero from "../src/pages/Hero/Hero.jsx";
 import NotFound from "./404/NotFound.jsx";
 import About from "./pages/About.jsx";
+import Searcheduser from "./search/Searcheduser.jsx";
 
 const router = createBrowserRouter([
   {
@@ -118,6 +119,10 @@ const router = createBrowserRouter([
   },{
     path:"/getpost/:postId",
     element:<><FromShare></FromShare></>
+  },
+  {
+    path:"/user/userprofile/:hotdropId",
+    element:<><Searcheduser></Searcheduser></>
   },
   {
     path:"*",
