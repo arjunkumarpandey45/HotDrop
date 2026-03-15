@@ -2,9 +2,13 @@ import { X, ChevronLeft, ChevronRight, Globe, ExternalLink, Heart, MessageCircle
 import { useAuthStore } from "../../../store/useAuthStore";
 import { formatDistanceToNow } from "date-fns";
 import dp from "../../../assets/dp.jpg";
+import { AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import PreviewModal from "./PreviewModal";
+import { Link } from "react-router";
 function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setLikePost, setCommentPost, setSharePost }) {
   const { user: currentUser } = useAuthStore();
-
+const [previewUrl, setPreviewUrl] = useState(null);
   // 1. SMART DETECTION: Pehle post ka user check karo, nahi toh current user (profile sync)
   // Isse My Profile aur All Post dono jagah sahi naam dikhega
   const postOwner = post?.user?.hotdropId ? post.user : currentUser;
@@ -70,9 +74,11 @@ function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setL
                 alt="avatar"
               />
               <div className="flex flex-col">
-                <span className="text-[12px] font-bold lowercase tracking-tight bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
+               <Link to={`/user/userprofile/${postOwner?.hotdropId}`} className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
+                 <span className="text-[12px] font-bold lowercase tracking-tight text-black bg-clip-text ">
                   @{postOwner?.hotdropId || "user"}
                 </span>
+               </Link>
                 <div className="flex items-center text-[9px] font-bold text-slate-400">
                   {post.createdAt ? (
                     <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
@@ -102,7 +108,15 @@ function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setL
 
             <div className="space-y-2">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Project Link</span>
-              <a href={livePost.projectLink} target="_blank" rel="noopener noreferrer" className="group/link relative flex items-center justify-between p-[1px] rounded-xl transition-all duration-300 hover:scale-[1.01]">
+              <div onClick={(e) => {
+                  e.preventDefault();
+                 
+                  if (!post.isLinkDead) {
+                    setPreviewUrl(post.projectLink);
+                  } else {
+                    toast.error("This project link appears to be dead")
+                  }
+                }}className="group/link relative flex items-center cursor-pointer justify-between p-[1px] rounded-xl transition-all duration-300 hover:scale-[1.01]">
                 <div className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${livePost.isLinkDead ? 'from-red-500 to-orange-500' : 'from-blue-500 via-cyan-400 to-emerald-400'}`} />
                 <div className="relative w-full flex items-center justify-between bg-white/90 backdrop-blur-md border border-slate-200/50 rounded-[11px] px-3 py-1.5 shadow-sm">
                   <div className="flex items-center gap-2.5 truncate">
@@ -117,7 +131,7 @@ function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setL
                     <ExternalLink size={11} className="text-slate-300 group-hover/link:text-blue-500 transition-all" />
                   </div>
                 </div>
-              </a>
+            </div>
             </div>
           </div>
 
@@ -143,10 +157,15 @@ function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setL
               <Share2 size={18} className="text-slate-400 group-hover/share:text-emerald-500" />
             </button>
           </div>
+          <AnimatePresence>{previewUrl && (
+        <PreviewModal key={previewUrl} url={previewUrl} onClose={() => setPreviewUrl(null)} />
+      )}</AnimatePresence>
         </div>
       </div>
     </div>
+    
   );
+  
 }
 
 export default ImageModal;

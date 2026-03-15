@@ -20,9 +20,11 @@ import LikeModal from "../Post/LikeModal";
 import ShareModal from "./ShareModal";
 import API from "../../../api/Api";
 import { toast} from "react-toastify";
-
+import PreviewModal from "./PreviewModal";
+import { AnimatePresence } from "framer-motion";
 function UserPost() {
   const { user } = useAuthStore();
+  const [previewUrl, setPreviewUrl] = useState(null);
 const [commentText, setCommentText] = useState("");
   const [imagePost, setImagePost] = useState(null);
   const [commentPost, setCommentPost] = useState(null);
@@ -47,10 +49,11 @@ const [commentText, setCommentText] = useState("");
     return () => window.removeEventListener("click", closeMenu);
   }, []);
 
-  const posts = [...(user?.posts || [])].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-  );
-
+ const posts = React.useMemo(() => {
+    return [...(user?.posts || [])].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+  }, [user?.posts]);
   const nextImage = (e, postId, total) => {
     e.stopPropagation();
     setCurrentImage((prev) => ({
@@ -323,10 +326,17 @@ if (imagePost && imagePost._id === commentPost._id) {
                 {/* TAGS */}
 
                 {/* PROJECT LINK */}
-                <a
-                  href={post.projectLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <div
+                onClick={(e) => {
+    e.preventDefault();
+    // Agar link live hai toh modal kholo, warna dead link ka error dikhao
+    if (!post.isLinkDead) {
+      setPreviewUrl(post.projectLink);
+    } else {
+      toast.error("This project link appears to be dead")
+    }
+  }}
+            
                   className="group/link relative flex items-center justify-between p-[1px] rounded-xl mb-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
                 >
                   {/* Border Glow Layer */}
@@ -382,7 +392,7 @@ if (imagePost && imagePost._id === commentPost._id) {
                       />
                     </div>
                   </div>
-                </a>
+                </div>
 
                 {/* DESCRIPTION */}
                 <div className="relative group/desc mb-5">
@@ -521,7 +531,12 @@ if (imagePost && imagePost._id === commentPost._id) {
     post={commentPost}
     commentText={commentText}
     setCommentText={setCommentText}
-    setCommentPost={setCommentPost}
+    setCommentPost={(upd) => {
+      setCommentPost(upd);
+      if (imagePost && imagePost._id === upd._id) {
+        setImagePost(upd);
+      }
+    }}
     submitComment={submitComment}
     onClose={() => setCommentPost(null)}
   />
@@ -532,6 +547,9 @@ if (imagePost && imagePost._id === commentPost._id) {
       {likePost && (
         <LikeModal post={likePost} onClose={() => setLikePost(null)} />
       )}
+      <AnimatePresence>{previewUrl && (
+        <PreviewModal  key={previewUrl} url={previewUrl} onClose={() => setPreviewUrl(null)} />
+      )}</AnimatePresence>
     </div>
   );
 }

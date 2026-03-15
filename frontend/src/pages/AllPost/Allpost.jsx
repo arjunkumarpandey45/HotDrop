@@ -24,10 +24,12 @@ import ImageModal from "../Profile/Post/ImageModal";
 import API from "../../api/Api";
 import Sponser from "../Sponser/Sponser";
 import dp from "../../assets/dp.jpg";
+import PreviewModal from "../Profile/Post/PreviewModal";
+import { AnimatePresence } from "framer-motion";
 function Allpost() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-
+const [previewUrl, setPreviewUrl] = useState(null);
   const [posts, setPosts] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
@@ -261,8 +263,15 @@ function Allpost() {
 
                   {/* Auth Protected Link Section */}
                   <div 
-                    onClick={() => !user ? setShowAuthModal(true) : window.open(post.projectLink, "_blank")}
-                    className="group/link relative flex items-center justify-between p-[1px] rounded-xl mb-6 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+               onClick={(e) => {
+                  e.preventDefault();
+                  
+                  if (!post.isLinkDead) {
+                    setPreviewUrl(post.projectLink);
+                  } else {
+                    toast.error("This project link appears to be dead")
+                  }
+                }}      className="group/link relative flex items-center  justify-between p-[1px] rounded-xl mb-6 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
                   >
                     <div className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${post.isLinkDead ? "from-red-500 to-orange-500" : "from-indigo-500 via-blue-400 to-emerald-400"}`} /> 
                     <div className="relative w-full flex items-center justify-between bg-white border border-slate-200/50 rounded-[11px] px-3 py-2 shadow-sm">
@@ -342,6 +351,9 @@ function Allpost() {
       )}
 
       {/* Modals synced with posts state */}
+      <AnimatePresence>{previewUrl && (
+        <PreviewModal  key={previewUrl} url={previewUrl} onClose={() => setPreviewUrl(null)} />
+      )}</AnimatePresence>
       {imagePost && <ImageModal post={imagePost} modalIndex={modalIndex} setModalIndex={setModalIndex} handleLike={handleLike} onClose={() => setImagePost(null)} setLikePost={setLikePost} setCommentPost={setCommentPost} setSharePost={setSharePost} />}
       {commentPost && <CommentModal post={commentPost} commentText={commentText} setCommentText={setCommentText} submitComment={submitComment} onClose={() => setCommentPost(null)} setCommentPost={(upd) => {
           setPosts(prev => prev.map(p => p._id === upd._id ? upd : p));
