@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "../api/Api";
 // 🔥 Added UserX icon to the imports
 import { Github, Linkedin, Globe, Edit, Loader2, Award, X, UserPlus, UserMinus, UserX } from "lucide-react";
@@ -15,10 +15,10 @@ import UserPost from "../pages/Profile/Post/UserPost";
 
 function Searcheduser() {
   const { hotdropId } = useParams();
-  const { user, setUser } = useAuthStore();
+  const { user, setUser,isCheckingAuth } = useAuthStore();
   const navigate = useNavigate();
 
-  const [profileUser, setProfileUser] = useState(user);
+  const [profileUser, setProfileUser] = useState(null);
   const [isOwner, setIsOwner] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
@@ -43,39 +43,90 @@ function Searcheduser() {
     gender: "",
   });
 
-  const targetHotdropId = hotdropId || user?.hotdropId;
+  const targetHotdropId = decodeURIComponent(
+    (hotdropId || user?.hotdropId || "").trim(),
+  );
 
   useEffect(() => {
+    if (!isCheckingAuth && !user) {
+      setShowLoginCard(true);
+    }
+    if (user) {
+      setShowLoginCard(false);
+    }
+  }, [isCheckingAuth, user]);
+
+  useEffect(() => {
+    let cancelled = false;
+
     const loadProfile = async () => {
-      if (!targetHotdropId) return;
+      if (isCheckingAuth) return;
+
+      if (!targetHotdropId) {
+        if (!cancelled) {
+          setProfileUser(null);
+          setLoading(false);
+        }
+        return;
+      }
+
       setLoading(true);
       setProfileUser(null);
-      setIsOwner(false);
-      setIsFollowing(false);
 
       try {
         const res = await axios.get(`/user/userprofile/${targetHotdropId}`);
         const profile = res.data.data.user;
-        setProfileUser(profile);
 
-        const owner = user?.hotdropId === profile.hotdropId;
-        setIsOwner(owner);
-
-        if (user && profile?.followers) {
-          const isFollowingNow = profile.followers.some((f) =>
-            (typeof f === "string" ? f : f._id).toString() === user._id.toString(),
-          );
-          setIsFollowing(isFollowingNow);
+        if (!cancelled) {
+          setProfileUser(profile);
         }
       } catch (error) {
-        showErrorToast(error.response?.data?.message || "Profile not found");
+        if (!cancelled && error.response?.status !== 401) {
+          showErrorToast(error.response?.data?.message || "Profile not found");
+          setProfileUser(null);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     loadProfile();
-  }, [targetHotdropId, user]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [targetHotdropId, isCheckingAuth]);
+
+  useEffect(() => {
+    if (!profileUser) {
+      setIsOwner(false);
+      setIsFollowing(false);
+      return;
+    }
+
+    const owner = user?.hotdropId === profileUser.hotdropId;
+    setIsOwner(owner);
+
+    if (user && profileUser?.followers) {
+      const currentUserId = String(user?._id || "");
+
+      if (!currentUserId) {
+        setIsFollowing(false);
+        return;
+      }
+
+      const isFollowingNow = profileUser.followers.some((f) => {
+        const followerId = typeof f === "string" ? f : f?._id;
+        return String(followerId || "") === currentUserId;
+      });
+
+      setIsFollowing(isFollowingNow);
+    } else {
+      setIsFollowing(false);
+    }
+  }, [profileUser, user]);
 
   useEffect(() => {
     if (profileUser && isOwner) {
@@ -173,7 +224,7 @@ function Searcheduser() {
 
   const getSocialValue = (key) => profileUser.socialLinks?.[key] || profileUser[key];
 
-  // 🔥 UPDATED LOGIC: Separated loading from "User Not Found"
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -185,7 +236,7 @@ function Searcheduser() {
   // 🔥 NEW: User Not Found UI
   if (!profileUser) {
     return (
-      <div className="w-full flex flex-col items-center justify-center min-h-[60vh] p-4 bg-[#F9FAFB]">
+      <div className="w-full flex flex-col items-center justify-center min-h-[100vh] p-4 bg-[#F9FAFB]">
         <div className="bg-white p-8 rounded-[2rem] shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col items-center text-center max-w-sm">
           <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
             <UserX size={32} className="text-slate-400" />
@@ -206,7 +257,7 @@ function Searcheduser() {
   }
 
   return (
-    <div className="w-full flex flex-col items-center gap-6 p-4 bg-[#F9FAFB]">
+    <div className="w-full flex flex-col items-center gap-6 p-4  px-bg-[#F9FAFB]">
       <ToastContainer
         position="top-center"
         autoClose={3000}
@@ -216,7 +267,7 @@ function Searcheduser() {
         transition={Slide}
       />
 
-      <div className="w-full h-auto md:h-[47vh] bg-white rounded-[2rem] shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden relative flex flex-col">
+      <div  className="w-full md:w-[80%] h-auto md:h-[47vh] bg-white rounded-[2rem] shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden relative flex flex-col">
         <div className="flex justify-between items-center px-6 py-3 border-b border-slate-50 bg-slate-50/40 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
@@ -336,6 +387,39 @@ function Searcheduser() {
         isOwnerOverride={isOwner} 
         hideOptions={true} 
       />
+
+      {showLoginCard && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-6">
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={() => setShowLoginCard(false)}
+          />
+          <div className="relative bg-white w-full max-w-[320px] rounded-2xl p-6 shadow-xl text-center border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <UserX size={22} />
+            </div>
+            <h2 className="text-base font-bold text-slate-900 mb-1">Login first</h2>
+            <p className="text-[12px] text-slate-500 mb-6">Login first to continue.</p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => navigate("/login")}
+                className="w-full bg-indigo-600 text-white text-[13px] font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition-all"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setShowLoginCard(false)}
+                className="w-full bg-slate-50 text-slate-600 text-[13px] font-semibold py-2.5 rounded-lg hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+            </div>
+            <p className="mt-4 text-[11px] text-slate-400">
+              New here? <Link to="/signup" className="text-indigo-600 font-bold hover:underline">Create account</Link>
+            </p>
+          </div>
+        </div>
+      )}
 
       {showFullImage && (
         <div
