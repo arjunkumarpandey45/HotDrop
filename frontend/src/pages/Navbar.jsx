@@ -3,7 +3,6 @@ import {
   Search,
   User,
   LogOut,
-
   Plus,
   X,
   Menu,
@@ -19,12 +18,19 @@ import logo from "../assets/logo5.png";
 import { useAuthStore } from "../store/useAuthStore";
 import { showSuccessToastForLogout } from "../Toast/toast";
 import { Slide, ToastContainer } from "react-toastify";
+
 const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+  // 🔥 NEW: State for our login prompt modal
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+  
   const [scrolled, setScrolled] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
   const { user, isLoggedIn, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,17 +49,35 @@ const Navbar = () => {
     }
   };
 
-  const handleLogout = async () => {
-    try{
-      logout();
-    showSuccessToastForLogout()
-    setIsProfileOpen(false); 
-  navigate("/");
-    }catch{
-      showErrorToast();
+  // 🔥 UPDATED: Search handler now checks for login status
+  const handleSearch = (e) => {
+    if (e.key === "Enter" && searchQuery.trim() !== "") {
+      if (!isLoggedIn) {
+        // If not logged in, stop the search and show the prompt
+        setIsLoginPromptOpen(true);
+        setIsMobileSearchOpen(false); // Close mobile search bar if open
+        return;
+      }
+      
+      // If logged in, proceed normally
+      navigate(`/user/userprofile/${searchQuery}`);
+      setSearchQuery("");
+      setIsMobileSearchOpen(false);
     }
-    
   };
+
+  const handleLogout = async () => {
+    try {
+      logout();
+      showSuccessToastForLogout();
+      setIsProfileOpen(false);
+      navigate("/");
+    } catch {
+      // Make sure showErrorToast() is imported if you use it!
+      console.error("Logout failed");
+    }
+  };
+
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -62,29 +86,33 @@ const Navbar = () => {
         scrolled ? "pt-2" : "pt-4"
       }`}
     >
-      {(isProfileOpen || isSidebarOpen || isCreateModalOpen) && (
+      {/* 🔥 UPDATED OVERLAY: Added isLoginPromptOpen to the condition */}
+      {(isProfileOpen || isSidebarOpen || isCreateModalOpen || isLoginPromptOpen) && (
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-md z-40"
           onClick={() => {
             setIsProfileOpen(false);
             setIsSidebarOpen(false);
             setIsCreateModalOpen(false);
+            setIsLoginPromptOpen(false); // Close modal when clicking outside
           }}
         />
       )}
-  <ToastContainer
-  position="top-center" 
-  autoClose={3000}
-  hideProgressBar
-  closeButton={false}
-  theme="light"
-  transition={Slide} 
-/>
+
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar
+        closeButton={false}
+        theme="light"
+        transition={Slide}
+      />
+
       {/* NAVBAR CARD */}
       <div
         className={`max-w-7xl mx-auto bg-white/90 backdrop-blur-xl border border-slate-200 shadow-lg rounded-2xl px-4 py-2 flex items-center justify-between relative z-50`}
       >
-        {/* 🔥 MOBILE SEARCH MODE */}
+        {/* MOBILE SEARCH MODE */}
         {isMobileSearchOpen ? (
           <div className="flex items-center w-full gap-3 md:hidden">
             <button
@@ -99,7 +127,10 @@ const Navbar = () => {
               <input
                 autoFocus
                 type="text"
-                placeholder="Search projects..."
+                placeholder="Search HotDrop ID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
@@ -116,7 +147,7 @@ const Navbar = () => {
               </button>
 
               <Link to="/" className="flex items-center gap-2">
-                <img src={logo} width="100" alt="" />
+                <img src={logo} width="100" alt="Logo" />
               </Link>
             </div>
 
@@ -126,7 +157,10 @@ const Navbar = () => {
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search projects..."
+                  placeholder="Search HotDrop ID..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearch}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
@@ -134,7 +168,6 @@ const Navbar = () => {
 
             {/* RIGHT */}
             <div className="flex items-center gap-2 md:gap-3">
-              {/* MOBILE SEARCH BUTTON */}
               <button
                 onClick={() => setIsMobileSearchOpen(true)}
                 className="md:hidden p-2 hover:bg-slate-100 rounded-xl"
@@ -142,26 +175,11 @@ const Navbar = () => {
                 <Search className="h-5 w-5 text-slate-600" />
               </button>
 
-              {/* CREATE BUTTON */}
               <button
                 onClick={handleCreateClick}
-                className="group relative flex items-center gap-2 
-  px-3 py-2 sm:px-5 sm:py-2.5 
-  rounded-xl sm:rounded-2xl 
-  text-xs sm:text-sm 
-  font-semibold text-white 
-  bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 
-  shadow-md sm:shadow-lg shadow-blue-500/20
-  transition-all duration-300 
-  hover:scale-105 hover:shadow-blue-600/40 
-  active:scale-95 overflow-hidden"
+                className="group relative flex items-center gap-2 px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 shadow-md sm:shadow-lg shadow-blue-500/20 transition-all duration-300 hover:scale-105 hover:shadow-blue-600/40 active:scale-95 overflow-hidden"
               >
-                {/* Shine Effect */}
-                <span
-                  className="absolute left-[-75%] top-0 h-full w-1/2 bg-white/20 skew-x-12 
-  group-hover:left-[130%] transition-all duration-700"
-                ></span>
-
+                <span className="absolute left-[-75%] top-0 h-full w-1/2 bg-white/20 skew-x-12 group-hover:left-[130%] transition-all duration-700"></span>
                 <Plus className="h-4 w-4 sm:h-5 sm:w-5 relative z-10" />
                 <span className="relative z-10 hidden sm:inline tracking-wide">
                   Drop Project
@@ -187,10 +205,10 @@ const Navbar = () => {
                         <img
                           src={user.profilePicture}
                           className="w-full h-full object-cover"
-                          alt=""
+                          alt="Profile"
                         />
                       ) : (
-                        user?.username?.charAt(0)
+                        user?.username?.charAt(0) || "U"
                       )}
                     </div>
                     <ChevronDown
@@ -219,8 +237,6 @@ const Navbar = () => {
                         <User className="h-4 w-4" /> Profile
                       </Link>
 
-                     
-
                       <div className="h-px bg-slate-100 my-1"></div>
 
                       <button
@@ -246,14 +262,14 @@ const Navbar = () => {
       >
         <div className="p-8 h-full flex flex-col">
           <div className="flex items-center justify-between mb-10">
-           <div className="flex items-center tracking-tighter">
-  <span className="font-black text-2xl text-orange-500  uppercase">
-    Hot
-  </span>
-  <span className="font-black text-2xl text-blue-600 px-1 uppercase">
-    Drop
-  </span>
-</div>
+            <div className="flex items-center tracking-tighter">
+              <span className="font-black text-2xl text-orange-500 uppercase">
+                Hot
+              </span>
+              <span className="font-black text-2xl text-blue-600 px-1 uppercase">
+                Drop
+              </span>
+            </div>
             <button
               onClick={() => setIsSidebarOpen(false)}
               className="p-2 hover:bg-slate-100 rounded-xl transition"
@@ -295,6 +311,47 @@ const Navbar = () => {
           </nav>
         </div>
       </div>
+
+      {/* 🔥 NEW: LOGIN PROMPT MODAL */}
+      {isLoginPromptOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-[70] px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setIsLoginPromptOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1 rounded-full transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            
+            <div className="h-14 w-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100">
+              <UserPlus className="h-7 w-7 text-blue-600" />
+            </div>
+            
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Sign in to search</h3>
+            <p className="text-sm text-slate-500 mb-6">
+              You need to be logged in to search for other HotDrop creators and view their profiles.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsLoginPromptOpen(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setIsLoginPromptOpen(false);
+                  navigate("/signup"); // Redirects to your signup/login page
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition"
+              >
+                Join Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <CreatePost
         isOpen={isCreateModalOpen}

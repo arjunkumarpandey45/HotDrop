@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import FounderCard from "./FounderCard"; // Make sure the filename matches
 import arjun from "../assets/ar.jpeg";
+import ankit from "../assets/an.jpeg";
 const About = () => {
   const { scrollYProgress } = useScroll();
 
@@ -140,12 +141,12 @@ const About = () => {
               type="co-founder"
               name="Ankit Mahabharat"
               role="MERN Stack Developer"
-             
-              bio="Focused on ecosystem scaling and ensuring every project on HotDrop meets the 'Live & Breathing' protocol standards."
+              image={ankit}
+              bio="Full-Stack MERN Developer focused on backend & frontend systems, scalable architecture, and AI-driven applications."
               color="blue"
-              github="#"
-              linkedin="#"
-              portfolio="#"
+              github="https://github.com/ankitmahabharat"
+              linkedin="https://www.linkedin.com/in/ankit-mahabharat-7730b7134/"
+              portfolio="https://portfolio-khaki-five-90.vercel.app/"
             />
           </div>
         </div>

@@ -59,6 +59,36 @@ const AiBot = () => {
       const res = await API.post("/bot/chat", { message ,username: user?.username || "Developer"});
 
       setChat((prev) => [...prev, { role: "ai", text: res.data.reply }]);
+
+      // Handle navigation commands
+      if (res.data.command) {
+        const command = res.data.command.action;
+        setTimeout(() => {
+          switch (command) {
+            case "profile":
+              navigate(`/profile/${user?.username}`);
+              break;
+            case "home":
+              navigate("/");
+              break;
+            case "createPost":
+              navigate("/create-post");
+              break;
+            case "allPosts":
+              navigate("/all-posts");
+              break;
+            case "about":
+              navigate("/about");
+              break;
+            case "contact":
+              navigate("/contact");
+              break;
+            default:
+              break;
+          }
+          setOpen(false); // Close the chat window after navigation
+        }, 500);
+      }
     } catch {
       setChat((prev) => [
         ...prev,
