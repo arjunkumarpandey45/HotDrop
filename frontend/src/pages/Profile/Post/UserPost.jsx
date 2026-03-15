@@ -531,7 +531,12 @@ if (imagePost && imagePost._id === commentPost._id) {
     post={commentPost}
     commentText={commentText}
     setCommentText={setCommentText}
-    setCommentPost={setCommentPost}
+    setCommentPost={(upd) => {
+      setCommentPost(upd);
+      if (imagePost && imagePost._id === upd._id) {
+        setImagePost(upd);
+      }
+    }}
     submitComment={submitComment}
     onClose={() => setCommentPost(null)}
   />
