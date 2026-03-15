@@ -52,7 +52,7 @@ const PreviewModal = ({ url, onClose }) => {
           className="relative w-full h-full max-w-[95%] bg-white shadow-2xl overflow-hidden flex flex-col sm:rounded-[2rem] border border-white/20 mx-auto"
         >
           {/* Header - Fixed Mobile Button */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 bg-white/90 backdrop-blur-md z-[60]">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-2 border-b border-slate-100 bg-white/90 backdrop-blur-md z-[60]">
             <div className="flex items-center gap-3">
               <div className="relative shrink-0">
                 <div className="p-2 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg">
@@ -169,7 +169,7 @@ const PreviewModal = ({ url, onClose }) => {
           </div>
 
           {/* FOOTER - Centered Note */}
-          <div className="px-6 py-4 bg-white border-t border-slate-50 flex flex-col items-center justify-center gap-3">
+          <div className="px-6 py-1 bg-white border-t border-slate-50 flex flex-col items-center justify-center gap-3">
             {/* Note Centered as requested */}
             <p className="text-[10px] text-slate-600 font-medium text-center leading-relaxed">
               "Note : In case the preview is blank, or to experience the all functionality, use the{" "}

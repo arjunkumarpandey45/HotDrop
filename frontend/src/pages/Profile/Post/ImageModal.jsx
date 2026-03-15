@@ -5,6 +5,7 @@ import dp from "../../../assets/dp.jpg";
 import { AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import PreviewModal from "./PreviewModal";
+import { Link } from "react-router";
 function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setLikePost, setCommentPost, setSharePost }) {
   const { user: currentUser } = useAuthStore();
 const [previewUrl, setPreviewUrl] = useState(null);
@@ -73,9 +74,11 @@ const [previewUrl, setPreviewUrl] = useState(null);
                 alt="avatar"
               />
               <div className="flex flex-col">
-                <span className="text-[12px] font-bold lowercase tracking-tight bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
+               <Link to={`/user/userprofile/${postOwner?.hotdropId}`} className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
+                 <span className="text-[12px] font-bold lowercase tracking-tight text-black bg-clip-text ">
                   @{postOwner?.hotdropId || "user"}
                 </span>
+               </Link>
                 <div className="flex items-center text-[9px] font-bold text-slate-400">
                   {post.createdAt ? (
                     <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
