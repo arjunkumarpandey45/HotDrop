@@ -19,11 +19,12 @@ import CommentModal from "../Post/CommentModal";
 import LikeModal from "../Post/LikeModal";
 import ShareModal from "./ShareModal";
 import API from "../../../api/Api";
-import { toast} from "react-toastify";
+import { toast } from "react-toastify";
 
-function UserPost() {
+// 🔥 Added hideOptions prop here
+function UserPost({ postsOverride, isOwnerOverride, hideOptions }) {
   const { user } = useAuthStore();
-const [commentText, setCommentText] = useState("");
+  const [commentText, setCommentText] = useState("");
   const [imagePost, setImagePost] = useState(null);
   const [commentPost, setCommentPost] = useState(null);
   const [likePost, setLikePost] = useState(null);
@@ -34,6 +35,7 @@ const [commentText, setCommentText] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [sharePost, setSharePost] = useState(null);
+
   useEffect(() => {
     const resize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", resize);
@@ -47,9 +49,9 @@ const [commentText, setCommentText] = useState("");
     return () => window.removeEventListener("click", closeMenu);
   }, []);
 
-  const posts = [...(user?.posts || [])].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-  );
+  const posts = postsOverride 
+    ? [...postsOverride].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    : [...(user?.posts || [])].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const nextImage = (e, postId, total) => {
     e.stopPropagation();
@@ -79,7 +81,6 @@ const [commentText, setCommentText] = useState("");
           render: "Drop deleted! 🗑️", type: "success", isLoading: false, autoClose: 2000 
         });
 
-        // Zustand se post ko turant UI se hatao
         useAuthStore.setState((state) => ({
           user: {
             ...state.user,
@@ -96,53 +97,53 @@ const [commentText, setCommentText] = useState("");
       setIsDeleting(false);
     }
   };
-const submitComment = async (e) => {
-  e.preventDefault();
-  if (!commentText.trim()) return;
 
-  try {
-    
-    const res = await API.post(`/post/comment/${commentPost._id}`, { 
-      text: commentText 
-    });
-toast.success("Comment added!");
-   
-    const newPopulatedComment = res.data.data;
+  const submitComment = async (e) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
 
-   
-    useAuthStore.setState((state) => ({
-      user: state.user ? {
-        ...state.user,
-        posts: state.user.posts.map((p) =>
-          p._id === commentPost._id
-            ? { 
-                ...p, 
-                comments: [newPopulatedComment, ...(p.comments || [])], 
-                commentCount: (p.commentCount || 0) + 1 
-              }
-            : p
-        )
-      } : null
-    }));
+    try {
+      const res = await API.post(`/post/comment/${commentPost._id}`, { 
+        text: commentText 
+      });
+      toast.success("Comment added!");
+      
+      const newPopulatedComment = res.data.data;
 
-    // Local state update taaki Modal refresh ho jaye
-    setCommentPost((prev) => ({
-      ...prev,
-      comments: [newPopulatedComment, ...(prev.comments || [])],
-      commentCount: (prev.commentCount || 0) + 1
-    }));
-if (imagePost && imagePost._id === commentPost._id) {
-      setImagePost((prev) => ({
+      useAuthStore.setState((state) => ({
+        user: state.user ? {
+          ...state.user,
+          posts: state.user.posts.map((p) =>
+            p._id === commentPost._id
+              ? { 
+                  ...p, 
+                  comments: [newPopulatedComment, ...(p.comments || [])], 
+                  commentCount: (p.commentCount || 0) + 1 
+                }
+              : p
+          )
+        } : null
+      }));
+
+      setCommentPost((prev) => ({
         ...prev,
         comments: [newPopulatedComment, ...(prev.comments || [])],
         commentCount: (prev.commentCount || 0) + 1
       }));
+
+      if (imagePost && imagePost._id === commentPost._id) {
+        setImagePost((prev) => ({
+          ...prev,
+          comments: [newPopulatedComment, ...(prev.comments || [])],
+          commentCount: (prev.commentCount || 0) + 1
+        }));
+      }
+      setCommentText(""); 
+    } catch (error) {
+      console.error("Comment submit error:", error);
     }
-    setCommentText(""); // Input khali karo
-  } catch (error) {
-    console.error("Comment submit error:", error);
-  }
-};
+  };
+
   if (posts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-32">
@@ -154,63 +155,57 @@ if (imagePost && imagePost._id === commentPost._id) {
     );
   }
 
-
-
- const handleLike = async (postToLike) => {
-  try {
-    const res = await API.post(`/post/like/${postToLike._id}`);
-    
-    if (res.status === 200) {
-      const { likeCount, isLiked } = res.data.data;
+  const handleLike = async (postToLike) => {
+    try {
+      const res = await API.post(`/post/like/${postToLike._id}`);
       
-      // LOGIC: Modal ke liye pura user object taiyar karo
-      const currentUserObj = {
-        _id: user._id,
-        hotdropId: user.hotdropId,
-        profilePicture: user.profilePicture
-      };
+      if (res.status === 200) {
+        const { likeCount, isLiked } = res.data.data;
+        
+        const currentUserObj = {
+          _id: user._id,
+          hotdropId: user.hotdropId,
+          profilePicture: user.profilePicture
+        };
 
-      toast.success(res.data.message || "Updated!");
+        toast.success(res.data.message || "Updated!");
 
-      // 1. UPDATE ZUSTAND STORE (Global)
-      useAuthStore.setState((state) => ({
-        user: state.user ? {
-          ...state.user,
-          posts: state.user.posts.map((p) =>
-            p._id === postToLike._id
-              ? { 
-                  ...p, 
-                  likeCount: likeCount,
-                  // FIX: ID ki jagah pura Object push karo taaki Modal mein data dikhe
-                  likes: isLiked 
-                    ? [...(p.likes || []), currentUserObj] 
-                    : (p.likes || []).filter(l => (l._id || l) !== user._id)
-                }
-              : p
-          )
-        } : null
-      }));
-
-      // 2. UPDATE IMAGE MODAL STATE (Syncing)
-      if (imagePost && imagePost._id === postToLike._id) {
-        setImagePost(prev => ({
-          ...prev,
-          likeCount: likeCount,
-          likes: isLiked 
-            ? [...(prev.likes || []), currentUserObj] 
-            : (prev.likes || []).filter(l => (l._id || l) !== user._id)
+        useAuthStore.setState((state) => ({
+          user: state.user ? {
+            ...state.user,
+            posts: state.user.posts.map((p) =>
+              p._id === postToLike._id
+                ? { 
+                    ...p, 
+                    likeCount: likeCount,
+                    likes: isLiked 
+                      ? [...(p.likes || []), currentUserObj] 
+                      : (p.likes || []).filter(l => (l._id || l) !== user._id)
+                  }
+                : p
+            )
+          } : null
         }));
-      }
 
+        if (imagePost && imagePost._id === postToLike._id) {
+          setImagePost(prev => ({
+            ...prev,
+            likeCount: likeCount,
+            likes: isLiked 
+              ? [...(prev.likes || []), currentUserObj] 
+              : (prev.likes || []).filter(l => (l._id || l) !== user._id)
+          }));
+        }
+
+      }
+    } catch (error) {
+      console.error("Like error:", error);
+      toast.error("Failed to like post");
     }
-  } catch (error) {
-    console.error("Like error:", error);
-    toast.error("Failed to like post");
-  }
-};
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-    
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.map((post) => {
           const imgIndex = currentImage[post._id] || 0;
@@ -221,7 +216,6 @@ if (imagePost && imagePost._id === commentPost._id) {
               key={post._id}
               className="relative bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col"
             >
-           
               {/* IMAGE */}
               <div
                 className="relative bg-slate-100 cursor-pointer flex items-center justify-center max-h-[260px] overflow-hidden"
@@ -269,45 +263,41 @@ if (imagePost && imagePost._id === commentPost._id) {
                   </div>
                 )}
 
-                {/* 3 DOT MENU */}
-                <div className="absolute top-3 right-3">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMenuOpen(menuOpen === post._id ? null : post._id);
-                    }}
-                    className="bg-white p-1.5 rounded-md shadow"
-                  >
-                    <MoreVertical size={16} />
-                  </button>
-
-                  {menuOpen === post._id && (
-                    <div
-                      onClick={(e) => e.stopPropagation()}
-                      className="absolute right-0 mt-2  bg-white border rounded-md shadow-md"
+                {/* 🔥 3 DOT MENU (Hidden if hideOptions is true) */}
+                {!hideOptions && (
+                  <div className="absolute top-3 right-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpen(menuOpen === post._id ? null : post._id);
+                      }}
+                      className="bg-white p-1.5 rounded-md shadow"
                     >
-                      <button
-  onClick={(e) => {
-    e.stopPropagation();
-    setDeleteConfirm(post);
-    setMenuOpen(null);
-  }}
-  className="relative flex items-center gap-3 px-3 py-3 text-[11px] font-extrabold uppercase tracking-widest text-red-500 
-  hover:text-red transition-all duration-300 group overflow-hidden rounded-lg active:scale-95"
->
-  
-  {/* Hover background slide */}
- 
-  {/* Content */}
-  <Trash2
-      size={15}
-      className="transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110"
-    />
+                      <MoreVertical size={16} />
+                    </button>
 
-</button>
-                    </div>
-                  )}
-                </div>
+                    {menuOpen === post._id && (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute right-0 mt-2  bg-white border rounded-md shadow-md"
+                      >
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteConfirm(post);
+                            setMenuOpen(null);
+                          }}
+                          className="relative flex items-center gap-3 px-3 py-3 text-[11px] font-extrabold uppercase tracking-widest text-red-500 hover:text-red transition-all duration-300 group overflow-hidden rounded-lg active:scale-95"
+                        >
+                          <Trash2
+                            size={15}
+                            className="transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110"
+                          />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* CONTENT */}
@@ -320,8 +310,6 @@ if (imagePost && imagePost._id === commentPost._id) {
                   <div className="h-[2px] w-8 bg-blue-600 mt-1.5 transition-all duration-300 group-hover/title:w-12" />
                 </div>
 
-                {/* TAGS */}
-
                 {/* PROJECT LINK */}
                 <a
                   href={post.projectLink}
@@ -331,12 +319,12 @@ if (imagePost && imagePost._id === commentPost._id) {
                 >
                   {/* Border Glow Layer */}
                   <div
-                className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${
-                  post.isLinkDead
-                    ? "from-red-500 to-orange-500"
-                    :"from-blue-500 via-cyan-400 to-emerald-400"
-                }`}
-              /> 
+                    className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${
+                      post.isLinkDead
+                        ? "from-red-500 to-orange-500"
+                        :"from-blue-500 via-cyan-400 to-emerald-400"
+                    }`}
+                  /> 
 
                   {/* Main Compact Body */}
                   <div className="relative w-full flex items-center justify-between bg-white/90 backdrop-blur-md border border-slate-200/50 rounded-[11px] px-3 py-1.5 shadow-sm">
@@ -386,9 +374,7 @@ if (imagePost && imagePost._id === commentPost._id) {
 
                 {/* DESCRIPTION */}
                 <div className="relative group/desc mb-5">
-                  {/* Subtle Vertical Accent Line */}
                   <div className="absolute -left-3 top-0 bottom-0 w-[2px] bg-slate-100 group-hover/desc:bg-blue-500/30 transition-colors duration-500 rounded-full" />
-
                   <p className="text-[11px] leading-[1.6] text-slate-500 font-medium line-clamp-2 transition-colors duration-300 group-hover/desc:text-slate-700 ">
                     <span className="text-blue-500/50 font-black text-sm leading-none mr-0.5 select-none inline-block transform translate-y-1">
                       &ldquo;
@@ -399,24 +385,26 @@ if (imagePost && imagePost._id === commentPost._id) {
                     </span>
                   </p>
                 </div>
- <div className="flex items-center  text-[9px] font-bold text-slate-400 ">
+                
+                <div className="flex items-center  text-[9px] font-bold text-slate-400 ">
+                  {post.createdAt ? (
+                    <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+                  ) : (
+                    <span>just now</span>
+                  )}
+                </div>
 
-  {post.createdAt ? (
-    <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
-  ) : (
-    <span>just now</span>
-  )}
-</div>
                 {/* FOOTER */}
                 <div className="flex justify-between  md:hidden items-center mt-auto border-t pt-3">
                   <div className="flex gap-5 items-center">
                     <div className="flex items-center gap-1">
-                      <Heart  size={18} onClick={() => handleLike(post)} // Click on icon triggers like
-    className={`cursor-pointer transition-colors ${
-      post.likes?.some(l => (l._id || l) === user._id)
-        ? "fill-red-500 text-red-500" 
-        : "text-slate-400" 
-    }`} />
+                      <Heart  size={18} onClick={() => handleLike(post)} 
+                        className={`cursor-pointer transition-colors ${
+                          post.likes?.some(l => (l._id || l) === user._id)
+                            ? "fill-red-500 text-red-500" 
+                            : "text-slate-400" 
+                        }`} 
+                      />
                       <span
                         onClick={() => setLikePost(post)}
                         className="text-xs cursor-pointer font-semibold"
@@ -445,90 +433,81 @@ if (imagePost && imagePost._id === commentPost._id) {
           );
         })}
       </div>
-{deleteConfirm && (
-  <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-300">
-    
-    {/* Overlay */}
-    <div
-      className="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity"
-      onClick={() => !isDeleting && setDeleteConfirm(null)}
-    />
 
-    {/* Modal */}
-    <div className="relative w-full max-w-[320px] bg-white rounded-2xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.25)] border border-slate-100 flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity"
+            onClick={() => !isDeleting && setDeleteConfirm(null)}
+          />
+          <div className="relative w-full max-w-[320px] bg-white rounded-2xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.25)] border border-slate-100 flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-4 shadow-sm">
+              <AlertCircle size={26} strokeWidth={2.5} />
+            </div>
+            <h4 className="text-lg font-semibold text-slate-800 mb-1">
+              Delete Drop?
+            </h4>
+            <p className="text-xs text-slate-500 leading-relaxed mb-6">
+              This action cannot be undone.  
+              <br />
+              Remove{" "}
+              <span className="font-semibold text-slate-900">
+                "{deleteConfirm.title}"
+              </span>
+              ?
+            </p>
+            <div className="flex w-full gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                disabled={isDeleting}
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFinalDelete}
+                disabled={isDeleting}
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:bg-red-300 transition flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  "Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Icon */}
-      <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-4 shadow-sm">
-        <AlertCircle size={26} strokeWidth={2.5} />
-      </div>
-
-      {/* Title */}
-      <h4 className="text-lg font-semibold text-slate-800 mb-1">
-        Delete Drop?
-      </h4>
-
-      {/* Description */}
-      <p className="text-xs text-slate-500 leading-relaxed mb-6">
-        This action cannot be undone.  
-        <br />
-        Remove{" "}
-        <span className="font-semibold text-slate-900">
-          "{deleteConfirm.title}"
-        </span>
-        ?
-      </p>
-
-      {/* Buttons */}
-      <div className="flex w-full gap-3">
-        <button
-          onClick={() => setDeleteConfirm(null)}
-          disabled={isDeleting}
-          className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={handleFinalDelete}
-          disabled={isDeleting}
-          className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:bg-red-300 transition flex items-center justify-center gap-2"
-        >
-          {isDeleting ? (
-            <Loader2 size={14} className="animate-spin" />
-          ) : (
-            "Delete"
-          )}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-    {imagePost && (
-  <ImageModal
-    post={imagePost}
-    modalIndex={modalIndex}
-    setModalIndex={setModalIndex}
-    onClose={() => setImagePost(null)}
-   handleLike={handleLike}
-    setLikePost={setLikePost}
-    setCommentPost={setCommentPost}
-    setSharePost={setSharePost}
-  />
-)}
+      {imagePost && (
+        <ImageModal
+          post={imagePost}
+          modalIndex={modalIndex}
+          setModalIndex={setModalIndex}
+          onClose={() => setImagePost(null)}
+          handleLike={handleLike}
+          setLikePost={setLikePost}
+          setCommentPost={setCommentPost}
+          setSharePost={setSharePost}
+        />
+      )}
 
       {commentPost && (
-  <CommentModal
-    post={commentPost}
-    commentText={commentText}
-    setCommentText={setCommentText}
-    setCommentPost={setCommentPost}
-    submitComment={submitComment}
-    onClose={() => setCommentPost(null)}
-  />
-)}
+        <CommentModal
+          post={commentPost}
+          commentText={commentText}
+          setCommentText={setCommentText}
+          setCommentPost={setCommentPost}
+          submitComment={submitComment}
+          onClose={() => setCommentPost(null)}
+        />
+      )}
+
       {sharePost && (
         <ShareModal post={sharePost} onClose={() => setSharePost(null)} />
       )}
+
       {likePost && (
         <LikeModal post={likePost} onClose={() => setLikePost(null)} />
       )}

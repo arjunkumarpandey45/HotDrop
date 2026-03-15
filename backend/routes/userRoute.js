@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/togglefollow", protect, toggleFollow);
 router.get("/", protect, getAllUser);
 router.get("/checkauth", protect, checkAuth);
-router.get("/userprofile/:hotdropId", protect, getUserByHotdropId);
+router.get("/userprofile/:hotdropId", getUserByHotdropId);
 
 router.put(
   "/bioupdate/:userIdFromParams",
