@@ -59,10 +59,10 @@ function FollowersModal({ isOpen, onClose, users = [] }) {
                     
                     {/* User Info */}
                     <div className="flex flex-col">
-                      <span className="text-[14px] font-bold text-slate-900 leading-tight">
+                      <span className="text-[15px] font-bold text-slate-900 leading-tight">
                         {user.username}
                       </span>
-                      <span className="bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent text-[12px] font-bold lowercase tracking-tight">
+                      <span className=" text-slate-400 text-[11px] font-bold lowercase tracking-tight">
                         @{user.hotdropId || "anonymous"}
                       </span>
                     </div>
