@@ -23,11 +23,13 @@ import ImageModal from "../Post/ImageModal";
 import API from "../../../api/Api";
 import { toast, ToastContainer } from "react-toastify";
 import dp from "../../../assets/dp.jpg";
+import { AnimatePresence } from "framer-motion";
+import PreviewModal from "./PreviewModal";
 function FromShare() {
   const { postId } = useParams();
   const { user } = useAuthStore();
   const navigate = useNavigate();
-
+const [previewUrl, setPreviewUrl] = useState(null);
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
@@ -222,8 +224,15 @@ function FromShare() {
 
               {/* STYLED LINK SECTION */}
               <div 
-                onClick={() => !user ? setShowAuthModal(true) : window.open(post.projectLink, "_blank")}
-                className="group/link relative flex items-center justify-between p-[1px] rounded-xl mb-6 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                onClick={() => {
+    if (!user) {
+      setShowAuthModal(true);
+    } else if (!post.isLinkDead) {
+      setPreviewUrl(post.projectLink); 
+    } else {
+      toast.error("This project link appears to be dead");
+    }
+  }}    className="group/link relative flex items-center justify-between p-[1px] rounded-xl mb-6 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
               >
                 <div className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${post.isLinkDead ? "from-red-500 to-orange-500" : "from-indigo-500 via-cyan-400 to-emerald-400"}`} /> 
                 <div className="relative w-full flex items-center justify-between bg-white border border-slate-200/50 rounded-[11px] px-3 py-2 shadow-sm">
@@ -286,7 +295,9 @@ function FromShare() {
           </div>
         </div>
       )}
-
+<AnimatePresence>{previewUrl && (
+        <PreviewModal  key={previewUrl} url={previewUrl} onClose={() => setPreviewUrl(null)} />
+      )}</AnimatePresence>
       {/* MODALS */}
       {imagePost && <ImageModal post={post} modalIndex={modalIndex} setModalIndex={setModalIndex} handleLike={handleLike} onClose={() => setImagePost(null)} setLikePost={setLikePost} setCommentPost={setCommentPost} setSharePost={setSharePost} />}
       {commentPost && <CommentModal post={post} commentText={commentText} setCommentText={setCommentText} submitComment={submitComment} onClose={() => setCommentPost(null)} setCommentPost={setPost} />}

@@ -19,12 +19,13 @@ import CommentModal from "../Post/CommentModal";
 import LikeModal from "../Post/LikeModal";
 import ShareModal from "./ShareModal";
 import API from "../../../api/Api";
-import { toast } from "react-toastify";
-
-// 🔥 Added hideOptions prop here
+import { toast} from "react-toastify";
+import PreviewModal from "./PreviewModal";
+import { AnimatePresence } from "framer-motion";
 function UserPost({ postsOverride, isOwnerOverride, hideOptions }) {
   const { user } = useAuthStore();
-  const [commentText, setCommentText] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(null);
+const [commentText, setCommentText] = useState("");
   const [imagePost, setImagePost] = useState(null);
   const [commentPost, setCommentPost] = useState(null);
   const [likePost, setLikePost] = useState(null);
@@ -311,10 +312,17 @@ function UserPost({ postsOverride, isOwnerOverride, hideOptions }) {
                 </div>
 
                 {/* PROJECT LINK */}
-                <a
-                  href={post.projectLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <div
+                onClick={(e) => {
+    e.preventDefault();
+    // Agar link live hai toh modal kholo, warna dead link ka error dikhao
+    if (!post.isLinkDead) {
+      setPreviewUrl(post.projectLink);
+    } else {
+      toast.error("This project link appears to be dead")
+    }
+  }}
+            
                   className="group/link relative flex items-center justify-between p-[1px] rounded-xl mb-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
                 >
                   {/* Border Glow Layer */}
@@ -370,7 +378,7 @@ function UserPost({ postsOverride, isOwnerOverride, hideOptions }) {
                       />
                     </div>
                   </div>
-                </a>
+                </div>
 
                 {/* DESCRIPTION */}
                 <div className="relative group/desc mb-5">
@@ -494,16 +502,20 @@ function UserPost({ postsOverride, isOwnerOverride, hideOptions }) {
       )}
 
       {commentPost && (
-        <CommentModal
-          post={commentPost}
-          commentText={commentText}
-          setCommentText={setCommentText}
-          setCommentPost={setCommentPost}
-          submitComment={submitComment}
-          onClose={() => setCommentPost(null)}
-        />
-      )}
-
+  <CommentModal
+    post={commentPost}
+    commentText={commentText}
+    setCommentText={setCommentText}
+    setCommentPost={(upd) => {
+      setCommentPost(upd);
+      if (imagePost && imagePost._id === upd._id) {
+        setImagePost(upd);
+      }
+    }}
+    submitComment={submitComment}
+    onClose={() => setCommentPost(null)}
+  />
+)}
       {sharePost && (
         <ShareModal post={sharePost} onClose={() => setSharePost(null)} />
       )}
@@ -511,6 +523,9 @@ function UserPost({ postsOverride, isOwnerOverride, hideOptions }) {
       {likePost && (
         <LikeModal post={likePost} onClose={() => setLikePost(null)} />
       )}
+      <AnimatePresence>{previewUrl && (
+        <PreviewModal  key={previewUrl} url={previewUrl} onClose={() => setPreviewUrl(null)} />
+      )}</AnimatePresence>
     </div>
   );
 }

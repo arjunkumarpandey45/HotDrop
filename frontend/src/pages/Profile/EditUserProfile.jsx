@@ -152,10 +152,10 @@ function EditUserProfile() {
           {/* Details - Reorganized for vertical Name/ID */}
           <div className="flex-1 text-center md:text-left overflow-hidden">
             <div className="flex flex-col mb-3">
-              <h1 className="text-xl md:text-xl font-semibold text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-tight leading-tight">
                 {user?.username}
               </h1>
-              <span className="text-[12px] font-bold lowercase tracking-tight bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent w-fit mx-auto md:mx-0">
+              <span className="text-[14px] font-bold lowercase tracking-tight bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent w-fit mx-auto md:mx-0">
                 @{user?.hotdropId}
               </span>
             </div>
@@ -183,7 +183,7 @@ function EditUserProfile() {
                   key={i}
                   onClick={stat.action}
                   disabled={!stat.action}
-                  className="flex items-center gap-1.5 group"
+                  className="flex items-center cursor-pointer  gap-1.5 group"
                 >
                   <span className="text-m font-medium text-slate-900">
                     {stat.count}
