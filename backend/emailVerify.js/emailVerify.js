@@ -6,15 +6,18 @@ dotenv.config();
 export const emailVerify = async (token, email) => {
   const URL = process.env.FRONTEND_URL 
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.MAIL_USER_EMAIL,
-        pass: process.env.MAIL_USER_PASS, // Gmail App Password
-      },
-
-
-    });
+   const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465, 
+  secure: true, 
+  auth: {
+    user: process.env.MAIL_USER_EMAIL, 
+    pass: process.env.MAIL_USER_PASS,  
+  },
+  tls: {
+    rejectUnauthorized: false 
+  }
+});
     // console.log("EMAIL:", process.env.MAIL_USER_EMAIL);
     // console.log("PASS:", process.env.MAIL_USER_PASS);
     const mailOptions = {
