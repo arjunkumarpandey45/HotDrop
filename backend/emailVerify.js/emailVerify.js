@@ -7,6 +7,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
  
 export const emailVerify = async (token, email) => {
+  const URL = process.env.FRONTEND_URL 
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -23,7 +24,7 @@ export const emailVerify = async (token, email) => {
       from: process.env.MAIL_USER_EMAIL,
       to: email,
       subject: "Email Verification for HotDrop",
-      text: `Please verify your email by clicking on the link: http://localhost:5173/verify-email/${token}`,
+      text: `Please verify your email by clicking on the link: ${URL}/${token}`,
     };
 
 
