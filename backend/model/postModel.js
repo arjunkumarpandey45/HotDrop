@@ -13,13 +13,13 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: [true, "Description is required"],
       trim: true,
-      maxLength: [200, "Description cannot exceed 200 characters"],
+      maxLength: [2000, "Description cannot exceed 2000 characters"],
     },
     title: {
       type: String,
       required: [true, "title is required"],
       trim: true,
-      maxLength: [50, "Description cannot exceed 50 characters"],
+      maxLength: [100, "Description cannot exceed 100 characters"],
     },
     projectLink: {
       type: String,
