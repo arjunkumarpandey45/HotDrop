@@ -148,6 +148,7 @@ const About = () => {
               github="https://github.com/ankitmahabharat"
               linkedin="https://www.linkedin.com/in/ankit-mahabharat-7730b7134/"
               portfolio="https://portfolio-khaki-five-90.vercel.app/"
+              instagram="https://www.instagram.com/ankit_mahabharat/"
             />
           </div>
         </div>
