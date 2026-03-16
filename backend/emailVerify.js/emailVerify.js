@@ -4,8 +4,12 @@ import dotenv from "dotenv";
 dotenv.config(); 
  
 export const emailVerify = async (token, email) => {
-  const URL = process.env.FRONTEND_URL 
+  const URL = process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173";
   try {
+   if (!process.env.MAIL_USER_EMAIL || !process.env.MAIL_USER_PASS) {
+    throw new Error("Missing MAIL_USER_EMAIL or MAIL_USER_PASS in environment");
+   }
+
    const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465, 
@@ -14,9 +18,6 @@ export const emailVerify = async (token, email) => {
     user: process.env.MAIL_USER_EMAIL, 
     pass: process.env.MAIL_USER_PASS,  
   },
-  tls: {
-    rejectUnauthorized: false 
-  }
 });
     // console.log("EMAIL:", process.env.MAIL_USER_EMAIL);
     // console.log("PASS:", process.env.MAIL_USER_PASS);
