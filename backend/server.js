@@ -11,9 +11,9 @@ import passport from 'passport'
 import botRouter from './routes/botRoute.js'
 const app = express()
 const PORT = process.env.PORT || 3000
-
+const URL=process.env.FRONTEND_URL
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: URL,
   credentials: true 
 })); 
 app.use(express.json())  

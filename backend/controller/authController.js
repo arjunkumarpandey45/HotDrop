@@ -59,8 +59,8 @@ export const registerUser = async (req, res) => {
 
     res.cookie("auth_token", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 15 * 24 * 60 * 60 * 1000,
     });
 
@@ -200,8 +200,8 @@ export const login = async (req, res) => {
     console.log("🔥 Followers Check:", user.followers);
     res.cookie("auth_token", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 15 * 24 * 60 * 60 * 1000,
     });
    
@@ -241,8 +241,8 @@ export const logout = async (req, res) => {
 
     res.clearCookie("auth_token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+ secure: true,
+      sameSite: "none",
     });
 
     return response(res, 200, "Logout Successfully and status updated in DB");
