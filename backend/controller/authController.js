@@ -53,7 +53,7 @@ export const registerUser = async (req, res) => {
     );
 
     newUser.token = VerificationToken;
-    await newUser.save();
+  
 
     let emailSent = true;
     try {
@@ -71,7 +71,7 @@ export const registerUser = async (req, res) => {
       sameSite: "none",
       maxAge: 15 * 24 * 60 * 60 * 1000,
     });
-
+  await newUser.save();
     return response(
       res,
       201,

@@ -1,7 +1,7 @@
 import React from "react";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import dp from "../../assets/dp.jpg";
 function FollowersModal({ isOpen, onClose, users = [] }) {
   const navigate = useNavigate();
 
@@ -51,7 +51,7 @@ function FollowersModal({ isOpen, onClose, users = [] }) {
                     {/* Circle Avatar */}
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-50 shadow-sm">
                       <img
-                        src={user.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
+                        src={user.profilePicture || dp}
                         alt={user.username}
                         className="w-full h-full object-cover"
                       />

@@ -3,6 +3,7 @@ import { CheckCircle, XCircle, Loader2, Mail } from "lucide-react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
+import API from "../api/Api";
 
 const Verify = () => {
   const [searchParams] = useSearchParams();
@@ -15,8 +16,8 @@ const Verify = () => {
   useEffect(() => {
     const verifyEmail = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:8080/auth/verification/${token}`,
+        const res = await API.get(
+          `/auth/verification/${token}`,
           { withCredentials: true }
         );
 
@@ -56,7 +57,8 @@ const Verify = () => {
           </h2>
 
           <p className="text-sm text-slate-600 mt-1">
-            Verifying your account email
+            Verifying your account email 
+            <br></br>[ If email not found at primary inbox, please check in spam or junk folder ]
           </p>
         </div>
 

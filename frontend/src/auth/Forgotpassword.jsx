@@ -3,6 +3,7 @@ import { Mail, ArrowRight, Loader2 } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import API from "../api/Api";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -16,8 +17,8 @@ const ForgotPassword = () => {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "http://localhost:8080/auth/forgotpassword",
+      const res = await API.post(
+        "auth/forgotpassword",
         { email }
       );
 

@@ -92,7 +92,7 @@ const PreviewModal = ({ url, onClose }) => {
 
   {/* Button Content */}
   <span className="relative z-10 flex items-center gap-1.5 drop-shadow-sm">
-    Launch <span className="hidden xs:inline">Site</span>
+    Visit Site
     <ArrowUpRight 
       size={15} 
       className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" 
@@ -178,7 +178,7 @@ const PreviewModal = ({ url, onClose }) => {
                 target="_blank"
                 className="text-blue-600 font-bold uppercase"
               >
-                Launch
+                Visit Site
               </a>{" "}
               button."
             </p>

@@ -3,6 +3,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2, Eye, EyeOff, Lock } from "lucide-react";
+import API from "../api/Api";
 
 const ResetPassword = () => {
   const { state } = useLocation();
@@ -40,7 +41,7 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      await axios.post("http://localhost:8080/auth/changepassword", {
+      await API.post("/auth/changepassword", {
         resetToken,
         newPassword,
       });
