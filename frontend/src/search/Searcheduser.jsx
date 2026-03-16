@@ -82,7 +82,7 @@ function Searcheduser() {
         }
       } catch (error) {
         if (!cancelled && error.response?.status !== 401) {
-          showErrorToast(error.response?.data?.message || "Profile not found");
+         
           setProfileUser(null);
         }
       } finally {

@@ -52,26 +52,43 @@ export const registerUser = async (req, res) => {
       },
     );
 
-    await emailVerify(VerificationToken, normalizedEmail);
     newUser.token = VerificationToken;
-    await newUser.save();
+  
+
+    let emailSent = true;
+    try {
+      await emailVerify(VerificationToken, normalizedEmail);
+    } catch (mailError) {
+      emailSent = false;
+      console.error("Verification mail error:", mailError.message);
+    }
+
     const accessToken = generateToken(newUser);
 
     res.cookie("auth_token", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 15 * 24 * 60 * 60 * 1000,
     });
-
-    return response(res, 201, "User Created Successfully", {
+  await newUser.save();
+    return response(
+      res,
+      201,
+      emailSent
+        ? "User Created Successfully"
+        : "User created, but verification email could not be sent. Please use resend verification.",
+      {
       userId: newUser._id,
       username: newUser.username,
       VerificationToken: VerificationToken,
       hotdropId: newUser.hotdropId,
-    });
+      emailSent,
+      },
+    );
   } catch (error) {
     console.log(error);
+    console.error("🔥 Registration Error Detail:", error);
     return response(res, 500, "Internal server error", null, error.message);
   }
 };
@@ -137,7 +154,7 @@ export const reVerificationMail = async (req, res) => {
       return response(res, 400, "User already verified. Please login.");
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: "15m",
     });
 
@@ -200,8 +217,8 @@ export const login = async (req, res) => {
     console.log("🔥 Followers Check:", user.followers);
     res.cookie("auth_token", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 15 * 24 * 60 * 60 * 1000,
     });
    
@@ -241,8 +258,8 @@ export const logout = async (req, res) => {
 
     res.clearCookie("auth_token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+ secure: true,
+      sameSite: "none",
     });
 
     return response(res, 200, "Logout Successfully and status updated in DB");

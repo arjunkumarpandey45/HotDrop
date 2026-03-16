@@ -1,37 +1,56 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 import dotenv from "dotenv";
-import path from "path";
 
-// Ye line manually path set karegi
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config();
 
- 
 export const emailVerify = async (token, email) => {
+  const URL = process.env.FRONTEND_URL || "http://localhost:5173";
+  const apiKey = process.env.BREVO_API_KEY || process.env.SMTP_PASS;
+
+  if (!apiKey) {
+    throw new Error("Brevo API Key is missing in environment variables.");
+  }
+
+  const verificationLink = `${URL}/verify-email/${token}`;
+
+  const data = {
+    sender: { 
+      name: "HotDrop Support", 
+      email: process.env.BREVO_USER_EMAIL || "hotdrop1229@gmail.com" 
+    },
+    to: [{ email: email.trim().toLowerCase() }],
+    subject: "Verify Your HotDrop Account 🚀",
+    htmlContent: `
+      <div style="font-family: sans-serif; text-align: center; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 500px; margin: auto;">
+        <h2 style="color: #2563eb;">Welcome to HotDrop!</h2>
+        <p>Bhai, account activate karne ke liye niche button dabbao:</p>
+        <div style="margin: 30px 0;">
+          <a href="${verificationLink}" 
+             style="background: #2563eb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+            Verify My Account
+          </a>
+        </div>
+        <p style="font-size: 12px; color: #666;">Link 60 mins mein expire ho jayega.</p>
+      </div>
+    `
+  };
+
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.MAIL_USER_EMAIL,
-        pass: process.env.MAIL_USER_PASS, // Gmail App Password
-      },
-
-
+    console.log(`⏳ Sending via Brevo HTTP API to: ${email}...`);
+    
+    const response = await axios.post('https://api.brevo.com/v3/smtp/email', data, {
+      headers: {
+        'api-key': apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
     });
-    // console.log("EMAIL:", process.env.MAIL_USER_EMAIL);
-    // console.log("PASS:", process.env.MAIL_USER_PASS);
-    const mailOptions = {
-      from: process.env.MAIL_USER_EMAIL,
-      to: email,
-      subject: "Email Verification for HotDrop",
-      text: `Please verify your email by clicking on the link: http://localhost:5173/verify-email/${token}`,
-    };
 
-
-    await transporter.sendMail(mailOptions);
-    console.log("✅ Verification email sent to", email);
-
+    console.log("✅ API SUCCESS! Email Sent. ID:", response.data.messageId);
+    return response.data;
   } catch (error) {
-    console.error("❌ Email sending failed:", error.message);
-    throw error; 
+    const errorMsg = error.response ? JSON.stringify(error.response.data) : error.message;
+    console.error("❌ BREVO HTTP ERROR:", errorMsg);
+    throw new Error(`Email API failed: ${error.message}`);
   }
 };

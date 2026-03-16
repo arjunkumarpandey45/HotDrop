@@ -3,6 +3,7 @@ import { Mail, Loader2 } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import API from "../api/Api";
 
 const ResendVerification = () => {
   const [email, setEmail] = useState("");
@@ -19,8 +20,8 @@ const ResendVerification = () => {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "http://localhost:8080/auth/reverificationmail",
+      const res = await API.post(
+        "/auth/reverificationmail",
         { email },
         { withCredentials: true }
       );
