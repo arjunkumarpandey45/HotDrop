@@ -25,7 +25,7 @@ import { toast} from "react-toastify";
 import PreviewModal from "./PreviewModal";
 import { AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-function UserPost({ postsOverride, isOwnerOverride, hideOptions }) {
+function UserPost({ postsOverride, isOwnerOverride, hideOptions, ownerOverride }) {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -563,6 +563,7 @@ const toggleExpand = (e) => {
           setLikePost={setLikePost}
           setCommentPost={setCommentPost}
           setSharePost={setSharePost}
+          ownerOverride={ownerOverride}
         />
       )}
 

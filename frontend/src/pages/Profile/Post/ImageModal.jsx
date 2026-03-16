@@ -6,12 +6,12 @@ import { AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import PreviewModal from "./PreviewModal";
 import { Link } from "react-router";
-function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setLikePost, setCommentPost, setSharePost }) {
+function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setLikePost, setCommentPost, setSharePost, ownerOverride }) {
   const { user: currentUser } = useAuthStore();
 const [previewUrl, setPreviewUrl] = useState(null);
 const [isExpanded, setIsExpanded] = useState(false);
   const maxLength = 50
-  const postOwner = post?.user?.hotdropId ? post.user : currentUser;
+  const postOwner = post?.user?.hotdropId ? post.user : (ownerOverride || currentUser);
 
   // 2. LIVE DATA SYNC
   const livePost = post;
