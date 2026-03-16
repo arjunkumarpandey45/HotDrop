@@ -1,10 +1,7 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import path from "path";
 
-// Ye line manually path set karegi
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-
+dotenv.config(); 
  
 export const emailVerify = async (token, email) => {
   const URL = process.env.FRONTEND_URL 
