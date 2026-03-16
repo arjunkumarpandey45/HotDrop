@@ -296,7 +296,7 @@ function Searcheduser() {
               <img
                 src={profileUser?.profilePicture || dp}
                 alt="Profile"
-                className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover cursor-pointer rounded-full group-hover:scale-110 transition-transform duration-700"
               />
             </div>
             <div className="absolute bottom-1 right-1 bg-white p-1.5 rounded-full shadow-md border border-slate-50">
@@ -314,7 +314,7 @@ function Searcheduser() {
               </span>
             </div>
 
-            <div className="flex justify-center md:justify-start gap-8 mb-4">
+            <div className="flex  justify-center md:justify-start gap-8 mb-4">
               {[
                 { label: "Posts", count: profileUser?.posts?.length || 0, action: null },
                 { label: "Followers", count: profileUser?.followerCount || 0, action: () => setShowFollowers(true) },
@@ -324,7 +324,7 @@ function Searcheduser() {
                   key={i}
                   onClick={stat.action}
                   disabled={!stat.action}
-                  className="flex items-center gap-1.5 group"
+                  className="flex items-center cursor-pointer gap-1.5 group"
                 >
                   <span className="text-m font-medium text-slate-900">{stat.count}</span>
                   <span className="text-sm font-medium lowercase text-slate-900 tracking-widest">{stat.label}</span>
@@ -341,10 +341,10 @@ function Searcheduser() {
                 <button
                   onClick={handleFollow}
                   disabled={followLoading}
-                  className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[9px] font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md transition-all hover:scale-105 disabled:opacity-50"
+                  className="flex items-center cursor-pointer gap-2 px-4 py-1.5 rounded-lg text-[9px] font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md transition-all disabled:opacity-50"
                 >
                   {followLoading ? (
-                    <Loader2 size={10} className="animate-spin" />
+                    <Loader2 size={10} className=" animate-spin" />
                   ) : isFollowing ? (
                     <><UserMinus size={10} /> Following</>
                   ) : (
@@ -354,7 +354,7 @@ function Searcheduser() {
               )}
               <button
                 onClick={() => setShowEmailModal(true)}
-                className="px-5 py-1.5 bg-slate-900 text-white rounded-lg font-semibold text-[9px] tracking-widest hover:bg-slate-800 transition-all"
+                className="px-5 py-1.5 bg-slate-900 cursor-pointer text-white rounded-lg font-semibold text-[9px] tracking-widest hover:bg-slate-800 transition-all"
               >
                 CONTACT
               </button>
@@ -389,7 +389,7 @@ function Searcheduser() {
       />
 
       {showLoginCard && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center cursor-pointer p-6">
           <div
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             onClick={() => setShowLoginCard(false)}
@@ -398,12 +398,12 @@ function Searcheduser() {
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
               <UserX size={22} />
             </div>
-            <h2 className="text-base font-bold text-slate-900 mb-1">Login first</h2>
+            <h2 className="text-base font-bold cursor-pointer text-slate-900 mb-1">Login first</h2>
             <p className="text-[12px] text-slate-500 mb-6">Login first to continue.</p>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col cursor-pointer gap-2">
               <button
                 onClick={() => navigate("/login")}
-                className="w-full bg-indigo-600 text-white text-[13px] font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition-all"
+                className="w-full bg-indigo-600 text-white cursor-pointer text-[13px] font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition-all"
               >
                 Sign In
               </button>
