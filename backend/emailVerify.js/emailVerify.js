@@ -1,98 +1,56 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 import dotenv from "dotenv";
-import dns from "dns";
 
 dotenv.config();
 
-const forceIPv4Lookup = (hostname, options, callback) => {
-  dns.lookup(hostname, { family: 4, all: false }, callback);
-};
-
-/**
- * Sends a verification email using Gmail SMTP.
- * Optimized for Render's Free Tier networking.
- */
 export const emailVerify = async (token, email) => {
   const URL = process.env.FRONTEND_URL || "http://localhost:5173";
-  const smtpHost = (process.env.SMTP_HOST || "smtp-relay.brevo.com").trim();
-  const smtpPort = Number(process.env.SMTP_PORT || 587);
-  const smtpSecure = String(process.env.SMTP_SECURE || "false") === "true";
-  const mailUser = (process.env.SMTP_USER || process.env.MAIL_USER_EMAIL || "").trim();
-  const mailPass = (process.env.SMTP_PASS || process.env.MAIL_USER_PASS || "").trim();
+  const apiKey = process.env.BREVO_API_KEY || process.env.SMTP_PASS;
 
-  if (!mailUser || !mailPass) {
-    throw new Error("SMTP credentials not configured on server.");
+  if (!apiKey) {
+    throw new Error("Brevo API Key is missing in environment variables.");
   }
-
-  const createTransporter = (port, secure) =>
-    nodemailer.createTransport({
-      host: smtpHost,
-      port,
-      secure,
-      requireTLS: !secure,
-      auth: {
-        user: mailUser,
-        pass: mailPass,
-      },
-      lookup: forceIPv4Lookup,
-      tls: {
-        servername: smtpHost,
-      },
-      connectionTimeout: 20000,
-      greetingTimeout: 20000,
-      socketTimeout: 30000,
-    });
 
   const verificationLink = `${URL}/verify-email/${token}`;
 
-  const mailOptions = {
-    from: `"HotDrop Support" <${mailUser}>`,
-    to: email.trim().toLowerCase(),
+  const data = {
+    sender: { 
+      name: "HotDrop Support", 
+      email: process.env.BREVO_USER_EMAIL || "hotdrop1229@gmail.com" 
+    },
+    to: [{ email: email.trim().toLowerCase() }],
     subject: "Verify Your HotDrop Account 🚀",
-    html: `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
-        <div style="background-color: #2563eb; padding: 20px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Welcome to HotDrop!</h1>
+    htmlContent: `
+      <div style="font-family: sans-serif; text-align: center; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 500px; margin: auto;">
+        <h2 style="color: #2563eb;">Welcome to HotDrop!</h2>
+        <p>Bhai, account activate karne ke liye niche button dabbao:</p>
+        <div style="margin: 30px 0;">
+          <a href="${verificationLink}" 
+             style="background: #2563eb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+            Verify My Account
+          </a>
         </div>
-        <div style="padding: 30px; color: #1e293b; line-height: 1.6;">
-          <p>Bhai, registration ke liye shukriya! Apne account ko activate karne ke liye niche button par click karein:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${verificationLink}" 
-               style="background-color: #2563eb; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
-               Verify My Account
-            </a>
-          </div>
-          <p style="font-size: 14px; color: #64748b;">Ye link 60 minutes mein expire ho jayega.</p>
-          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
-          <p style="font-size: 12px; color: #94a3b8; text-align: center;">
-            If the button doesn't work, copy-paste this: <br>
-            <a href="${verificationLink}" style="color: #2563eb;">${verificationLink}</a>
-          </p>
-        </div>
+        <p style="font-size: 12px; color: #666;">Link 60 mins mein expire ho jayega.</p>
       </div>
-    `,
+    `
   };
 
   try {
-    console.log(`⏳ Attempting SMTP on ${smtpHost}:${smtpPort}...`);
-    let transporter = createTransporter(smtpPort, smtpSecure);
+    console.log(`⏳ Sending via Brevo HTTP API to: ${email}...`);
+    
+    const response = await axios.post('https://api.brevo.com/v3/smtp/email', data, {
+      headers: {
+        'api-key': apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
 
-    try {
-      await transporter.verify();
-    } catch (primaryError) {
-      const fallbackPort = smtpPort === 587 ? 465 : 587;
-      const fallbackSecure = fallbackPort === 465;
-      console.warn(`⚠️ SMTP ${smtpPort} failed, trying ${fallbackPort}: ${primaryError.message}`);
-      transporter = createTransporter(fallbackPort, fallbackSecure);
-      await transporter.verify();
-    }
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log("✅ Email sent successfully! MessageID:", info.messageId);
-    return info;
+    console.log("✅ API SUCCESS! Email Sent. ID:", response.data.messageId);
+    return response.data;
   } catch (error) {
-    console.error("❌ NODEMAILER ERROR:", error.message);
-
-    throw new Error(`Email failed: ${error.message}`);
+    const errorMsg = error.response ? JSON.stringify(error.response.data) : error.message;
+    console.error("❌ BREVO HTTP ERROR:", errorMsg);
+    throw new Error(`Email API failed: ${error.message}`);
   }
 };
