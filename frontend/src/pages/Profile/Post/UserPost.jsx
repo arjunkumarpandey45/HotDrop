@@ -41,13 +41,17 @@ const [commentText, setCommentText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [sharePost, setSharePost] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-
+  const [isExpanded, setIsExpanded] = useState(false);
+  const maxLength = 50
   useEffect(() => {
     const resize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
   }, []);
-
+const toggleExpand = (e) => {
+  e.preventDefault();
+  setIsExpanded(!isExpanded);
+};
   /* CLOSE MENU ON OUTSIDE CLICK */
   useEffect(() => {
     const closeMenu = () => setMenuOpen(null);
@@ -414,18 +418,22 @@ const [commentText, setCommentText] = useState("");
                 </div>
 
                 {/* DESCRIPTION */}
-                <div className="relative group/desc mb-5">
-                  <div className="absolute -left-3 top-0 bottom-0 w-[2px] bg-slate-100 group-hover/desc:bg-blue-500/30 transition-colors duration-500 rounded-full" />
-                  <p className="text-[11px] leading-[1.6] text-slate-500 font-medium line-clamp-2 transition-colors duration-300 group-hover/desc:text-slate-700 ">
-                    <span className="text-blue-500/50 font-black text-sm leading-none mr-0.5 select-none inline-block transform translate-y-1">
-                      &ldquo;
-                    </span>
-                    {post.description}
-                    <span className="text-blue-500/50 font-black text-sm leading-none ml-0.5 select-none inline-block transform translate-y-1">
-                      &rdquo;
-                    </span>
-                  </p>
-                </div>
+                <div className="relative group/desc ">
+                   <p className="text-[12px] text-slate-900 pb-1  font-medium leading-relaxed">
+     
+      {isExpanded ? post.description : `${post.description.slice(0, maxLength)}`}
+      
+     
+      {post.description.length > maxLength && (
+        <button 
+          onClick={toggleExpand}
+          className="ml-1 text-[11px] text-slate-400 hover:text-blue-600 font-bold transition-colors cursor-pointer inline-block"
+        >
+          {isExpanded ? '  ..Show Less' : '  ...Read More'}
+        </button>
+      )}
+    </p>
+  </div>
                 
                 <div className="flex items-center  text-[9px] font-bold text-slate-400 ">
                   {post.createdAt ? (

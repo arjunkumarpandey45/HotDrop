@@ -9,14 +9,17 @@ import { Link } from "react-router";
 function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setLikePost, setCommentPost, setSharePost }) {
   const { user: currentUser } = useAuthStore();
 const [previewUrl, setPreviewUrl] = useState(null);
-  // 1. SMART DETECTION: Pehle post ka user check karo, nahi toh current user (profile sync)
-  // Isse My Profile aur All Post dono jagah sahi naam dikhega
+const [isExpanded, setIsExpanded] = useState(false);
+  const maxLength = 50
   const postOwner = post?.user?.hotdropId ? post.user : currentUser;
 
   // 2. LIVE DATA SYNC
   const livePost = post;
   const isLiked = livePost.likes?.some(l => (l._id || l) === currentUser?._id);
-
+const toggleExpand = (e) => {
+  e.preventDefault();
+  setIsExpanded(!isExpanded);
+};
   const next = (e) => {
     e.stopPropagation();
     setModalIndex((prev) => (prev + 1) % livePost.images.length);
@@ -104,7 +107,20 @@ const [previewUrl, setPreviewUrl] = useState(null);
               </div>
             </div>
 
-            <p className="text-[12px] text-slate-500 leading-relaxed ">"{livePost.description}"</p>
+             <p className="text-[12px] text-slate-900 pb-3  font-medium leading-relaxed">
+     
+      {isExpanded ? post.description : `${post.description.slice(0, maxLength)}`}
+      
+      {/* Button ko text ke bilkul saath ya niche dikhane ke liye condition */}
+      {post.description.length > maxLength && (
+        <button 
+          onClick={toggleExpand}
+          className="ml-1 text-[11px] text-slate-400 hover:text-blue-600 font-bold transition-colors cursor-pointer inline-block"
+        >
+          {isExpanded ? '  ..Show Less' : '  ...Read More'}
+        </button>
+      )}
+    </p>
 
             <div className="space-y-2">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Project Link</span>
