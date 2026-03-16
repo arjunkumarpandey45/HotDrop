@@ -24,7 +24,7 @@ export const emailVerify = async (token, email) => {
       from: process.env.MAIL_USER_EMAIL,
       to: email,
       subject: "Email Verification for HotDrop",
-      text: `Please verify your email by clicking on the link: ${URL}/${token}`,
+      text: `Please verify your email by clicking on the link: ${URL}/verify-email/${token}`,
     };
 
 
