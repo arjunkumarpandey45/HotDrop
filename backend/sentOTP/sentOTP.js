@@ -21,7 +21,7 @@ export const sentOtpMail = async (email, otp) => {
     htmlContent: `
       <div style="font-family: sans-serif; text-align: center; padding: 20px; border: 1px solid #eee; border-radius: 12px; max-width: 450px; margin: auto; background-color: #ffffff;">
         <h2 style="color: #2563eb; margin-bottom: 10px;">HotDrop Verification</h2>
-        <p style="color: #4b5563; font-size: 16px;">Apna account login karne ke liye niche diya gaya OTP use karein:</p>
+        <p style="color: #4b5563; font-size: 16px;">Your OTP :</p>
         <div style="margin: 25px 0;">
           <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e293b; background: #f3f4f6; padding: 10px 20px; border-radius: 8px; border: 1px dashed #cbd5e1;">
             ${otp}

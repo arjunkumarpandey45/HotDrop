@@ -57,7 +57,8 @@ const Verify = () => {
           </h2>
 
           <p className="text-sm text-slate-600 mt-1">
-            Verifying your account email
+            Verifying your account email 
+            <br></br>[ If email not found at primary inbox, please check in spam or junk folder ]
           </p>
         </div>
 
