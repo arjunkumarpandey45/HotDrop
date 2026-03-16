@@ -40,7 +40,8 @@ const [previewUrl, setPreviewUrl] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [imagePost, setImagePost] = useState(null);
   const [modalIndex, setModalIndex] = useState(0);
-
+const [isExpanded, setIsExpanded] = useState(false);
+  const maxLength = 50
   useEffect(() => {
     const fetchSinglePost = async () => {
       try {
@@ -55,7 +56,10 @@ const [previewUrl, setPreviewUrl] = useState(null);
     };
     if (postId) fetchSinglePost();
   }, [postId]);
-
+const toggleExpand = (e) => {
+  e.preventDefault();
+  setIsExpanded(!isExpanded);
+};
   const handleLike = async (postToLike) => {
     if (!user) return setShowAuthModal(true);
     try {
@@ -257,7 +261,20 @@ const [previewUrl, setPreviewUrl] = useState(null);
                 </div>
               </div>
 
-              <p className="text-[12px] text-slate-600 leading-relaxed mb-6">"{post.description}"</p>
+             <p className="text-[12px] text-slate-900 pb-3  font-medium leading-relaxed">
+     
+      {isExpanded ? post.description : `${post.description.slice(0, maxLength)}`}
+      
+      {/* Button ko text ke bilkul saath ya niche dikhane ke liye condition */}
+      {post.description.length > maxLength && (
+        <button 
+          onClick={toggleExpand}
+          className="ml-1 text-[11px] text-slate-400 hover:text-blue-600 font-bold transition-colors cursor-pointer inline-block"
+        >
+          {isExpanded ? '  ..Show Less' : '  ...Read More'}
+        </button>
+      )}
+    </p>
   
               {/* ACTION BAR */}
               <div className="flex justify-between items-center border-t pt-4">

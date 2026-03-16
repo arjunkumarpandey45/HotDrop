@@ -40,12 +40,16 @@ const [previewUrl, setPreviewUrl] = useState(null);
   const [modalIndex, setModalIndex] = useState(0);
   const [currentImage, setCurrentImage] = useState({});
   const [showAuthModal, setShowAuthModal] = useState(false);
-  
+  const [isExpanded, setIsExpanded] = useState(false);
+  const maxLength = 50
   // States for Infinite Scroll
   const [fetchingMore, setFetchingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-
+const toggleExpand = (e) => {
+  e.preventDefault();
+  setIsExpanded(!isExpanded);
+};
   const shuffleArray = (array) => {
     let shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -271,7 +275,7 @@ const [previewUrl, setPreviewUrl] = useState(null);
                   } else {
                     toast.error("This project link appears to be dead")
                   }
-                }}      className="group/link relative flex items-center  justify-between p-[1px] rounded-xl mb-6 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                }}      className="group/link relative flex items-center  justify-between p-[1px] rounded-xl mb-3 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
                   >
                     <div className={`absolute inset-0 rounded-xl opacity-10 group-hover/link:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${post.isLinkDead ? "from-red-500 to-orange-500" : "from-indigo-500 via-blue-400 to-emerald-400"}`} /> 
                     <div className="relative w-full flex items-center justify-between bg-white border border-slate-200/50 rounded-[11px] px-3 py-2 shadow-sm">
@@ -296,8 +300,22 @@ const [previewUrl, setPreviewUrl] = useState(null);
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-slate-900 font-medium mb-4 line-clamp-2">{post.description}</p>
-                  
+                  <div className="relative">
+    <p className="text-[12px] text-slate-900 pb-3  font-medium leading-relaxed">
+     
+      {isExpanded ? post.description : `${post.description.slice(0, maxLength)}`}
+      
+      {/* Button ko text ke bilkul saath ya niche dikhane ke liye condition */}
+      {post.description.length > maxLength && (
+        <button 
+          onClick={toggleExpand}
+          className="ml-1 text-[11px] text-slate-400 hover:text-blue-600 font-bold transition-colors cursor-pointer inline-block"
+        >
+          {isExpanded ? '  ..Show Less' : '  ...Read More'}
+        </button>
+      )}
+    </p>
+  </div>
                   {/* Interactions */}
                   <div className="flex gap-8 border-t pt-4">
                     <div className="flex items-center gap-2 cursor-pointer group">

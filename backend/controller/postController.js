@@ -104,7 +104,7 @@ if( !req.files ||  req.files.length === 0 ){
     return response(
       res,
       500,
-      "Post create karne mein error aaya",
+      "Server error while creating post",
       null,
       error.message,
     );

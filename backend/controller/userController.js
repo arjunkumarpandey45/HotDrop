@@ -133,7 +133,7 @@ export const bioUpdate = async (req, res) => {
 
   try {
     const user = await User.findById(loggedInUserId);
-    if (!user) return response(res, 404, "User nahi mila!");
+    if (!user) return response(res, 404, "User not found!");
     const updateData = {
       bio: req.body.bio,
       username: req.body.username,

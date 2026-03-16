@@ -385,7 +385,8 @@ function Searcheduser() {
       <UserPost 
         postsOverride={profileUser.posts} 
         isOwnerOverride={isOwner} 
-        hideOptions={true} 
+        hideOptions={true}
+        ownerOverride={profileUser}
       />
 
       {showLoginCard && (
