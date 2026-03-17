@@ -150,15 +150,13 @@ function HomeWrapper() {
   );
 }
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
+const [showSplash, setShowSplash] = useState(true);
   const { checkAuth, isCheckingAuth } = useAuthStore();
   useEffect(() => {
-    // Auth check aur Timer dono ko handle karein
+   
     const initApp = async () => {
-      await checkAuth(); // Backend se check karein
-      setTimeout(() => {
-        setIsLoading(false); // 2s ke baad loading khatam
-      }, 2000);
+      await checkAuth(); 
+      setShowSplash(false)
     };
     initApp();
   }, [checkAuth]);
@@ -167,10 +165,17 @@ function App() {
     <>
       {" "}
       <AnimatePresence>
-        {isLoading || isCheckingAuth ? (
+        {showSplash || isCheckingAuth ? (
           <SplashScreen key="splash" />
         ) : (
-          <RouterProvider router={router} />
+         <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <RouterProvider router={router} />
+          </motion.div>
         )}
       </AnimatePresence>
       {/* <AiBot></AiBot> */}
