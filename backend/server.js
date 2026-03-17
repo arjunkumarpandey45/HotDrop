@@ -43,5 +43,7 @@ app.get('/', (req, res) => res.send("HotDrop Backend is Live! 🚀"));
 app.listen(PORT, () => {
     connectDB(),
     startLiveTracking();
+    console.log("CORS Origin:", URL);
   console.log(`Example app listening on port ${PORT}`)
+
 })
