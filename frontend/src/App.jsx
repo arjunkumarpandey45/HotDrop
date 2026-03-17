@@ -29,6 +29,7 @@ import Hero from "../src/pages/Hero/Hero.jsx";
 import NotFound from "./404/NotFound.jsx";
 import About from "./pages/About.jsx";
 import Searcheduser from "./search/Searcheduser.jsx";
+import Notice from "./pages/Notice.jsx";
 
 const router = createBrowserRouter([
   {
@@ -130,6 +131,10 @@ const router = createBrowserRouter([
   },{
     path:"/about",
     element:<><About></About></>
+  },
+  {
+    path:"/notice",
+    element:<><Notice></Notice></>
   }
   
 ]);
