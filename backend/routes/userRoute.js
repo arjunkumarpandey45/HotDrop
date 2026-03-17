@@ -6,6 +6,7 @@ import {
   getAllUser,
   getMe,
   getUserByHotdropId,
+  searchUsers,
   toggleFollow,
 } from "../controller/userController.js";
 import { uploadProfile } from "../config/cloudinary.js";
@@ -16,7 +17,7 @@ router.post("/togglefollow", protect, toggleFollow);
 router.get("/", protect, getAllUser);
 router.get("/checkauth", protect, checkAuth);
 router.get("/userprofile/:hotdropId", getUserByHotdropId);
-
+router.get("/search", protect, searchUsers)
 router.put(
   "/bioupdate/:userIdFromParams",
   protect,
