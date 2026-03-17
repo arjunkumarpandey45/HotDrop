@@ -210,3 +210,24 @@ export const getMe = async (req, res) => {
     return response(res, 500, "Server error", null, error.message);
   }
 };
+// Backend Route: /user/search?q=arjun
+export const searchUsers = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) return res.status(200).json([]);
+
+    
+    const users = await User.find({
+      $or: [
+        { username: { $regex: q, $options: 'i' } },
+        { hotdropId: { $regex: q, $options: 'i' } }
+      ]
+    })
+    .select("username hotdropId profilePicture") 
+    .limit(15); 
+
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Search failed" });
+  }
+};

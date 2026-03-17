@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Search,
   User,
@@ -18,7 +18,8 @@ import logo from "../assets/logo5.png";
 import { useAuthStore } from "../store/useAuthStore";
 import { showSuccessToastForLogout } from "../Toast/toast";
 import { Slide, ToastContainer } from "react-toastify";
-
+import API from "../api/Api";
+import dp from "../assets/dp.jpg";
 const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -29,8 +30,11 @@ const Navbar = () => {
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   
   const [scrolled, setScrolled] = useState(false);
-
+const [suggestions, setSuggestions] = useState([]); // 🔥 New state for suggestions
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const desktopSearchRef = useRef(null);
+  const mobileSearchRef = useRef(null);
   const { user, isLoggedIn, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,6 +45,37 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!showSuggestions) return;
+      const desktopEl = desktopSearchRef.current;
+      const mobileEl = mobileSearchRef.current;
+
+      if (desktopEl && desktopEl.contains(e.target)) return;
+      if (mobileEl && mobileEl.contains(e.target)) return;
+
+      setShowSuggestions(false);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showSuggestions]);
+
+  const handleSuggestionClick = (hotdropId) => {
+    if (!isLoggedIn) {
+      setIsLoginPromptOpen(true);
+      setIsMobileSearchOpen(false);
+      return;
+    }
+  
+    navigate(`/user/userprofile/${hotdropId}`);
+    
+ 
+    setSearchQuery("");
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setIsMobileSearchOpen(false);
+  };
   const handleCreateClick = () => {
     if (!isLoggedIn) {
       navigate("/signup");
@@ -48,7 +83,25 @@ const Navbar = () => {
       setIsCreateModalOpen(true);
     }
   };
+useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim().length < 1) {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        
+        const { data } = await API.get(`/user/search?q=${searchQuery}`);
+        setSuggestions(data);
+        setShowSuggestions(true);
+      } catch (err) {
+        console.error("Search error", err);
+      }
+    };
 
+    const timeoutId = setTimeout(fetchSuggestions, 300); // 300ms Debounce
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
   // 🔥 UPDATED: Search handler now checks for login status
   const handleSearch = (e) => {
     if (e.key === "Enter" && searchQuery.trim() !== "") {
@@ -61,7 +114,9 @@ const Navbar = () => {
       
       // If logged in, proceed normally
       navigate(`/user/userprofile/${searchQuery}`);
-      setSearchQuery("");
+     setSearchQuery("");
+    setSuggestions([]);
+    setShowSuggestions(false);
       setIsMobileSearchOpen(false);
     }
   };
@@ -73,7 +128,7 @@ const Navbar = () => {
       setIsProfileOpen(false);
       navigate("/");
     } catch {
-      // Make sure showErrorToast() is imported if you use it!
+      
       console.error("Logout failed");
     }
   };
@@ -86,7 +141,7 @@ const Navbar = () => {
         scrolled ? "pt-2" : "pt-4"
       }`}
     >
-      {/* 🔥 UPDATED OVERLAY: Added isLoginPromptOpen to the condition */}
+     
       {(isProfileOpen || isSidebarOpen || isCreateModalOpen || isLoginPromptOpen) && (
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-md z-40"
@@ -94,7 +149,7 @@ const Navbar = () => {
             setIsProfileOpen(false);
             setIsSidebarOpen(false);
             setIsCreateModalOpen(false);
-            setIsLoginPromptOpen(false); // Close modal when clicking outside
+            setIsLoginPromptOpen(false); 
           }}
         />
       )}
@@ -107,6 +162,13 @@ const Navbar = () => {
         theme="light"
         transition={Slide}
       />
+
+      {showSuggestions && (
+        <div
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+          onClick={() => setShowSuggestions(false)}
+        />
+      )}
 
       {/* NAVBAR CARD */}
       <div
@@ -122,7 +184,7 @@ const Navbar = () => {
               <X className="h-5 w-5 text-slate-600" />
             </button>
 
-            <div className="relative flex-1">
+            <div className="relative flex-1" ref={mobileSearchRef}>
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <input
                 autoFocus
@@ -133,6 +195,19 @@ const Navbar = () => {
                 onKeyDown={handleSearch}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
               />
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute cursor-pointer top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50">
+                   {suggestions.map(s => (
+                     <div key={s._id} onClick={() => handleSuggestionClick(s.hotdropId)} className="p-3 cursor-pointer hover:bg-slate-50 flex items-center gap-3 cursor-pointer">
+                        <img src={s.profilePicture || dp} className="h-8 w-8 rounded-full" />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold">@{s.hotdropId}</span>
+                          <span className="text-[10px] text-slate-500 uppercase">{s.username}</span>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -153,7 +228,7 @@ const Navbar = () => {
 
             {/* DESKTOP SEARCH */}
             <div className="hidden md:flex flex-1 max-w-md mx-8">
-              <div className="relative w-full">
+              <div className="relative w-full" ref={desktopSearchRef}>
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 <input
                   type="text"
@@ -163,6 +238,26 @@ const Navbar = () => {
                   onKeyDown={handleSearch}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full  left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                    <p className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Suggestions</p>
+                    {suggestions.map((s) => (
+                      <button
+                        key={s._id}
+                        onClick={() => handleSuggestionClick(s.hotdropId)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 transition text-left"
+                      >
+                        <div className="h-8 w-8 cursor-pointer rounded-full bg-blue-100 flex-shrink-0 overflow-hidden border border-slate-200">
+                          <img src={s.profilePicture || dp} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex cursor-pointer flex-col">
+                          <span className="text-sm  font-bold text-slate-900">@{s.hotdropId}</span>
+                          <span className="text-[10px] text-slate-500 uppercase">{s.username}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
