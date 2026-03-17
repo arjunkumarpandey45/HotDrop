@@ -27,7 +27,7 @@ export const sentOtpMail = async (email, otp) => {
             ${otp}
           </span>
         </div>
-        <p style="font-size: 14px; color: #94a3b8;">Ye OTP agle 10 minutes ke liye valid hai. Kisi ke saath share na karein.</p>
+        <p style="font-size: 14px; color: #94a3b8;">OTP will expire in 10 min.Don't share this with anyone.</p>
         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
         <p style="font-size: 12px; color: #cbd5e1;">&copy; 2026 HotDrop Devs</p>
       </div>
