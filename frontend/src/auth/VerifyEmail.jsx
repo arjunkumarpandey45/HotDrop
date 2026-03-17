@@ -62,8 +62,8 @@ const VerifyEmailPage = () => {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-slate-900">
-            Email Verification
+          <h2 className="text-xl font-bold text-slate-900">
+            Email Verification Sent To Your G-MAIL
           </h2>
 
           <p className="text-sm text-slate-600 mt-1">

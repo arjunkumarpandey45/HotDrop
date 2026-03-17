@@ -3,6 +3,7 @@ import { protect } from "../middleware/protect.js";
 import {
   bioUpdate,
   checkAuth,
+  deleteAccount,
   getAllUser,
   getMe,
   getUserByHotdropId,
@@ -28,7 +29,7 @@ router.put(
           return response(
             res,
             400,
-            "Bhai, ek baar mein sirf ek hi photo daal sakte ho! 🛑",
+            "Bhai, ek baar mein sirf ek hi photo daal sakte ho ! 🛑",
           );
         }
         if (err.code === "LIMIT_FILE_SIZE") {
@@ -44,4 +45,5 @@ router.put(
     });
 }, bioUpdate);
 router.get("/me", protect, getMe);
+router.delete("/deleteaccount/:targetUserId", protect, deleteAccount);
 export default router; 

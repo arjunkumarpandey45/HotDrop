@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   UserPlus,
   ChevronDown,
+  Notebook,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import CreatePost from "./CreatePost";
@@ -402,6 +403,13 @@ useEffect(() => {
               className="flex items-center gap-3 p-3 rounded-xl text-slate-600 font-bold text-sm"
             >
               <Mail className="h-5 w-5" /> Contact us
+            </Link>
+            <Link
+              to="/notice"
+              onClick={() => setIsSidebarOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-xl text-slate-600 font-bold text-sm"
+            >
+              <Notebook className="h-5 w-5" /> Notice
             </Link>
           </nav>
         </div>

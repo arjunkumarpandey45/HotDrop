@@ -23,14 +23,14 @@ export const emailVerify = async (token, email) => {
     htmlContent: `
       <div style="font-family: sans-serif; text-align: center; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 500px; margin: auto;">
         <h2 style="color: #2563eb;">Welcome to HotDrop!</h2>
-        <p>Bhai, account activate karne ke liye niche button dabbao:</p>
+        <p>Please Click at Verify My Account:</p>
         <div style="margin: 30px 0;">
           <a href="${verificationLink}" 
              style="background: #2563eb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
             Verify My Account
           </a>
         </div>
-        <p style="font-size: 12px; color: #666;">Link 60 mins mein expire ho jayega.</p>
+        <p style="font-size: 12px; color: #666;">Link will expire in 60min.</p>
       </div>
     `
   };

@@ -52,24 +52,21 @@ const Verify = () => {
             <Mail className="text-blue-600 w-8 h-8" />
           </div>
 
-          <h2 className="text-2xl font-bold text-slate-900">
-            Email Verification
+          <h2 className="text-xl font-bold text-slate-900">
+             Verification Email Sent To Your G-MAIL
           </h2>
 
-          <p className="text-sm text-slate-600 mt-1">
-            Verifying your account email 
-            <br></br>[ If email not found at primary inbox, please check in spam or junk folder ]
+          <p className="text-sm text-slate-400 mt-1">
+             If email not found at primary inbox, please check in spam or junk folder
           </p>
         </div>
 
         {/* LOADING */}
         {loading && (
           <div className="flex flex-col items-center gap-4 py-6">
-            <Loader2 className="animate-spin text-blue-600 w-8 h-8" />
+            <Loader2 className="animate-spin text-blue-600 w-14 h-14" />
 
-            <p className="text-slate-600 text-sm">
-              Please wait while we verify your email...
-            </p>
+            
           </div>
         )}
 

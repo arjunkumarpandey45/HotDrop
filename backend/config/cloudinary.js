@@ -54,7 +54,7 @@ export const uploadProfile = multer({
         if (file.mimetype.startsWith("image/")) {
             cb(null, true);
         } else {
-            cb(new Error("Sirf images upload karein!"), false);
+            cb(new Error("Only Images !"), false);
         }
     }
 });

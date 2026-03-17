@@ -65,24 +65,44 @@ const Signup = () => {
             
             {/* Row 1: ID & Username */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Hotdrop ID</label>
-                <input name="hotdropId" value={form.hotdropId} onChange={handleChange} placeholder="@username" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required />
+                <input name="hotdropId" value={form.hotdropId} onChange={handleChange} placeholder="hotdropId" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required />
               </div>
-              <div className="space-y-1.5">
+              <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                <input name="username" value={form.username} onChange={handleChange} placeholder="John Doe" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required />
+                <input name="username" value={form.username} onChange={handleChange} placeholder="e.g Alan Walker" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required />
               </div>
             </div>
 
             {/* Row 2: Email */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-              <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="name@company.com" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required />
-            </div>
+           <div>
+  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+    Email Address
+  </label>
+  
+  <input 
+    name="email" 
+    type="email" 
+    value={form.email} 
+    onChange={handleChange} 
+    placeholder="name@company.com" 
+    className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" 
+    required 
+  />
+
+  {/* Subtle Note - Halka aur Stylish */}
+  <div className="flex items-center gap-1.5 ml-1 mt-1">
+{/* Chhota sa dot indicator */}
+    <p className="text-[10px] leading-tight text-slate-400 font-medium">
+      <span className="text-slate-500 font-bold uppercase mr-1 text-[9px]">Note :</span> 
+     "Please use the email address currently logged into this device.
+    </p>
+  </div>
+</div>
 
             {/* Row 3: Password */}
-            <div className="space-y-1.5">
+            <div>
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Secure Password</label>
               <div className="relative">
                 <input name="password" type={showPassword ? "text" : "password"} value={form.password} onChange={handleChange} placeholder="••••••••" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 pr-11 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required />
@@ -94,7 +114,7 @@ const Signup = () => {
 
             {/* Row 4: Gender & DOB (Side by Side) */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Gender</label>
                 <select name="gender" value={form.gender} onChange={handleChange} className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer" required>
                   <option value="">Select</option>
@@ -102,7 +122,7 @@ const Signup = () => {
                   <option value="female">Female</option>
                 </select>
               </div>
-              <div className="space-y-1.5">
+              <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Birth Date</label>
                 <input name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={handleChange} className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-500" required />
               </div>

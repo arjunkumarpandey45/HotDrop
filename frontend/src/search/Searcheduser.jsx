@@ -1,8 +1,8 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import axios from "../api/Api";
+// import axios from "../api/Api";
 // 🔥 Added UserX icon to the imports
-import { Github, Linkedin, Globe, Edit, Loader2, Award, X, UserPlus, UserMinus, UserX } from "lucide-react";
+import { Github, Linkedin, Globe, Edit, Loader2, Award, X, UserPlus, UserMinus, UserX, Share2 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { showErrorToast, showProfileUpdatedToast } from "../Toast/toast";
 import EmailModal from "../pages/Profile/EmailModal";
@@ -12,12 +12,13 @@ import FollowingModal from "../pages/Profile/FollowingModal";
 import { Slide, ToastContainer } from "react-toastify";
 import dp from "../assets/dp.jpg";
 import UserPost from "../pages/Profile/Post/UserPost";
-
+import API from "../api/Api";
+import ShareProfileModal from "../pages/Profile/ShareProfileModal";
 function Searcheduser() {
   const { hotdropId } = useParams();
   const { user, setUser,isCheckingAuth } = useAuthStore();
   const navigate = useNavigate();
-
+const [showShareModal, setShowShareModal] = useState(false);
   const [profileUser, setProfileUser] = useState(null);
   const [isOwner, setIsOwner] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -74,7 +75,7 @@ function Searcheduser() {
       setProfileUser(null);
 
       try {
-        const res = await axios.get(`/user/userprofile/${targetHotdropId}`);
+        const res = await API.get(`/user/userprofile/${targetHotdropId}`);
         const profile = res.data.data.user;
 
         if (!cancelled) {
@@ -188,7 +189,7 @@ function Searcheduser() {
 
     setFollowLoading(true);
     try {
-      const toggleRes = await axios.post("/user/togglefollow", {
+      const toggleRes = await API.post("/user/togglefollow", {
         userIdToFollow: profileUser._id,
       });
 
@@ -201,7 +202,7 @@ function Searcheduser() {
         followers: toggleRes.data.data?.followers ?? prev.followers,
       }));
 
-      const refreshed = await axios.get(`/user/userprofile/${profileUser.hotdropId}`);
+      const refreshed = await API.get(`/user/userprofile/${profileUser.hotdropId}`);
       const refreshedProfile = refreshed.data.data.user;
       setProfileUser(refreshedProfile);
 
@@ -275,16 +276,24 @@ function Searcheduser() {
               <span className="text-orange-600">HOT</span>
               <span className="text-blue-600">DROP</span>
             </span>
-          </div>
-          {isOwner && (
+           </div>
+           <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowEditModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-[9px] font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md transition-all hover:scale-105"
+              onClick={() => setShowShareModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-[9px] font-semibold text-white bg-gradient-to-r from-green-500 to-teal-500 shadow-md transition-all hover:scale-105"
             >
-              <Edit size={10} /> Edit
+              <Share2 size={10} />
             </button>
-          )}
-        </div>
+            {isOwner && (
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-[9px] font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md transition-all hover:scale-105"
+              >
+                <Edit size={10} /> 
+              </button>
+            )}
+          </div>
+          </div>
 
         <div className="p-4 sm:p-6 flex flex-col md:flex-row items-center md:items-center gap-6 md:gap-10 h-full">
           <div
@@ -456,6 +465,11 @@ function Searcheduser() {
         isOpen={showFollowing}
         onClose={() => setShowFollowing(false)}
         users={profileUser?.following}
+      />
+      <ShareProfileModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        user={profileUser}
       />
       <EmailModal
         isOpen={showEmailModal}
