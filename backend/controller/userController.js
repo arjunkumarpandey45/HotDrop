@@ -1,5 +1,6 @@
 import User from "../model/userModel.js";
 import Follow from "../model/followModel.js";
+import Post from "../model/postModel.js";
 import response from "../utils/responseHandler.js";
 import { v2 as cloudinary } from "cloudinary";
 export const toggleFollow = async (req, res) => {
@@ -14,56 +15,59 @@ export const toggleFollow = async (req, res) => {
     const userToFollow = await User.findById(userIdToFollow);
     if (!userToFollow) return response(res, 404, "User not found!");
 
+ 
     const existingFollow = await Follow.findOne({
       follower: myId,
       following: userIdToFollow,
     });
 
     if (existingFollow) {
+      // --- UNFOLLOW LOGIC ---
       await Promise.all([
         Follow.deleteOne({ _id: existingFollow._id }),
         User.findByIdAndUpdate(myId, {
-          $pull: { following: userIdToFollow },
+          $pull: { following: userIdToFollow }, 
           $inc: { followingCount: -1 },
         }),
         User.findByIdAndUpdate(userIdToFollow, {
-          $pull: { followers: myId },
+          $pull: { followers: myId }, 
           $inc: { followerCount: -1 },
         }),
       ]);
+
       const updatedTargetUser = await User.findById(userIdToFollow).select(
-        "followerCount followers hotdropId profilePicture",
+        "followerCount followers hotdropId profilePicture" // 🔥 
       );
+
       return response(res, 200, `Unfollowed @${updatedTargetUser.hotdropId}`, {
         isFollowing: false,
         followerCount: updatedTargetUser.followerCount,
         profilePicture: updatedTargetUser.profilePicture,
-        followers: updatedTargetUser.followers, // Sending fresh list for the modal
+        followers: updatedTargetUser.followers, 
       });
     } else {
       // --- FOLLOW LOGIC ---
       await Promise.all([
         Follow.create({ follower: myId, following: userIdToFollow }),
-       
         User.findByIdAndUpdate(myId, {
           $push: { following: userIdToFollow },
           $inc: { followingCount: 1 },
         }),
-        // Update their account: Add my ID to their 'followers' array
         User.findByIdAndUpdate(userIdToFollow, {
-          $push: { followers: myId },
-          $inc: { followerCount: 1 }, // Standardized name
+          $push: { followers: myId }, 
+          $inc: { followerCount: 1 },
         }),
       ]);
 
       const updatedTargetUser = await User.findById(userIdToFollow).select(
-        "followerCount followers hotdropId profilePicture",
+        "followerCount followers hotdropId profilePicture"
       );
+
       return response(res, 200, `Followed @${userToFollow.hotdropId}`, {
         isFollowing: true,
         followerCount: updatedTargetUser.followerCount,
         profilePicture: updatedTargetUser.profilePicture,
-        followers: updatedTargetUser.followers,
+        followers: updatedTargetUser.followers, 
       });
     }
   } catch (error) {
@@ -210,7 +214,7 @@ export const getMe = async (req, res) => {
     return response(res, 500, "Server error", null, error.message);
   }
 };
-// Backend Route: /user/search?q=arjun
+
 export const searchUsers = async (req, res) => {
   try {
     const { q } = req.query;
@@ -231,3 +235,115 @@ export const searchUsers = async (req, res) => {
     res.status(500).json({ message: "Search failed" });
   }
 };
+
+
+export const deleteAccount = async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id.toString();
+    const targetUserId = req.params.targetUserId;
+
+    if (loggedInUserId !== targetUserId) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only delete your own account!",
+        
+      });
+    }
+
+    const user = await User.findById(loggedInUserId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found!" });
+    }
+
+    // --- 🚀 CLOUDINARY CLEANUP LOGIC ---
+    const getPublicIdFromUrl = (url) => {
+      if (!url || !url.includes("cloudinary")) return null;
+      try {
+        const parts = url.split("/");
+        const publicIdWithExtension = parts.slice(-2).join("/");
+        const publicId = publicIdWithExtension.substring(
+          0,
+          publicIdWithExtension.lastIndexOf("."),
+        );
+        return publicId;
+      } catch (error) {
+        console.error("Error extracting public_id from URL:", url, error);
+        return null;
+      }
+    };
+
+    // A. Delete Profile Picture from Cloudinary
+    if (user.profilePicture) {
+      const profilePublicId = getPublicIdFromUrl(user.profilePicture);
+      if (profilePublicId) {
+        await cloudinary.uploader.destroy(profilePublicId);
+      }
+    }
+
+    // B. Delete all Post Images from Cloudinary
+    const userPosts = await Post.find({ user: loggedInUserId });
+    const imageDeletionPromises = [];
+    for (const post of userPosts) {
+      if (post.images && post.images.length > 0) {
+        for (const image of post.images) {
+          if (image.public_id) {
+            imageDeletionPromises.push(cloudinary.uploader.destroy(image.public_id));
+          }
+        }
+      }
+    }
+    await Promise.all(imageDeletionPromises);
+
+    // --- 🧹 DATABASE CLEANUP LOGIC ---
+
+    // 1. Remove user's likes from all posts
+    await Post.updateMany(
+      { likes: loggedInUserId },
+      { $pull: { likes: loggedInUserId }, $inc: { likeCount: -1 } },
+    );
+
+    // 2. Remove user's comments from all posts
+    await Post.updateMany(
+      { "comments.user": loggedInUserId },
+      { 
+        $pull: { comments: { user: loggedInUserId } },
+        $inc: { commentCount: -1 }
+      },
+    );
+
+    // 3. Remove user from other users' followers/following lists
+    await User.updateMany(
+      { followers: loggedInUserId },
+      { $pull: { followers: loggedInUserId }, $inc: { followerCount: -1 } },
+    );
+    await User.updateMany(
+      { following: loggedInUserId },
+      { $pull: { following: loggedInUserId }, $inc: { followingCount: -1 } },
+    );
+    
+    // 4. Delete all of the user's posts
+    await Post.deleteMany({ user: loggedInUserId });
+
+    // 5. Delete the user's follow/following records
+    await Follow.deleteMany({ $or: [{ follower: loggedInUserId }, { following: loggedInUserId }] });
+
+    // 6. Finally, delete the user account
+    await User.findByIdAndDelete(loggedInUserId);
+
+    // 7. Clear cookie and send response
+    res.clearCookie("accessToken");
+    res.status(200).json({
+      success: true,
+      message:
+        "Account and all associated data (posts, images, comments, likes) have been successfully deleted.",
+    });
+  } catch (error) {
+    console.error("Delete Account Error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error: Account delete failed. Please try again later." 
+    });
+  }
+}

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../api/Api";
-import { Github, Linkedin, Globe, Edit, Loader2, Award, X } from "lucide-react";
+import { Github, Linkedin, Globe, Edit, Loader2, Award, X, Share2 } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { showErrorToast, showProfileUpdatedToast } from "../../Toast/toast";
 import EmailModal from "./EmailModal";
 import EditProfileModal from "./EditProfileModal";
 import FollowersModal from "./FollowersModal";
 import FollowingModal from "./FollowingModal";
+import ShareProfileModal from "./ShareProfileModal";
 import { Slide, ToastContainer } from "react-toastify";
 import dp from "../../assets/dp.jpg";
 function EditUserProfile() {
@@ -17,6 +18,7 @@ function EditUserProfile() {
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [showFullImage, setShowFullImage] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -113,12 +115,22 @@ function EditUserProfile() {
               <span className="text-blue-600">DROP</span>
             </span>
           </div>
+          <div className="flex items-center gap-2">
+
+          <button
+            onClick={() => setShowShareModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-[9px] font-semibold text-white bg-gradient-to-r from-green-500 to-teal-500 shadow-md transition-all hover:scale-105"
+          >
+            <Share2 size={10} />
+          </button>
           <button
             onClick={() => setShowEditModal(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-full text-[9px] font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md transition-all hover:scale-105"
           >
             <Edit size={10} /> 
           </button>
+          </div>
+          
         </div>
 
         {/* Content Body - Shortened Spacing */}
@@ -283,6 +295,11 @@ function EditUserProfile() {
         isOpen={showEmailModal}
         onClose={() => setShowEmailModal(false)}
         email={user?.email}
+      />
+      <ShareProfileModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        user={user}
       />
     </div>
   );
