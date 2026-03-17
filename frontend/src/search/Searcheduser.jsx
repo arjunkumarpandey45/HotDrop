@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import axios from "../api/Api";
+// import axios from "../api/Api";
 // 🔥 Added UserX icon to the imports
 import { Github, Linkedin, Globe, Edit, Loader2, Award, X, UserPlus, UserMinus, UserX } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
@@ -12,6 +12,7 @@ import FollowingModal from "../pages/Profile/FollowingModal";
 import { Slide, ToastContainer } from "react-toastify";
 import dp from "../assets/dp.jpg";
 import UserPost from "../pages/Profile/Post/UserPost";
+import API from "../api/Api";
 
 function Searcheduser() {
   const { hotdropId } = useParams();
@@ -74,7 +75,7 @@ function Searcheduser() {
       setProfileUser(null);
 
       try {
-        const res = await axios.get(`/user/userprofile/${targetHotdropId}`);
+        const res = await API.get(`/user/userprofile/${targetHotdropId}`);
         const profile = res.data.data.user;
 
         if (!cancelled) {
@@ -188,7 +189,7 @@ function Searcheduser() {
 
     setFollowLoading(true);
     try {
-      const toggleRes = await axios.post("/user/togglefollow", {
+      const toggleRes = await API.post("/user/togglefollow", {
         userIdToFollow: profileUser._id,
       });
 
@@ -201,7 +202,7 @@ function Searcheduser() {
         followers: toggleRes.data.data?.followers ?? prev.followers,
       }));
 
-      const refreshed = await axios.get(`/user/userprofile/${profileUser.hotdropId}`);
+      const refreshed = await API.get(`/user/userprofile/${profileUser.hotdropId}`);
       const refreshedProfile = refreshed.data.data.user;
       setProfileUser(refreshedProfile);
 

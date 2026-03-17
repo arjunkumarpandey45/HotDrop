@@ -29,6 +29,7 @@ if (loading) return;
   
   setTimeout(() => {
     navigate("/");
+    window.location.reload();
   }, 1500);;
     } else {
      
