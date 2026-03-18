@@ -39,7 +39,7 @@ const toggleExpand = (e) => {
         onClick={(e) => { e.stopPropagation(); onClose(); }}
         className="absolute top-5 right-5 text-white/70 hover:text-white transition-transform hover:scale-110 z-[1100]"
       >
-        <X size={26} />
+        <X  className="text-red-500 cursor- pointer" size={26} />
       </button>
 
       <div 
