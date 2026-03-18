@@ -41,7 +41,7 @@ const [previewUrl, setPreviewUrl] = useState(null);
   const [currentImage, setCurrentImage] = useState({});
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const maxLength = 50
+  const maxLength = 99
   // States for Infinite Scroll
   const [fetchingMore, setFetchingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -77,7 +77,15 @@ const toggleExpand = (e) => {
           : shuffleArray(fetchedPosts);
 
         // logic: Naya data purane data ke end mein append karo
-        setPosts((prev) => (pageNum === 1 ? processedBatch : [...prev, ...processedBatch]));
+       setPosts((prev) => {
+  if (pageNum === 1) return processedBatch;
+
+  // Sirf wahi posts add karein jo pehle se state mein nahi hain
+  const existingIds = new Set(prev.map((p) => p._id));
+  const uniqueNewPosts = processedBatch.filter((p) => !existingIds.has(p._id));
+
+  return [...prev, ...uniqueNewPosts];
+});
         setHasMore(moreAvailable); 
       }
     } catch (error) {
@@ -100,13 +108,11 @@ const toggleExpand = (e) => {
       const currentHeight = window.innerHeight + document.documentElement.scrollTop;
 
       // logic: Bottom se 200px pehle hi naya data mangwa lo smooth experience ke liye
-      if (currentHeight >= scrollHeight - 200 && hasMore && !loading && !fetchingMore) {
-        setPage((prevPage) => {
-          const nextPage = prevPage + 1;
-          fetchGlobalFeed(nextPage);
-          return nextPage;
-        });
-      }
+     if (currentHeight >= scrollHeight - 200 && hasMore && !loading && !fetchingMore) {
+  const nextPage = page + 1;
+  setPage(nextPage);
+  fetchGlobalFeed(nextPage);
+}
     };
 
     window.addEventListener("scroll", handleScroll);
