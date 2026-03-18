@@ -274,11 +274,16 @@ function Allpost() {
                   <div 
                onClick={(e) => {
                   e.preventDefault();
-                  
+
+                  if (!user) {
+                    setShowAuthModal(true);
+                    return;
+                  }
+
                   if (!post.isLinkDead) {
                     setPreviewUrl(post.projectLink);
                   } else {
-                    toast.error("This project link appears to be dead")
+                    toast.error("This project link appears to be dead");
                   }
                 }}      className="group/link relative flex items-center  justify-between p-[1px] rounded-xl mb-3 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
                   >
