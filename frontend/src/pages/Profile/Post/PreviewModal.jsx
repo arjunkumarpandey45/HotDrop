@@ -22,7 +22,7 @@ const PreviewModal = ({ url, onClose }) => {
         setLoading(false);
         setShowFailSafe(true);
       }
-    }, 2500);
+    }, 6000);
     return () => clearTimeout(timer);
   }, [url]);
 
