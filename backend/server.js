@@ -10,6 +10,13 @@ import { startLiveTracking } from './utils/cronJobs.js'
 import passport from 'passport'
 import botRouter from './routes/botRoute.js'
 const app = express()
+app.get('/keep-alive', (req, res) => {
+  res.status(200).json({ 
+    success: true, 
+    message: "HotDrop Server is Awake! 🔥",
+    timestamp: new Date().toLocaleString()
+  });
+});
 const PORT = process.env.PORT || 3000
 const URL=process.env.FRONTEND_URL
 const corsOptions ={
