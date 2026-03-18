@@ -3,15 +3,25 @@ import { useAuthStore } from "../../../store/useAuthStore";
 import { formatDistanceToNow } from "date-fns";
 import dp from "../../../assets/dp.jpg";
 import { AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PreviewModal from "./PreviewModal";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
+
 function ImageModal({ post, modalIndex, setModalIndex, handleLike, onClose, setLikePost, setCommentPost, setSharePost, ownerOverride }) {
   const { user: currentUser } = useAuthStore();
-const [previewUrl, setPreviewUrl] = useState(null);
-const [isExpanded, setIsExpanded] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const maxLength = 50
   const postOwner = post?.user?.hotdropId ? post.user : (ownerOverride || currentUser);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // 2. LIVE DATA SYNC
   const livePost = post;
@@ -29,6 +39,35 @@ const toggleExpand = (e) => {
     e.stopPropagation();
     setModalIndex((prev) => (prev - 1 + livePost.images.length) % livePost.images.length);
   };
+
+  if (isMobile) {
+    return (
+      <div 
+        className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[99] p-3"
+        onClick={onClose}
+      >
+        <button
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          className="absolute top-5 right-5 text-white/70 hover:text-white transition-transform hover:scale-110 z-[1100]"
+        >
+          <X size={26} />
+        </button>
+        <div className="relative w-full h-full flex items-center justify-center">
+          <img
+            src={livePost.images?.[modalIndex]?.url}
+            className="object-contain w-full h-full"
+            alt="Preview"
+          />
+          {livePost.images.length > 1 && (
+            <>
+              <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 text-white p-2 rounded-lg hover:bg-white/40"><ChevronLeft size={20} /></button>
+              <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 text-white p-2 rounded-lg hover:bg-white/40"><ChevronRight size={20} /></button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 

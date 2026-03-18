@@ -42,7 +42,7 @@ const [commentText, setCommentText] = useState("");
   const [sharePost, setSharePost] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const maxLength = 50
+  const maxLength = 100
   useEffect(() => {
     const resize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", resize);
