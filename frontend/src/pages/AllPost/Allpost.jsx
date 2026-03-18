@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react"; // useCallback add kiya
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
 import { 
@@ -25,31 +25,28 @@ import API from "../../api/Api";
 import Sponser from "../Sponser/Sponser";
 import dp from "../../assets/dp.jpg";
 import PreviewModal from "../Profile/Post/PreviewModal";
+import PostDescription from "./PostDescription";
 import { AnimatePresence } from "framer-motion";
 function Allpost() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [posts, setPosts] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [commentPost, setCommentPost] = useState(null);
   const [likePost, setLikePost] = useState(null);
   const [sharePost, setSharePost] = useState(null);
-  const [imagePost, setImagePost] = useState(null); 
+  const [imagePost, setImagePost] = useState(null);
   const [modalIndex, setModalIndex] = useState(0);
   const [currentImage, setCurrentImage] = useState({});
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const maxLength = 99
+
   // States for Infinite Scroll
   const [fetchingMore, setFetchingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-const toggleExpand = (e) => {
-  e.preventDefault();
-  setIsExpanded(!isExpanded);
-};
+
   const shuffleArray = (array) => {
     let shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -65,28 +62,28 @@ const toggleExpand = (e) => {
       if (pageNum === 1) setLoading(true);
       else setFetchingMore(true);
 
-      const res = await API.get(`/post/getallposts?page=${pageNum}&limit=10`); 
+      const res = await API.get(`/post/getallposts?page=${pageNum}&limit=10`);
       const { posts: fetchedPosts, hasMore: moreAvailable } = res.data?.data || {};
 
       if (fetchedPosts) {
-        // logic: Pehle batch ko shuffle karo
-        const processedBatch = pageNum === 1 
-          ? (fetchedPosts.length > 3 
-              ? [...fetchedPosts.slice(0, 3), ...shuffleArray(fetchedPosts.slice(3))] 
-              : shuffleArray(fetchedPosts))
-          : shuffleArray(fetchedPosts);
+        setPosts((prev) => {
+          if (pageNum === 1) {
+            return fetchedPosts.length > 3
+              ? [...fetchedPosts.slice(0, 3), ...shuffleArray(fetchedPosts.slice(3))]
+              : shuffleArray(fetchedPosts);
+          }
 
-        // logic: Naya data purane data ke end mein append karo
-       setPosts((prev) => {
-  if (pageNum === 1) return processedBatch;
+          // Deduplicate using a Map, preserving insertion order
+          const postMap = new Map(prev.map(p => [p._id, p]));
+          shuffleArray(fetchedPosts).forEach(p => {
+            if (!postMap.has(p._id)) {
+              postMap.set(p._id, p);
+            }
+          });
 
-  // Sirf wahi posts add karein jo pehle se state mein nahi hain
-  const existingIds = new Set(prev.map((p) => p._id));
-  const uniqueNewPosts = processedBatch.filter((p) => !existingIds.has(p._id));
-
-  return [...prev, ...uniqueNewPosts];
-});
-        setHasMore(moreAvailable); 
+          return Array.from(postMap.values());
+        });
+        setHasMore(moreAvailable);
       }
     } catch (error) {
       toast.error("Failed to load more posts.");
@@ -108,11 +105,13 @@ const toggleExpand = (e) => {
       const currentHeight = window.innerHeight + document.documentElement.scrollTop;
 
       // logic: Bottom se 200px pehle hi naya data mangwa lo smooth experience ke liye
-     if (currentHeight >= scrollHeight - 200 && hasMore && !loading && !fetchingMore) {
-  const nextPage = page + 1;
-  setPage(nextPage);
-  fetchGlobalFeed(nextPage);
-}
+      if (currentHeight >= scrollHeight - 200 && hasMore && !loading && !fetchingMore) {
+        setPage(prevPage => {
+          const nextPage = prevPage + 1;
+          fetchGlobalFeed(nextPage);
+          return nextPage;
+        });
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -306,22 +305,8 @@ const toggleExpand = (e) => {
                     </div>
                   </div>
 
-                  <div className="relative">
-    <p className="text-[12px] text-slate-900 pb-3  font-medium leading-relaxed">
-     
-      {isExpanded ? post.description : `${post.description.slice(0, maxLength)}`}
-      
-      {/* Button ko text ke bilkul saath ya niche dikhane ke liye condition */}
-      {post.description.length > maxLength && (
-        <button 
-          onClick={toggleExpand}
-          className="ml-1 text-[11px] text-slate-400 hover:text-blue-600 font-bold transition-colors cursor-pointer inline-block"
-        >
-          {isExpanded ? '  ..Show Less' : '  ...Read More'}
-        </button>
-      )}
-    </p>
-  </div>
+                  <PostDescription description={post.description} />
+
                   {/* Interactions */}
                   <div className="flex gap-8 border-t pt-4">
                     <div className="flex items-center gap-2 cursor-pointer group">
