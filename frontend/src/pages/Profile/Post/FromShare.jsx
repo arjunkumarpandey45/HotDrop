@@ -41,7 +41,7 @@ const [previewUrl, setPreviewUrl] = useState(null);
   const [imagePost, setImagePost] = useState(null);
   const [modalIndex, setModalIndex] = useState(0);
 const [isExpanded, setIsExpanded] = useState(false);
-  const maxLength = 50
+  const maxLength = 100
   useEffect(() => {
     const fetchSinglePost = async () => {
       try {

@@ -11,6 +11,9 @@ const Signup = () => {
   const [form, setForm] = useState({
     hotdropId: "", username: "", email: "", password: "", gender: "", dateOfBirth: "",
   });
+  const today = new Date();
+  today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+  const maxDobDate = today.toISOString().split("T")[0];
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -18,6 +21,12 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (form.dateOfBirth && form.dateOfBirth > maxDobDate) {
+      showErrorToastForSIgnup("Birth date cannot be in the future");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await API.post("/auth/register", form, {
@@ -124,7 +133,7 @@ const Signup = () => {
               </div>
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Birth Date</label>
-                <input name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={handleChange} className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-500" required />
+                <input name="dateOfBirth" type="date" max={maxDobDate} value={form.dateOfBirth} onChange={handleChange} className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-500" required />
               </div>
             </div>
 

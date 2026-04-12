@@ -13,13 +13,12 @@ function LikeModal({ post, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[600]">
       <div className="bg-white w-[350px] rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in duration-200">
-        
         {/* HEADER */}
         <div className="p-4 border-b flex justify-between items-center">
           <h3 className="font-bold text-sm text-slate-800">
             Likes ({post.likes?.length || 0})
           </h3>
-          <button 
+          <button
             onClick={onClose}
             className="p-1 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"
           >
@@ -31,8 +30,8 @@ function LikeModal({ post, onClose }) {
         <div className="max-h-[400px] overflow-y-auto p-4 space-y-4 custom-scrollbar">
           {post.likes && post.likes.length > 0 ? (
             post.likes.map((likedUser, i) => (
-              <div 
-                key={likedUser._id || i} 
+              <div
+                key={likedUser._id || i}
                 className="flex gap-3 items-center group cursor-pointer"
                 onClick={() => handleProfileClick(likedUser.hotdropId)}
               >
