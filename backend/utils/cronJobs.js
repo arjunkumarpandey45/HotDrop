@@ -23,7 +23,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const startLiveTracking = () => {
   // Har 2 ghante mein run hoga
-  cron.schedule('0 */2 * * *', async () => {
+cron.schedule('*/8 * * * *', async () => {
     console.log(`--- 🛡️ Safe Tracking Started: ${new Date().toLocaleString()} ---`);
 
     try {
